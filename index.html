@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JobPulse — honest weekly job matches</title>
+<meta name="description" content="A weekly email of jobs scored against your real profile, with an honest gap analysis for each one.">
+<style>
+  :root{ --blue:#0b5cad; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:680px;margin:0 auto;padding:0 22px;}
+  header{padding:64px 0 20px;}
+  .logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:19px;color:var(--blue);}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--blue);
+    box-shadow:0 0 0 5px color-mix(in srgb,var(--blue) 18%,transparent);}
+  h1{font-size:40px;line-height:1.1;margin:26px 0 14px;letter-spacing:-.02em;}
+  .lede{font-size:19px;color:var(--muted);margin:0 0 30px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:16px 0;}
+  .card h3{margin:0 0 6px;font-size:16px;}
+  .card p{margin:0;color:var(--muted);font-size:14.5px;}
+  form{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 8px;}
+  input[type=email]{flex:1 1 240px;min-width:0;padding:14px 16px;font-size:16px;border-radius:10px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);}
+  button{padding:14px 22px;font-size:16px;font-weight:600;border:0;border-radius:10px;
+    background:var(--blue);color:#fff;cursor:pointer;}
+  button:hover{filter:brightness(1.07);}
+  .fine{font-size:12.5px;color:var(--muted);margin-top:6px;}
+  .grid{display:grid;gap:14px;grid-template-columns:1fr;margin:28px 0;}
+  @media(min-width:560px){.grid{grid-template-columns:1fr 1fr 1fr;}}
+  .badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;color:#fff;}
+  .b-strong{background:#1a7f37} .b-stretch{background:#b8860b} .b-skip{background:#8a94a0}
+  footer{padding:40px 0 60px;color:var(--muted);font-size:13px;}
+  a{color:var(--blue);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="logo"><span class="dot"></span>JobPulse</span>
+    <h1>Job matches that tell you the truth.</h1>
+    <p class="lede">One email a week. Every role scored against <em>your</em> profile, not a keyword.
+      And for each one, the honest gap: what you'd need, and whether it's learnable or a real wall.</p>
+
+    <!-- SETUP: replace YOUR_FORM_ID with the id from your Formspree form
+         (formspree.io → New form → copy the endpoint's last path segment). -->
+    <form id="waitlist" action="https://formspree.io/f/YOUR_FORM_ID" method="post">
+      <input type="email" name="email" placeholder="you@email.com" required aria-label="Email address">
+      <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+      <button type="submit">Join the waitlist</button>
+    </form>
+    <div class="fine" id="formnote">No spam, no selling your data. One click to leave, ever.</div>
+  </header>
+
+  <div class="grid">
+    <div class="card"><h3>Scored, not searched</h3><p>Each role gets a fit score from your skills, experience and goals — the way a good recruiter would read it.</p></div>
+    <div class="card"><h3>Gap analysis</h3><p>Missing a requirement? We say which one, and whether a weekend of learning fixes it or it's structural.</p></div>
+    <div class="card"><h3>Once a week</h3><p>A calm weekly digest. No doom-scrolling a job board, no 40 near-duplicate alerts.</p></div>
+  </div>
+
+  <div class="card">
+    <h3>What a match looks like</h3>
+    <p style="margin-top:10px;color:var(--ink);"><strong>Quality Engineer — Apple, Cork</strong> &nbsp;<span class="badge b-strong">81 · Strong</span><br>
+    <span style="color:var(--muted)">Your escalation + testing work maps almost 1:1. Gap: Swift, XCTest — both preferred, not required.</span></p>
+    <p style="margin-top:14px;color:var(--ink);"><strong>Agentic AI Engineer — MANGO</strong> &nbsp;<span class="badge b-stretch">57 · Stretch</span><br>
+    <span style="color:var(--muted)">Strong on agentic + AI security. Wall: they want 3+ years backend Python you don't have yet.</span></p>
+    <p style="margin-top:14px;color:var(--ink);"><strong>Senior ML Engineer — (example)</strong> &nbsp;<span class="badge b-skip">31 · Skip</span><br>
+    <span style="color:var(--muted)">Needs production model training. Not close — we won't waste your week on it.</span></p>
+  </div>
+
+  <footer>
+    Private, pre-launch. Building in the open, carefully.<br>
+    Questions? <a href="mailto:albertreinabuxo@icloud.com">Get in touch.</a>
+  </footer>
+
+</div>
+
+<script>
+  // Submits to Formspree via AJAX so the user stays on the page.
+  // Until the form action still contains YOUR_FORM_ID it runs in demo mode.
+  var form = document.getElementById('waitlist');
+  var note = document.getElementById('formnote');
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    var email = (this.email.value || '').trim();
+    if(!email) return;
+    if(this.action.indexOf('YOUR_FORM_ID') !== -1){
+      note.textContent = "Thanks — you're on the list. (Demo mode: add your Formspree id to go live.)";
+      this.reset(); return;
+    }
+    note.textContent = "Adding you…";
+    try{
+      var res = await fetch(this.action, {
+        method:'POST', body:new FormData(this), headers:{'Accept':'application/json'}
+      });
+      note.textContent = res.ok
+        ? "You're on the list. Thanks — I'll be in touch."
+        : "Hmm, that didn't go through. Email me directly instead.";
+      if(res.ok) this.reset();
+    }catch(_){
+      note.textContent = "Network hiccup — try again, or email me directly.";
+    }
+  });
+</script>
+</body>
+</html>
