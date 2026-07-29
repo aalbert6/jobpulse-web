@@ -179,13 +179,28 @@
   // Submit stays disabled until consent is explicitly given.
   box.addEventListener('change', function(){ btn.disabled = !box.checked; });
 
+  var MAX_FILE = 5 * 1024 * 1024; // 5 MB per file
+
   form.addEventListener('submit', async function(e){
     e.preventDefault();
     if(!box.checked) return;
-    if(form.action.indexOf('rkuiprrginjullnzskkg') !== -1){
-      note.textContent = "Not live yet: set a DPA-covered storage endpoint first (see GDPR-COMPLIANCE.md).";
+
+    // Tell the user up front if any attached file is over the limit,
+    // instead of silently dropping it during upload.
+    var tooBig = [];
+    ['cv_file','documents'].forEach(function(n){
+      var input = form.querySelector('[name="'+n+'"]');
+      if(input && input.files){
+        for(var i=0;i<input.files.length;i++){
+          if(input.files[i].size > MAX_FILE) tooBig.push(input.files[i].name);
+        }
+      }
+    });
+    if(tooBig.length){
+      note.textContent = "Over the 5 MB limit — please shrink or remove: " + tooBig.join(", ");
       return;
     }
+
     var data = new FormData(form);
     data.append('consent_timestamp', new Date().toISOString()); // record when consent was given
     note.textContent = "Saving your profile…";
