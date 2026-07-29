@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JobPulse — set up your profile</title>
+<!--
+  PRODUCT INTAKE FORM. Do NOT deploy live until the storage decision is made and the
+  processor DPAs are in place (see docs/GDPR-COMPLIANCE.md → "the one blocking decision").
+  The `action` below is a placeholder. Point it at YOUR chosen, DPA-covered endpoint
+  (an EU-region function/DB write), NOT at a generic form host holding raw CVs.
+  Design principles applied: data minimization, explicit opt-in consent (submit is
+  disabled until the box is ticked), privacy notice linked before submission, honeypot.
+-->
+<style>
+  :root{ --blue:#0b5cad; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;}
+  .wrap{max-width:600px;margin:0 auto;padding:40px 22px 70px;}
+  h1{font-size:28px;margin:0 0 6px;letter-spacing:-.01em;}
+  .sub{color:var(--muted);margin:0 0 26px;}
+  label{display:block;font-weight:600;font-size:14px;margin:18px 0 6px;}
+  .hint{font-weight:400;color:var(--muted);font-size:12.5px;}
+  input,select,textarea{width:100%;padding:12px 14px;font-size:15px;border-radius:9px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);font-family:inherit;}
+  textarea{min-height:96px;resize:vertical;}
+  .row{display:grid;gap:12px;grid-template-columns:1fr 1fr;}
+  @media(max-width:480px){.row{grid-template-columns:1fr;}}
+  .consent{display:flex;gap:10px;align-items:flex-start;margin:26px 0 6px;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
+  .consent input{width:auto;margin-top:3px;}
+  .consent label{margin:0;font-weight:400;font-size:13.5px;color:var(--ink);}
+  button{margin-top:18px;width:100%;padding:14px;font-size:16px;font-weight:600;border:0;
+    border-radius:10px;background:var(--blue);color:#fff;cursor:pointer;}
+  button:disabled{opacity:.45;cursor:not-allowed;}
+  .note{font-size:13px;color:var(--muted);margin-top:12px;text-align:center;}
+  a{color:var(--blue);}
+  fieldset{border:0;padding:0;margin:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Set up your profile</h1>
+  <p class="sub">Takes ~3 minutes. We only ask for what we use to match you — nothing else.</p>
+
+  <form id="intake" action="https://rkuiprrginjullnzskkg.supabase.co/functions/v1/intake" method="post">
+    <!-- honeypot -->
+    <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+
+    <fieldset>
+      <div class="row">
+        <div>
+          <label>First name <span class="hint">for the greeting</span></label>
+          <input name="first_name" required maxlength="60">
+        </div>
+        <div>
+          <label>Email <span class="hint">where the digest goes</span></label>
+          <input type="email" name="email" required>
+        </div>
+      </div>
+
+      <label>Current role / title</label>
+      <input name="current_role" placeholder="e.g. Package Consultant" maxlength="120">
+
+      <div class="row">
+        <div>
+          <label>Years of experience</label>
+          <input name="years_experience" inputmode="numeric" placeholder="e.g. 2" maxlength="4">
+        </div>
+        <div>
+          <label>Where can you work? <span class="hint">not nationality</span></label>
+          <select name="work_authorization">
+            <option value="">Select…</option>
+            <option>EU — no sponsorship needed</option>
+            <option>Needs visa sponsorship</option>
+            <option>Remote only</option>
+            <option>Other / will explain</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Key skills <span class="hint">comma-separated</span></label>
+      <input name="skills" placeholder="e.g. Python, digital analytics, prompt engineering" maxlength="300">
+
+      <label>Roles you want <span class="hint">what to search for</span></label>
+      <input name="target_roles" placeholder="e.g. AI Engineer, Data Analyst" maxlength="200">
+
+      <div class="row">
+        <div>
+          <label>Location</label>
+          <input name="location" placeholder="e.g. Barcelona" maxlength="80">
+        </div>
+        <div>
+          <label>Work style</label>
+          <select name="work_style">
+            <option value="">Select…</option>
+            <option>On-site</option>
+            <option>Hybrid</option>
+            <option>Remote</option>
+            <option>No preference</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Minimum salary <span class="hint">optional — helps filter</span></label>
+      <input name="salary_floor" placeholder="e.g. €35,000" maxlength="40">
+
+      <label>Deal-breakers <span class="hint">optional</span></label>
+      <input name="deal_breakers" placeholder="e.g. no relocation, no pure maintenance" maxlength="200">
+
+      <label>CV text or LinkedIn URL <span class="hint">optional — improves matching</span></label>
+      <textarea name="cv_or_linkedin" placeholder="Paste your CV text, or a link to your LinkedIn profile" maxlength="8000"></textarea>
+    </fieldset>
+
+    <div class="consent">
+      <input type="checkbox" id="consent" name="consent" required>
+      <label for="consent">I've read the <a href="privacy.html" target="_blank" rel="noopener">privacy notice</a>
+        and consent to JobPulse processing this information to generate my weekly job matches.
+        I can withdraw and delete my data at any time.</label>
+    </div>
+
+    <button id="submit" type="submit" disabled>Create my profile</button>
+    <div class="note" id="note">Your data is used only to match you to jobs. Never sold, deletable anytime.</div>
+  </form>
+</div>
+
+<script>
+  var form = document.getElementById('intake');
+  var box  = document.getElementById('consent');
+  var btn  = document.getElementById('submit');
+  var note = document.getElementById('note');
+
+  // Submit stays disabled until consent is explicitly given.
+  box.addEventListener('change', function(){ btn.disabled = !box.checked; });
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    if(!box.checked) return;
+    if(form.action.indexOf('rkuiprrginjullnzskkg') !== -1){
+      note.textContent = "Not live yet: set a DPA-covered storage endpoint first (see GDPR-COMPLIANCE.md).";
+      return;
+    }
+    var data = new FormData(form);
+    data.append('consent_timestamp', new Date().toISOString()); // record when consent was given
+    note.textContent = "Saving your profile…";
+    try{
+      var res = await fetch(form.action, {method:'POST', body:data, headers:{'Accept':'application/json'}});
+      note.textContent = res.ok
+        ? "You're set. Your first digest is on its way soon."
+        : "That didn't save — please try again or email us.";
+      if(res.ok) form.reset(), btn.disabled = true;
+    }catch(_){ note.textContent = "Network issue — please try again."; }
+  });
+</script>
+</body>
+</html>
