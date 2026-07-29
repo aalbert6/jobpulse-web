@@ -23,6 +23,9 @@
   .wrap{max-width:600px;margin:0 auto;padding:40px 22px 70px;}
   h1{font-size:28px;margin:0 0 6px;letter-spacing:-.01em;}
   .sub{color:var(--muted);margin:0 0 26px;}
+  .section{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--blue);margin:30px 0 4px;padding-bottom:6px;border-bottom:2px solid var(--line);}
+  .section:first-of-type{margin-top:6px;}
   label{display:block;font-weight:600;font-size:14px;margin:18px 0 6px;}
   .hint{font-weight:400;color:var(--muted);font-size:12.5px;}
   input,select,textarea{width:100%;padding:12px 14px;font-size:15px;border-radius:9px;
@@ -45,13 +48,15 @@
 <body>
 <div class="wrap">
   <h1>Set up your profile</h1>
-  <p class="sub">Takes ~3 minutes. We only ask for what we use to match you — nothing else.</p>
+  <p class="sub">Takes ~6 minutes. The more you tell us, the better the matches. Everything past
+    the first two fields is optional — do as much as you like.</p>
 
   <form id="intake" action="https://rkuiprrginjullnzskkg.supabase.co/functions/v1/intake" method="post">
     <!-- honeypot -->
     <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
 
     <fieldset>
+      <div class="section">About you</div>
       <div class="row">
         <div>
           <label>First name <span class="hint">for the greeting</span></label>
@@ -83,12 +88,27 @@
         </div>
       </div>
 
-      <label>Key skills <span class="hint">comma-separated</span></label>
+      <div class="section">Skills</div>
+      <label>Your strongest skills <span class="hint">comma-separated</span></label>
       <input name="skills" placeholder="e.g. Python, digital analytics, prompt engineering" maxlength="300">
 
+      <label>Skills you're building <span class="hint">optional — what you're learning</span></label>
+      <input name="learning_skills" placeholder="e.g. Swift, cloud, machine learning" maxlength="300">
+
+      <div class="section">What you're looking for</div>
       <label>Roles you want <span class="hint">what to search for</span></label>
       <input name="target_roles" placeholder="e.g. AI Engineer, Data Analyst" maxlength="200">
 
+      <label>Dream companies <span class="hint">optional — any to watch for</span></label>
+      <input name="target_companies" placeholder="e.g. Apple, Accenture, local startups" maxlength="200">
+
+      <label>Where do you want to grow next? <span class="hint">optional</span></label>
+      <textarea name="career_goal" placeholder="e.g. move from consulting into hands-on engineering, eventually a lead role" maxlength="600"></textarea>
+
+      <label>What kind of work energizes you? <span class="hint">optional</span></label>
+      <textarea name="energizers" placeholder="e.g. building and shipping features; solving a client's problem end to end" maxlength="600"></textarea>
+
+      <div class="section">Logistics</div>
       <div class="row">
         <div>
           <label>Location</label>
@@ -106,13 +126,29 @@
         </div>
       </div>
 
-      <label>Minimum salary <span class="hint">optional — helps filter</span></label>
-      <input name="salary_floor" placeholder="e.g. €35,000" maxlength="40">
+      <div class="row">
+        <div>
+          <label>Max commute / relocation <span class="hint">optional</span></label>
+          <input name="commute" placeholder="e.g. 45 min, or open to relocating for the right role" maxlength="120">
+        </div>
+        <div>
+          <label>Minimum salary <span class="hint">optional</span></label>
+          <input name="salary_floor" placeholder="e.g. €35,000" maxlength="40">
+        </div>
+      </div>
 
       <label>Deal-breakers <span class="hint">optional</span></label>
       <input name="deal_breakers" placeholder="e.g. no relocation, no pure maintenance" maxlength="200">
 
-      <label>CV text or LinkedIn URL <span class="hint">optional — improves matching</span></label>
+      <div class="section">How you work <span class="hint" style="font-weight:400">— optional, helps culture fit</span></div>
+      <label>What environments do you thrive in?</label>
+      <textarea name="thrive_environment" placeholder="e.g. small teams with real ownership and fast feedback" maxlength="600"></textarea>
+
+      <label>What drains you at work?</label>
+      <textarea name="drains_energy" placeholder="e.g. rigid process, endless maintenance, no autonomy" maxlength="600"></textarea>
+
+      <div class="section">Your CV</div>
+      <label>CV text or LinkedIn URL <span class="hint">optional — the single biggest boost to matching</span></label>
       <textarea name="cv_or_linkedin" placeholder="Paste your CV text, or a link to your LinkedIn profile" maxlength="8000"></textarea>
     </fieldset>
 
