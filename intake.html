@@ -69,12 +69,12 @@
       </div>
 
       <label>Current role / title</label>
-      <input name="current_role" placeholder="e.g. Package Consultant" maxlength="120">
+      <input name="current_role" placeholder="e.g. Software Engineer" maxlength="120">
 
       <div class="row">
         <div>
           <label>Years of experience</label>
-          <input name="years_experience" inputmode="numeric" placeholder="e.g. 2" maxlength="4">
+          <input name="years_experience" inputmode="numeric" placeholder="e.g. 4" maxlength="4">
         </div>
         <div>
           <label>Where can you work? <span class="hint">not nationality</span></label>
@@ -90,23 +90,23 @@
 
       <div class="section">Skills</div>
       <label>Your strongest skills <span class="hint">comma-separated</span></label>
-      <input name="skills" placeholder="e.g. Python, digital analytics, prompt engineering" maxlength="300">
+      <input name="skills" placeholder="e.g. Python, SQL, communication" maxlength="300">
 
       <label>Skills you're building <span class="hint">optional — what you're learning</span></label>
-      <input name="learning_skills" placeholder="e.g. Swift, cloud, machine learning" maxlength="300">
+      <input name="learning_skills" placeholder="e.g. cloud, leadership" maxlength="300">
 
       <div class="section">What you're looking for</div>
       <label>Roles you want <span class="hint">what to search for</span></label>
-      <input name="target_roles" placeholder="e.g. AI Engineer, Data Analyst" maxlength="200">
+      <input name="target_roles" placeholder="e.g. Backend Developer, Product Manager" maxlength="200">
 
       <label>Dream companies <span class="hint">optional — any to watch for</span></label>
-      <input name="target_companies" placeholder="e.g. Apple, Accenture, local startups" maxlength="200">
+      <input name="target_companies" placeholder="e.g. companies you admire" maxlength="200">
 
       <label>Where do you want to grow next? <span class="hint">optional</span></label>
-      <textarea name="career_goal" placeholder="e.g. move from consulting into hands-on engineering, eventually a lead role" maxlength="600"></textarea>
+      <textarea name="career_goal" placeholder="e.g. grow into a senior or lead role over the next few years" maxlength="600"></textarea>
 
       <label>What kind of work energizes you? <span class="hint">optional</span></label>
-      <textarea name="energizers" placeholder="e.g. building and shipping features; solving a client's problem end to end" maxlength="600"></textarea>
+      <textarea name="energizers" placeholder="e.g. building things, solving hard problems with a team" maxlength="600"></textarea>
 
       <div class="section">Logistics</div>
       <div class="row">
@@ -129,23 +129,23 @@
       <div class="row">
         <div>
           <label>Max commute / relocation <span class="hint">optional</span></label>
-          <input name="commute" placeholder="e.g. 45 min, or open to relocating for the right role" maxlength="120">
+          <input name="commute" placeholder="e.g. up to 30 min, or open to relocating" maxlength="120">
         </div>
         <div>
           <label>Minimum salary <span class="hint">optional</span></label>
-          <input name="salary_floor" placeholder="e.g. €35,000" maxlength="40">
+          <input name="salary_floor" placeholder="e.g. €40,000" maxlength="40">
         </div>
       </div>
 
       <label>Deal-breakers <span class="hint">optional</span></label>
-      <input name="deal_breakers" placeholder="e.g. no relocation, no pure maintenance" maxlength="200">
+      <input name="deal_breakers" placeholder="e.g. no relocation, no on-call" maxlength="200">
 
       <div class="section">How you work <span class="hint" style="font-weight:400">— optional, helps culture fit</span></div>
       <label>What environments do you thrive in?</label>
-      <textarea name="thrive_environment" placeholder="e.g. small teams with real ownership and fast feedback" maxlength="600"></textarea>
+      <textarea name="thrive_environment" placeholder="e.g. collaborative teams with clear goals" maxlength="600"></textarea>
 
       <label>What drains you at work?</label>
-      <textarea name="drains_energy" placeholder="e.g. rigid process, endless maintenance, no autonomy" maxlength="600"></textarea>
+      <textarea name="drains_energy" placeholder="e.g. rigid process, unclear priorities" maxlength="600"></textarea>
 
       <div class="section">Your CV</div>
       <label>CV text or LinkedIn URL <span class="hint">optional — the single biggest boost to matching</span></label>
@@ -168,6 +168,20 @@
     <button id="submit" type="submit" disabled>Create my profile</button>
     <div class="note" id="note">Your data is used only to match you to jobs. Never sold, deletable anytime.</div>
   </form>
+
+  <!-- Confirmation shown after a successful submit (replaces the form). -->
+  <div id="done" hidden style="text-align:center;padding:50px 10px;">
+    <div style="width:64px;height:64px;border-radius:50%;background:#1a7f37;color:#fff;
+      font-size:34px;line-height:64px;margin:0 auto 20px;">&#10003;</div>
+    <h1 style="margin:0 0 10px;">You're in!</h1>
+    <p class="sub" style="margin:0 auto;max-width:440px;font-size:16px;">
+      Your profile is saved. We'll start matching you to roles and email your first
+      digest soon. You can close this tab — nothing else to do.</p>
+    <p style="margin-top:26px;font-size:14px;">
+      Changed your mind? Email <a href="mailto:clinch-vassals.3r@icloud.com">clinch-vassals.3r@icloud.com</a>
+      to update or delete your data anytime &middot; <a href="privacy.html">Privacy notice</a>
+    </p>
+  </div>
 </div>
 
 <script>
@@ -206,10 +220,16 @@
     note.textContent = "Saving your profile…";
     try{
       var res = await fetch(form.action, {method:'POST', body:data, headers:{'Accept':'application/json'}});
-      note.textContent = res.ok
-        ? "You're set. Your first digest is on its way soon."
-        : "That didn't save — please try again or email us.";
-      if(res.ok) form.reset(), btn.disabled = true;
+      if(res.ok){
+        // Swap the form out for the confirmation view.
+        document.querySelector('h1').hidden = true;
+        document.querySelector('.sub').hidden = true;
+        form.hidden = true;
+        document.getElementById('done').hidden = false;
+        window.scrollTo(0, 0);
+      } else {
+        note.textContent = "That didn't save — please try again or email us.";
+      }
     }catch(_){ note.textContent = "Network issue — please try again."; }
   });
 </script>
