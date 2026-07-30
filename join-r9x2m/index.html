@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>JobPulse — set up your profile</title>
 <!--
@@ -48,8 +49,8 @@
 <body>
 <div class="wrap">
   <h1>Set up your profile</h1>
-  <p class="sub">Takes ~6 minutes. The more you tell us, the better the matches. Everything past
-    the first two fields is optional — do as much as you like.</p>
+  <p class="sub">Takes ~6 minutes. A few fields are required so we can match you; the rest are optional but
+    sharpen your results. Takes ~6 minutes.</p>
 
   <form id="intake" action="https://rkuiprrginjullnzskkg.supabase.co/functions/v1/intake" method="post">
     <!-- honeypot -->
@@ -69,7 +70,7 @@
       </div>
 
       <label>Current role / title</label>
-      <input name="current_role" placeholder="e.g. Software Engineer" maxlength="120">
+      <input name="current_role" required placeholder="e.g. Software Engineer" maxlength="120">
 
       <div class="row">
         <div>
@@ -78,7 +79,7 @@
         </div>
         <div>
           <label>Where can you work? <span class="hint">not nationality</span></label>
-          <select name="work_authorization">
+          <select name="work_authorization" required>
             <option value="">Select…</option>
             <option>EU — no sponsorship needed</option>
             <option>Needs visa sponsorship</option>
@@ -90,14 +91,14 @@
 
       <div class="section">Skills</div>
       <label>Your strongest skills <span class="hint">comma-separated</span></label>
-      <input name="skills" placeholder="e.g. Python, SQL, communication" maxlength="300">
+      <input name="skills" required placeholder="e.g. Python, SQL, communication" maxlength="300">
 
       <label>Skills you're building <span class="hint">optional — what you're learning</span></label>
       <input name="learning_skills" placeholder="e.g. cloud, leadership" maxlength="300">
 
       <div class="section">What you're looking for</div>
       <label>Roles you want <span class="hint">what to search for</span></label>
-      <input name="target_roles" placeholder="e.g. Backend Developer, Product Manager" maxlength="200">
+      <input name="target_roles" required placeholder="e.g. Backend Developer, Product Manager" maxlength="200">
 
       <label>Dream companies <span class="hint">optional — any to watch for</span></label>
       <input name="target_companies" placeholder="e.g. companies you admire" maxlength="200">
@@ -112,7 +113,7 @@
       <div class="row">
         <div>
           <label>Location</label>
-          <input name="location" placeholder="e.g. Barcelona" maxlength="80">
+          <input name="location" required placeholder="e.g. Barcelona" maxlength="80">
         </div>
         <div>
           <label>Work style</label>
@@ -160,7 +161,7 @@
 
     <div class="consent">
       <input type="checkbox" id="consent" name="consent" required>
-      <label for="consent">I've read the <a href="privacy.html" target="_blank" rel="noopener">privacy notice</a>
+      <label for="consent">I've read the <a href="../privacy/" target="_blank" rel="noopener">privacy notice</a>
         and consent to JobPulse processing this information to generate my weekly job matches.
         I can withdraw and delete my data at any time.</label>
     </div>
@@ -179,7 +180,7 @@
       digest soon. You can close this tab — nothing else to do.</p>
     <p style="margin-top:26px;font-size:14px;">
       Changed your mind? Email <a href="mailto:clinch-vassals.3r@icloud.com">clinch-vassals.3r@icloud.com</a>
-      to update or delete your data anytime &middot; <a href="privacy.html">Privacy notice</a>
+      to update or delete your data anytime &middot; <a href="../privacy/">Privacy notice</a>
     </p>
   </div>
 </div>
