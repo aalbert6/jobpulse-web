@@ -7,54 +7,84 @@
 <title>JobPulse — your matches</title>
 <!--
   Premium dashboard. Magic-link auth via Supabase; RLS (migration 006) scopes every read
-  and write to the signed-in user's own rows, matched by the JWT email. The anon key below
-  is PUBLIC by design (safe to ship) — RLS is what protects the data, not key secrecy.
-  SETUP: paste your project's anon/public key into SUPABASE_ANON_KEY
-  (Supabase dashboard -> Project Settings -> API -> "anon public"). URL is already set.
+  and write to the signed-in user's own rows, matched by the JWT email. The publishable key
+  below is PUBLIC by design (safe to ship) — RLS is what protects the data, not key secrecy.
 -->
 <style>
-  :root{ --blue:#0b5cad; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; }
+  :root{
+    --blue:#0b5cad; --blue-d:#094a8c; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9;
+    --card:#fff; --line:#e3e8ee; --dot:#0b5cad;
+    --green:#1a7f37; --amber:#b26a00; --grey:#7a7a7a;
+  }
   @media (prefers-color-scheme: dark){
-    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; }
+    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; }
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;}
-  .wrap{max-width:680px;margin:0 auto;padding:34px 20px 70px;}
-  h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em;}
-  .sub{color:var(--muted);margin:0 0 24px;font-size:14.5px;}
-  input,button{font-family:inherit;font-size:15px;}
-  input[type=email]{width:100%;padding:12px 14px;border-radius:9px;border:1px solid var(--line);
-    background:var(--card);color:var(--ink);}
-  .btn{padding:11px 18px;border:0;border-radius:9px;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;}
-  .btn:hover{filter:brightness(1.07);} .btn[disabled]{opacity:.55;cursor:default;}
-  .btn.ghost{background:transparent;color:var(--blue);border:1px solid var(--line);}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0;}
-  .row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
-  .title{font-size:16px;font-weight:700;}
-  .badge{white-space:nowrap;font-size:12.5px;font-weight:700;color:#fff;padding:3px 10px;border-radius:20px;}
-  .loc{font-size:13px;color:var(--muted);margin-top:2px;}
-  .why{font-size:13.5px;margin-top:8px;}
-  .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
-  .actions a,.actions button{font-size:13px;padding:7px 12px;border-radius:7px;text-decoration:none;cursor:pointer;}
-  .view{background:var(--blue);color:#fff;font-weight:600;border:0;}
-  .save,.flag{background:transparent;border:1px solid var(--line);color:var(--ink);}
-  .saved{color:#1a7f37;border-color:#1a7f37;} .flagged{color:#b26a00;border-color:#b26a00;}
-  .notice{font-size:12px;color:var(--muted);margin-top:20px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
-  #msg{font-size:13.5px;color:var(--muted);margin-top:10px;}
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased;}
   a{color:var(--blue);}
+  input,button{font-family:inherit;font-size:15px;}
+
+  /* Top brand bar with Sign Out on the right */
+  header.bar{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line);}
+  .bar-in{max-width:720px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
+  .logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:18px;color:var(--blue);letter-spacing:-.01em;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--dot);
+    box-shadow:0 0 0 5px color-mix(in srgb,var(--dot) 18%,transparent);}
+  .signout{padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:transparent;
+    color:var(--ink);font-weight:600;font-size:13px;cursor:pointer;}
+  .signout:hover{border-color:var(--blue);color:var(--blue);}
+
+  .wrap{max-width:720px;margin:0 auto;padding:26px 20px 72px;}
+  h1{font-size:24px;margin:0 0 4px;letter-spacing:-.01em;}
+  .sub{color:var(--muted);margin:0 0 22px;font-size:14.5px;}
+
+  .btn{padding:12px 18px;border:0;border-radius:9px;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;}
+  .btn:hover{background:var(--blue-d);} .btn[disabled]{opacity:.55;cursor:default;}
+  input[type=email]{width:100%;padding:12px 14px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);color:var(--ink);}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:14px 0;
+    box-shadow:0 1px 2px rgba(20,32,43,.04);}
+  .m-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .m-title{font-size:16.5px;font-weight:700;line-height:1.3;}
+  .m-co{font-size:13.5px;color:var(--muted);margin-top:2px;}
+  .m-src{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+    color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:1px 6px;margin-left:8px;vertical-align:1px;}
+  .badge{white-space:nowrap;font-size:13px;font-weight:800;color:#fff;padding:4px 11px;border-radius:20px;}
+  .m-why{font-size:14px;margin-top:10px;color:var(--ink);}
+  .m-gap{font-size:12.5px;margin-top:5px;color:var(--amber);}
+  .actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+  .actions a,.actions button{font-size:13px;font-weight:600;padding:8px 13px;border-radius:8px;
+    text-decoration:none;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink);}
+  .view{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .view:hover{background:var(--blue-d);}
+  .save.on{color:var(--green);border-color:var(--green);} .flag.on{color:var(--amber);border-color:var(--amber);}
+
+  .notice{font-size:12px;color:var(--muted);margin-top:22px;line-height:1.65;border-top:1px solid var(--line);padding-top:14px;}
+  #msg{font-size:13.5px;color:var(--muted);margin-top:10px;}
+  .lead{font-size:15px;margin:0 0 12px;}
 </style>
 </head>
 <body>
+
+<header class="bar">
+  <div class="bar-in">
+    <span class="logo"><span class="dot"></span>JobPulse</span>
+    <button class="signout" id="signout" hidden>Sign out</button>
+  </div>
+</header>
+
 <div class="wrap">
-  <h1>Your matches</h1>
-  <p class="sub">Roles scored against your profile, with the honest gap on each. Save the ones worth keeping.</p>
 
   <!-- Signed-out: magic-link login -->
   <div id="auth">
+    <h1>Sign in to your matches</h1>
+    <p class="sub">Roles scored against your profile — with the honest gap on each.</p>
     <div class="card">
-      <p style="margin:0 0 10px;">Enter the email you signed up with — we'll send a one-tap sign-in link.</p>
-      <input type="email" id="email" placeholder="you@email.com" aria-label="Email">
+      <p class="lead">Enter the email you signed up with and we'll send a one-tap sign-in link.</p>
+      <input type="email" id="email" placeholder="you@email.com" aria-label="Email" autocomplete="email">
       <div style="margin-top:10px;"><button class="btn" id="send">Email me a sign-in link</button></div>
       <div id="msg"></div>
     </div>
@@ -62,9 +92,10 @@
 
   <!-- Signed-in: the matches -->
   <div id="app" hidden>
+    <h1>Your matches</h1>
+    <p class="sub" id="count">Scored against your profile. Save the ones worth keeping.</p>
     <div id="matches"></div>
     <div id="empty" hidden class="card">No matches yet — your first digest is on the way.</div>
-    <div style="margin-top:16px;"><button class="btn ghost" id="signout">Sign out</button></div>
   </div>
 
   <div class="notice">
@@ -79,44 +110,51 @@
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
   const SUPABASE_URL = 'https://rkuiprrginjullnzskkg.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_jtWlWOLHLw-ebE0BcfHifA_D9PIQy8O';  // publishable key: public by design; RLS protects data
+  const SUPABASE_ANON_KEY = 'sb_publishable_jtWlWOLHLw-ebE0BcfHifA_D9PIQy8O';  // publishable: public by design; RLS protects data
 
-  const BADGE = { 'Strong Fit':'#1a7f37','Good Fit':'#0b5cad','Moderate Fit':'#b26a00','Weak Fit':'#7a7a7a','Poor Fit':'#7a7a7a' };
+  const BADGE = { 'Strong Fit':'var(--green)','Good Fit':'var(--blue)','Moderate Fit':'var(--amber)','Weak Fit':'var(--grey)','Poor Fit':'var(--grey)' };
   const band = s => s>=75?'Strong Fit':s>=60?'Good Fit':s>=45?'Moderate Fit':s>=30?'Weak Fit':'Poor Fit';
   const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const host = u => { try { return new URL(u).hostname.replace(/^www\./,''); } catch { return ''; } };
 
   const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const $ = id => document.getElementById(id);
 
   async function render() {
     const { data: { session } } = await sb.auth.getSession();
-    $('auth').hidden = !!session;
-    $('app').hidden = !session;
-    if (!session) return;
+    const inn = !!session;
+    $('auth').hidden = inn; $('app').hidden = !inn; $('signout').hidden = !inn;
+    if (!inn) return;
     const { data, error } = await sb.from('matches')
-      .select('id,title,company,location,url,score,reasons,saved_at,flagged_at')
+      .select('id,title,company,location,url,score,reasons,saved_at,flagged_at,source')
       .order('score', { ascending: false });
     if (error) { $('matches').innerHTML = '<div class="card">Could not load matches: ' + esc(error.message) + '</div>'; return; }
     $('empty').hidden = data.length > 0;
+    $('count').textContent = data.length + ' role' + (data.length===1?'':'s') + ' scored against your profile. Save the ones worth keeping.';
     $('matches').innerHTML = data.map(card).join('');
-    for (const m of data) {
-      $('save-' + m.id).onclick = () => save(m.id);
-      $('flag-' + m.id).onclick = () => flag(m.id);
-    }
+    for (const m of data) { $('save-'+m.id).onclick = () => save(m.id); $('flag-'+m.id).onclick = () => flag(m.id); }
   }
 
   function card(m) {
     const v = band(m.score || 0);
     const why = (m.reasons || '').split(' | ').find(p => p.startsWith('Fits:')) || 'Scored against your profile.';
-    return `<div class="card"><div class="row">
-        <div><div class="title">${esc(m.title)} — ${esc(m.company)}</div><div class="loc">${esc(m.location)}</div></div>
-        <span class="badge" style="background:${BADGE[v]}">${m.score} · ${v}</span></div>
-      <div class="why">${esc(why)}</div>
-      <div class="actions">
-        <a class="view" href="${esc(m.url)}" target="_blank" rel="noopener">View listing</a>
-        <button class="save ${m.saved_at?'saved':''}" id="save-${m.id}">${m.saved_at?'✓ Saved':'Save'}</button>
-        <button class="flag ${m.flagged_at?'flagged':''}" id="flag-${m.id}">${m.flagged_at?'⚑ Flagged':'Flag'}</button>
-      </div></div>`;
+    const gap = (m.reasons || '').split(' | ').find(p => p.startsWith('Gaps:'));
+    const src = m.source || host(m.url);
+    return `<div class="card">
+        <div class="m-top">
+          <div>
+            <div class="m-title">${esc(m.title)}${src?`<span class="m-src">${esc(src)}</span>`:''}</div>
+            <div class="m-co">${esc(m.company||'')}${m.company&&m.location?' · ':''}${esc(m.location||'')}</div>
+          </div>
+          <span class="badge" style="background:${BADGE[v]}">${m.score} · ${v}</span>
+        </div>
+        <div class="m-why">${esc(why)}</div>
+        ${gap?`<div class="m-gap">${esc(gap)}</div>`:''}
+        <div class="actions">
+          <a class="view" href="${esc(m.url)}" target="_blank" rel="noopener">View listing ↗</a>
+          <button class="save ${m.saved_at?'on':''}" id="save-${m.id}">${m.saved_at?'✓ Saved':'Save'}</button>
+          <button class="flag ${m.flagged_at?'on':''}" id="flag-${m.id}">${m.flagged_at?'⚑ Flagged':'Flag'}</button>
+        </div></div>`;
   }
 
   async function save(id) {
