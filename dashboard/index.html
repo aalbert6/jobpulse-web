@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>JobPulse — your matches</title>
+<!--
+  Premium dashboard. Magic-link auth via Supabase; RLS (migration 006) scopes every read
+  and write to the signed-in user's own rows, matched by the JWT email. The anon key below
+  is PUBLIC by design (safe to ship) — RLS is what protects the data, not key secrecy.
+  SETUP: paste your project's anon/public key into SUPABASE_ANON_KEY
+  (Supabase dashboard -> Project Settings -> API -> "anon public"). URL is already set.
+-->
+<style>
+  :root{ --blue:#0b5cad; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;}
+  .wrap{max-width:680px;margin:0 auto;padding:34px 20px 70px;}
+  h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em;}
+  .sub{color:var(--muted);margin:0 0 24px;font-size:14.5px;}
+  input,button{font-family:inherit;font-size:15px;}
+  input[type=email]{width:100%;padding:12px 14px;border-radius:9px;border:1px solid var(--line);
+    background:var(--card);color:var(--ink);}
+  .btn{padding:11px 18px;border:0;border-radius:9px;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;}
+  .btn:hover{filter:brightness(1.07);} .btn[disabled]{opacity:.55;cursor:default;}
+  .btn.ghost{background:transparent;color:var(--blue);border:1px solid var(--line);}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0;}
+  .row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .title{font-size:16px;font-weight:700;}
+  .badge{white-space:nowrap;font-size:12.5px;font-weight:700;color:#fff;padding:3px 10px;border-radius:20px;}
+  .loc{font-size:13px;color:var(--muted);margin-top:2px;}
+  .why{font-size:13.5px;margin-top:8px;}
+  .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  .actions a,.actions button{font-size:13px;padding:7px 12px;border-radius:7px;text-decoration:none;cursor:pointer;}
+  .view{background:var(--blue);color:#fff;font-weight:600;border:0;}
+  .save,.flag{background:transparent;border:1px solid var(--line);color:var(--ink);}
+  .saved{color:#1a7f37;border-color:#1a7f37;} .flagged{color:#b26a00;border-color:#b26a00;}
+  .notice{font-size:12px;color:var(--muted);margin-top:20px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px;}
+  #msg{font-size:13.5px;color:var(--muted);margin-top:10px;}
+  a{color:var(--blue);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Your matches</h1>
+  <p class="sub">Roles scored against your profile, with the honest gap on each. Save the ones worth keeping.</p>
+
+  <!-- Signed-out: magic-link login -->
+  <div id="auth">
+    <div class="card">
+      <p style="margin:0 0 10px;">Enter the email you signed up with — we'll send a one-tap sign-in link.</p>
+      <input type="email" id="email" placeholder="you@email.com" aria-label="Email">
+      <div style="margin-top:10px;"><button class="btn" id="send">Email me a sign-in link</button></div>
+      <div id="msg"></div>
+    </div>
+  </div>
+
+  <!-- Signed-in: the matches -->
+  <div id="app" hidden>
+    <div id="matches"></div>
+    <div id="empty" hidden class="card">No matches yet — your first digest is on the way.</div>
+    <div style="margin-top:16px;"><button class="btn ghost" id="signout">Sign out</button></div>
+  </div>
+
+  <div class="notice">
+    Your matches are <strong>curated by an automated algorithm</strong> (scored on skills, roles,
+    location and salary — never on personal traits). Think a result is wrong? Use <em>Flag</em> and a
+    human will review it. Reply to your digest anytime to update or delete your data &middot;
+    <a href="../privacy/">Privacy notice</a>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const SUPABASE_URL = 'https://rkuiprrginjullnzskkg.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_jtWlWOLHLw-ebE0BcfHifA_D9PIQy8O';  // publishable key: public by design; RLS protects data
+
+  const BADGE = { 'Strong Fit':'#1a7f37','Good Fit':'#0b5cad','Moderate Fit':'#b26a00','Weak Fit':'#7a7a7a','Poor Fit':'#7a7a7a' };
+  const band = s => s>=75?'Strong Fit':s>=60?'Good Fit':s>=45?'Moderate Fit':s>=30?'Weak Fit':'Poor Fit';
+  const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const $ = id => document.getElementById(id);
+
+  async function render() {
+    const { data: { session } } = await sb.auth.getSession();
+    $('auth').hidden = !!session;
+    $('app').hidden = !session;
+    if (!session) return;
+    const { data, error } = await sb.from('matches')
+      .select('id,title,company,location,url,score,reasons,saved_at,flagged_at')
+      .order('score', { ascending: false });
+    if (error) { $('matches').innerHTML = '<div class="card">Could not load matches: ' + esc(error.message) + '</div>'; return; }
+    $('empty').hidden = data.length > 0;
+    $('matches').innerHTML = data.map(card).join('');
+    for (const m of data) {
+      $('save-' + m.id).onclick = () => save(m.id);
+      $('flag-' + m.id).onclick = () => flag(m.id);
+    }
+  }
+
+  function card(m) {
+    const v = band(m.score || 0);
+    const why = (m.reasons || '').split(' | ').find(p => p.startsWith('Fits:')) || 'Scored against your profile.';
+    return `<div class="card"><div class="row">
+        <div><div class="title">${esc(m.title)} — ${esc(m.company)}</div><div class="loc">${esc(m.location)}</div></div>
+        <span class="badge" style="background:${BADGE[v]}">${m.score} · ${v}</span></div>
+      <div class="why">${esc(why)}</div>
+      <div class="actions">
+        <a class="view" href="${esc(m.url)}" target="_blank" rel="noopener">View listing</a>
+        <button class="save ${m.saved_at?'saved':''}" id="save-${m.id}">${m.saved_at?'✓ Saved':'Save'}</button>
+        <button class="flag ${m.flagged_at?'flagged':''}" id="flag-${m.id}">${m.flagged_at?'⚑ Flagged':'Flag'}</button>
+      </div></div>`;
+  }
+
+  async function save(id) {
+    await sb.from('matches').update({ saved_at: new Date().toISOString(), status: 'saved' }).eq('id', id);
+    render();
+  }
+  async function flag(id) {
+    const reason = prompt('What looks wrong about this match? (a human will review it)');
+    if (reason === null) return;
+    await sb.from('matches').update({ flagged_at: new Date().toISOString(), flag_reason: reason }).eq('id', id);
+    render();
+  }
+
+  $('send').onclick = async () => {
+    const email = $('email').value.trim().toLowerCase();
+    if (!email) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      $('msg').textContent = "That doesn't look like a valid email — check for typos, spaces, or autofill.";
+      return;
+    }
+    $('send').disabled = true; $('msg').textContent = 'Sending…';
+    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href } });
+    $('send').disabled = false;
+    $('msg').textContent = error ? ('Could not send: ' + error.message) : 'Check your inbox for the sign-in link.';
+  };
+  $('signout').onclick = async () => { await sb.auth.signOut(); render(); };
+
+  sb.auth.onAuthStateChange(() => render());
+  render();
+</script>
+</body>
+</html>
