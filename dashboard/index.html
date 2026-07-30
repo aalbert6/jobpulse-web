@@ -16,9 +16,11 @@
     --card:#fff; --line:#e3e8ee; --dot:#0b5cad;
     --green:#1a7f37; --amber:#b26a00; --grey:#7a7a7a;
   }
+  /* dark vars, shared by OS-auto (unless the user forced light) and the explicit toggle */
   @media (prefers-color-scheme: dark){
-    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; }
+    :root:not([data-theme="light"]){ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; --blue-d:#2f7fca; }
   }
+  :root[data-theme="dark"]{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; --blue-d:#2f7fca; }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
@@ -32,9 +34,11 @@
   .logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:18px;color:var(--blue);letter-spacing:-.01em;}
   .dot{width:11px;height:11px;border-radius:50%;background:var(--dot);
     box-shadow:0 0 0 5px color-mix(in srgb,var(--dot) 18%,transparent);}
-  .signout{padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:transparent;
+  .bar-actions{display:flex;align-items:center;gap:8px;}
+  .signout,.iconbtn{padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:transparent;
     color:var(--ink);font-weight:600;font-size:13px;cursor:pointer;}
-  .signout:hover{border-color:var(--blue);color:var(--blue);}
+  .signout:hover,.iconbtn:hover{border-color:var(--blue);color:var(--blue);}
+  .iconbtn{padding:7px 11px;font-size:15px;line-height:1;}
 
   .wrap{max-width:720px;margin:0 auto;padding:26px 20px 72px;}
   h1{font-size:24px;margin:0 0 4px;letter-spacing:-.01em;}
@@ -58,8 +62,8 @@
   .actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
   .actions a,.actions button{font-size:13px;font-weight:600;padding:8px 13px;border-radius:8px;
     text-decoration:none;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink);}
-  .view{background:var(--blue);color:#fff;border-color:var(--blue);}
-  .view:hover{background:var(--blue-d);}
+  .actions a.view{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .actions a.view:hover{background:var(--blue-d);border-color:var(--blue-d);}
   .save.on{color:var(--green);border-color:var(--green);} .flag.on{color:var(--amber);border-color:var(--amber);}
 
   .notice{font-size:12px;color:var(--muted);margin-top:22px;line-height:1.65;border-top:1px solid var(--line);padding-top:14px;}
@@ -72,7 +76,10 @@
 <header class="bar">
   <div class="bar-in">
     <span class="logo"><span class="dot"></span>JobPulse</span>
-    <button class="signout" id="signout" hidden>Sign out</button>
+    <div class="bar-actions">
+      <button class="iconbtn" id="theme" title="Toggle light / dark" aria-label="Toggle light or dark mode">🌙</button>
+      <button class="signout" id="signout" hidden>Sign out</button>
+    </div>
   </div>
 </header>
 
@@ -119,6 +126,22 @@
 
   const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const $ = id => document.getElementById(id);
+
+  // Light/dark toggle: explicit choice wins (persisted); otherwise follow the OS.
+  const root = document.documentElement;
+  const prefersDark = () => matchMedia('(prefers-color-scheme: dark)').matches;
+  function applyTheme(t) {
+    if (t) root.setAttribute('data-theme', t); else root.removeAttribute('data-theme');
+    const dark = t ? t === 'dark' : prefersDark();
+    $('theme').textContent = dark ? '☀️' : '🌙';
+  }
+  applyTheme(localStorage.getItem('jp-theme'));
+  $('theme').onclick = () => {
+    const cur = root.getAttribute('data-theme') || (prefersDark() ? 'dark' : 'light');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('jp-theme', next);
+    applyTheme(next);
+  };
 
   async function render() {
     const { data: { session } } = await sb.auth.getSession();
