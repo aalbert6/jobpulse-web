@@ -148,14 +148,23 @@
       <label>What drains you at work?</label>
       <textarea name="drains_energy" placeholder="e.g. rigid process, unclear priorities" maxlength="600"></textarea>
 
-      <div class="section">Your CV</div>
-      <label>CV text or LinkedIn URL <span class="hint">optional — the single biggest boost to matching</span></label>
-      <textarea name="cv_or_linkedin" placeholder="Paste your CV text, or a link to your LinkedIn profile" maxlength="8000"></textarea>
+      <div class="section">Your documents</div>
+      <label>Upload your CV <span class="hint">required — PDF, DOC or image, max 5 MB</span></label>
+      <input type="file" name="cv_file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" required>
 
-      <label>Upload your CV <span class="hint">optional — PDF, DOC or image, max 5 MB</span></label>
-      <input type="file" name="cv_file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
+      <label style="margin-top:18px;">Upload your LinkedIn profile as a PDF <span class="hint">required — max 5 MB</span></label>
+      <details style="margin:2px 0 8px;">
+        <summary style="cursor:pointer;color:var(--blue);font-size:13px;font-weight:600;">How do I save my LinkedIn as a PDF?</summary>
+        <div style="font-size:13px;color:var(--muted);margin-top:8px;line-height:1.7;padding:10px 12px;background:var(--bg);border-radius:8px;">
+          1. Open your LinkedIn profile.<br>
+          2. Click <strong>More</strong> (just below your headline).<br>
+          3. Choose <strong>Save to PDF</strong> — LinkedIn downloads your profile.<br>
+          4. Upload that file here.
+        </div>
+      </details>
+      <input type="file" name="linkedin_pdf" accept=".pdf" required>
 
-      <label>Cover letters, certificates, other <span class="hint">optional — attach several, 5 MB each</span></label>
+      <label style="margin-top:18px;">Cover letters, certificates, other <span class="hint">optional — attach several, 5 MB each</span></label>
       <input type="file" name="documents" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" multiple>
     </fieldset>
 
@@ -203,7 +212,7 @@
     // Tell the user up front if any attached file is over the limit,
     // instead of silently dropping it during upload.
     var tooBig = [];
-    ['cv_file','documents'].forEach(function(n){
+    ['cv_file','linkedin_pdf','documents'].forEach(function(n){
       var input = form.querySelector('[name="'+n+'"]');
       if(input && input.files){
         for(var i=0;i<input.files.length;i++){
