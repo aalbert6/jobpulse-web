@@ -15,10 +15,15 @@
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
     line-height:1.55;-webkit-font-smoothing:antialiased;}
   .wrap{max-width:680px;margin:0 auto;padding:0 22px;}
-  header{padding:64px 0 20px;}
-  .logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:19px;color:var(--blue);}
+  header{padding:20px 0 20px;}
+  .logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:19px;color:var(--blue);text-decoration:none;}
   .dot{width:11px;height:11px;border-radius:50%;background:var(--blue);
     box-shadow:0 0 0 5px color-mix(in srgb,var(--blue) 18%,transparent);}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0 0;flex-wrap:wrap;gap:10px;}
+  .links{display:flex;align-items:center;gap:4px;}
+  .links a{font-size:14px;font-weight:600;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--ink);}
+  .links a:hover{color:var(--blue);}
+  .links a.nav-cta{background:var(--blue);color:#fff;}
   h1{font-size:40px;line-height:1.1;margin:26px 0 14px;letter-spacing:-.02em;}
   .lede{font-size:19px;color:var(--muted);margin:0 0 30px;}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:16px 0;}
@@ -42,14 +47,15 @@
 <body>
 <div class="wrap">
 
-  <header>
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <span class="logo"><span class="dot"></span>JobsPulse</span>
-      <span style="font-size:14px;font-weight:600;">
-        <a href="/how-it-works/" style="margin-left:16px;">How it works</a>
-        <a href="/pricing/" style="margin-left:16px;">Pricing</a>
-      </span>
+  <nav>
+    <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
+    <div class="links">
+      <a href="/how-it-works/">How it works</a>
+      <a href="/pricing/">Pricing</a>
+      <a class="nav-cta" href="#waitlist">Join</a>
     </div>
+  </nav>
+  <header>
     <h1>Job matches that tell you the truth.</h1>
     <p class="lede">One email a week. Every role scored against <em>your</em> profile, not a keyword.
       And for each one, the honest gap: what you'd need, and whether it's learnable or a real wall.</p>
@@ -89,8 +95,9 @@
   </div>
 
   <footer>
-    Private, pre-launch. Building in the open, carefully.<br>
-    <a href="/privacy/">Privacy notice</a> &middot; <a href="mailto:clinch-vassals.3r@icloud.com">Get in touch</a>
+    <a href="/how-it-works/">How it works</a> &middot; <a href="/pricing/">Pricing</a> &middot;
+    <a href="/privacy/">Privacy</a> &middot; <a href="mailto:clinch-vassals.3r@icloud.com">Get in touch</a><br>
+    <span style="opacity:.75;">Private beta. Building in the open, carefully.</span>
   </footer>
 
 </div>

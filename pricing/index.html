@@ -20,6 +20,8 @@
   .dot{width:11px;height:11px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px color-mix(in srgb,var(--blue) 18%,transparent);}
   nav .links a{font-size:14px;font-weight:600;margin-left:16px;text-decoration:none;color:var(--ink);}
   nav .links a:hover{color:var(--blue);}
+  nav .links a.nav-cta{background:var(--blue);color:#fff;padding:8px 12px;border-radius:8px;}
+  nav .links a.nav-cta:hover{color:#fff;filter:brightness(1.07);}
   h1{font-size:34px;line-height:1.12;margin:22px 0 8px;letter-spacing:-.02em;}
   .lede{font-size:18px;color:var(--muted);margin:0 0 26px;}
   .grid{display:grid;gap:16px;grid-template-columns:1fr;margin:8px 0 8px;}
@@ -44,7 +46,7 @@
 <div class="wrap">
   <nav>
     <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
-    <div class="links"><a href="/how-it-works/">How it works</a><a href="/pricing/">Pricing</a><a href="/#waitlist">Join</a></div>
+    <div class="links"><a href="/how-it-works/">How it works</a><a href="/pricing/">Pricing</a><a class="nav-cta" href="/#waitlist">Join</a></div>
   </nav>
 
   <h1>Simple pricing</h1>
