@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>JobPulse — set up your profile</title>
+<title>JobsPulse — set up your profile</title>
 <!--
   PRODUCT INTAKE FORM. Do NOT deploy live until the storage decision is made and the
   processor DPAs are in place (see docs/GDPR-COMPLIANCE.md → "the one blocking decision").
@@ -49,8 +48,8 @@
 <body>
 <div class="wrap">
   <h1>Set up your profile</h1>
-  <p class="sub">Takes ~6 minutes. A few fields are required so we can match you; the rest are optional but
-    sharpen your results. Takes ~6 minutes.</p>
+  <p class="sub">Takes ~6 minutes. The more you tell us, the better the matches. Everything past
+    the first two fields is optional — do as much as you like.</p>
 
   <form id="intake" action="https://rkuiprrginjullnzskkg.supabase.co/functions/v1/intake" method="post">
     <!-- honeypot -->
@@ -70,7 +69,7 @@
       </div>
 
       <label>Current role / title</label>
-      <input name="current_role" required placeholder="e.g. Software Engineer" maxlength="120">
+      <input name="current_role" placeholder="e.g. Software Engineer" maxlength="120">
 
       <div class="row">
         <div>
@@ -79,7 +78,7 @@
         </div>
         <div>
           <label>Where can you work? <span class="hint">not nationality</span></label>
-          <select name="work_authorization" required>
+          <select name="work_authorization">
             <option value="">Select…</option>
             <option>EU — no sponsorship needed</option>
             <option>Needs visa sponsorship</option>
@@ -91,14 +90,14 @@
 
       <div class="section">Skills</div>
       <label>Your strongest skills <span class="hint">comma-separated</span></label>
-      <input name="skills" required placeholder="e.g. Python, SQL, communication" maxlength="300">
+      <input name="skills" placeholder="e.g. Python, SQL, communication" maxlength="300">
 
       <label>Skills you're building <span class="hint">optional — what you're learning</span></label>
       <input name="learning_skills" placeholder="e.g. cloud, leadership" maxlength="300">
 
       <div class="section">What you're looking for</div>
       <label>Roles you want <span class="hint">what to search for</span></label>
-      <input name="target_roles" required placeholder="e.g. Backend Developer, Product Manager" maxlength="200">
+      <input name="target_roles" placeholder="e.g. Backend Developer, Product Manager" maxlength="200">
 
       <label>Dream companies <span class="hint">optional — any to watch for</span></label>
       <input name="target_companies" placeholder="e.g. companies you admire" maxlength="200">
@@ -113,7 +112,7 @@
       <div class="row">
         <div>
           <label>Location</label>
-          <input name="location" required placeholder="e.g. Barcelona" maxlength="80">
+          <input name="location" placeholder="e.g. Barcelona" maxlength="80">
         </div>
         <div>
           <label>Work style</label>
@@ -148,31 +147,24 @@
       <label>What drains you at work?</label>
       <textarea name="drains_energy" placeholder="e.g. rigid process, unclear priorities" maxlength="600"></textarea>
 
-      <div class="section">Your documents</div>
-      <label>Upload your CV <span class="hint">required — PDF, DOC or image, max 5 MB</span></label>
-      <input type="file" name="cv_file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" required>
+      <div class="section">Your CV</div>
+      <label>CV text or LinkedIn URL <span class="hint">optional — the single biggest boost to matching</span></label>
+      <textarea name="cv_or_linkedin" placeholder="Paste your CV text, or a link to your LinkedIn profile" maxlength="8000"></textarea>
 
-      <label style="margin-top:18px;">Upload your LinkedIn profile as a PDF <span class="hint">required — max 5 MB</span></label>
-      <details style="margin:2px 0 8px;">
-        <summary style="cursor:pointer;color:var(--blue);font-size:13px;font-weight:600;">How do I save my LinkedIn as a PDF?</summary>
-        <div style="font-size:13px;color:var(--muted);margin-top:8px;line-height:1.7;padding:10px 12px;background:var(--bg);border-radius:8px;">
-          1. Open your LinkedIn profile.<br>
-          2. Click <strong>More</strong> (just below your headline).<br>
-          3. Choose <strong>Save to PDF</strong> — LinkedIn downloads your profile.<br>
-          4. Upload that file here.
-        </div>
-      </details>
-      <input type="file" name="linkedin_pdf" accept=".pdf" required>
+      <label>Upload your CV <span class="hint">optional — PDF, DOC or image, max 5 MB</span></label>
+      <input type="file" name="cv_file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
 
-      <label style="margin-top:18px;">Cover letters, certificates, other <span class="hint">optional — attach several, 5 MB each</span></label>
+      <label>Cover letters, certificates, other <span class="hint">optional — attach several, 5 MB each</span></label>
       <input type="file" name="documents" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" multiple>
     </fieldset>
 
     <div class="consent">
       <input type="checkbox" id="consent" name="consent" required>
       <label for="consent">I've read the <a href="../privacy/" target="_blank" rel="noopener">privacy notice</a>
-        and consent to JobPulse processing this information to generate my weekly job matches.
-        I can withdraw and delete my data at any time.</label>
+        and consent to JobsPulse processing this information to generate my weekly job matches.
+        Matches are curated by an <strong>automated algorithm</strong>, scored on skills, roles,
+        location and salary — never on personal traits like age, gender or nationality. I can
+        ask for a human to review a result, and withdraw or delete my data at any time.</label>
     </div>
 
     <button id="submit" type="submit" disabled>Create my profile</button>
@@ -186,7 +178,8 @@
     <h1 style="margin:0 0 10px;">You're in!</h1>
     <p class="sub" style="margin:0 auto;max-width:440px;font-size:16px;">
       Your profile is saved. We'll start matching you to roles and email your first
-      digest soon. You can close this tab — nothing else to do.</p>
+      digest soon — an algorithm curates it, and you can reply anytime if a match looks
+      wrong and a human will check. You can close this tab — nothing else to do.</p>
     <p style="margin-top:26px;font-size:14px;">
       Changed your mind? Email <a href="mailto:clinch-vassals.3r@icloud.com">clinch-vassals.3r@icloud.com</a>
       to update or delete your data anytime &middot; <a href="../privacy/">Privacy notice</a>
@@ -212,7 +205,7 @@
     // Tell the user up front if any attached file is over the limit,
     // instead of silently dropping it during upload.
     var tooBig = [];
-    ['cv_file','linkedin_pdf','documents'].forEach(function(n){
+    ['cv_file','documents'].forEach(function(n){
       var input = form.querySelector('[name="'+n+'"]');
       if(input && input.files){
         for(var i=0;i<input.files.length;i++){
