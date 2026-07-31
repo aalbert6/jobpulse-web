@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JobsPulse — pricing</title>
+<meta name="description" content="JobsPulse pricing: a free monthly gap-aware digest, or $1/mo for weekly matches, the dashboard, and tailored CV & cover letters.">
+<style>
+  :root{ --blue:#0b5cad; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; --green:#1a7f37; }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  a{color:var(--blue);}
+  .wrap{max-width:720px;margin:0 auto;padding:0 22px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0;flex-wrap:wrap;gap:10px;}
+  .logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:19px;color:var(--blue);text-decoration:none;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px color-mix(in srgb,var(--blue) 18%,transparent);}
+  nav .links a{font-size:14px;font-weight:600;margin-left:16px;text-decoration:none;color:var(--ink);}
+  nav .links a:hover{color:var(--blue);}
+  h1{font-size:34px;line-height:1.12;margin:22px 0 8px;letter-spacing:-.02em;}
+  .lede{font-size:18px;color:var(--muted);margin:0 0 26px;}
+  .grid{display:grid;gap:16px;grid-template-columns:1fr;margin:8px 0 8px;}
+  @media(min-width:620px){.grid{grid-template-columns:1fr 1fr;}}
+  .plan{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column;}
+  .plan.pro{border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 14%,transparent);}
+  .tag{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);}
+  .price{font-size:34px;font-weight:800;margin:6px 0 2px;letter-spacing:-.02em;}
+  .price small{font-size:15px;font-weight:600;color:var(--muted);}
+  .plan p.note{color:var(--muted);font-size:13.5px;margin:2px 0 14px;}
+  ul{list-style:none;padding:0;margin:0 0 18px;}
+  li{padding:7px 0 7px 26px;position:relative;font-size:14.5px;}
+  li::before{content:"✓";position:absolute;left:0;color:var(--green);font-weight:800;}
+  li.no{color:var(--muted);} li.no::before{content:"—";color:var(--muted);}
+  .cta{margin-top:auto;display:inline-block;text-align:center;background:var(--blue);color:#fff;font-weight:600;padding:12px 18px;border-radius:10px;text-decoration:none;}
+  .cta.ghost{background:transparent;color:var(--blue);border:1px solid var(--line);}
+  .fine{color:var(--muted);font-size:13px;margin:20px 0 0;}
+  footer{padding:36px 0 60px;color:var(--muted);font-size:13px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
+    <div class="links"><a href="/how-it-works/">How it works</a><a href="/pricing/">Pricing</a><a href="/#waitlist">Join</a></div>
+  </nav>
+
+  <h1>Simple pricing</h1>
+  <p class="lede">Start free. Upgrade only if the honest shortlist is worth a coffee a month.</p>
+
+  <div class="grid">
+    <div class="plan">
+      <span class="tag">Free</span>
+      <div class="price">€0</div>
+      <p class="note">The honest shortlist, in your inbox.</p>
+      <ul>
+        <li>One gap-aware digest per month</li>
+        <li>Roles scored against your profile</li>
+        <li>An honest gap on every match</li>
+        <li class="no">Weekly digests</li>
+        <li class="no">Dashboard (save &amp; flag)</li>
+        <li class="no">Tailored CV &amp; cover letter</li>
+      </ul>
+      <a class="cta ghost" href="/#waitlist">Start free</a>
+    </div>
+
+    <div class="plan pro">
+      <span class="tag">Premium · beta</span>
+      <div class="price">$1<small> / month</small></div>
+      <p class="note">Everything in Free, plus the tools to act on it.</p>
+      <ul>
+        <li>Weekly gap-aware digests</li>
+        <li>Private dashboard — save &amp; flag matches</li>
+        <li>A tailored CV &amp; cover letter for each saved role</li>
+        <li>Re-match when you update your profile</li>
+        <li>Roles scored against your profile</li>
+        <li>An honest gap on every match</li>
+      </ul>
+      <a class="cta" href="/#waitlist">Join the beta</a>
+    </div>
+  </div>
+
+  <p class="fine">Prices are for the private beta and are set to cover running costs, not for
+  profit. No card needed to start free; you can delete your data anytime.
+  <a href="/how-it-works/">See how it works</a> &middot; <a href="/privacy/">Privacy notice</a>.</p>
+
+  <footer>
+    <a href="/how-it-works/">How it works</a> &middot; <a href="/privacy/">Privacy notice</a> &middot;
+    <a href="mailto:clinch-vassals.3r@icloud.com">Get in touch</a>
+  </footer>
+</div>
+</body>
+</html>
