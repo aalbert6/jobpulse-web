@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>JobsPulse — your feedback</title>
+<meta name="description" content="Tell us what's working and what's missing in the JobsPulse beta.">
+<style>
+  :root{ --blue:#0b5cad; --blue-d:#094a8c; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  a{color:var(--blue);}
+  .wrap{max-width:620px;margin:0 auto;padding:0 22px 60px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:20px 0;flex-wrap:wrap;gap:10px;}
+  .logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:19px;color:var(--blue);text-decoration:none;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px color-mix(in srgb,var(--blue) 18%,transparent);}
+  nav .links a{font-size:14px;font-weight:600;margin-left:16px;text-decoration:none;color:var(--ink);}
+  nav .links a:hover{color:var(--blue);}
+  h1{font-size:30px;line-height:1.14;margin:20px 0 8px;letter-spacing:-.02em;}
+  .lede{font-size:17px;color:var(--muted);margin:0 0 24px;}
+  label{display:block;font-weight:600;font-size:14.5px;margin:20px 0 8px;}
+  textarea,input[type=email]{width:100%;padding:12px 14px;font-size:15px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-family:inherit;}
+  textarea{min-height:84px;resize:vertical;}
+  .scale{display:flex;gap:8px;flex-wrap:wrap;}
+  .scale label{margin:0;font-weight:500;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:9px;padding:9px 13px;cursor:pointer;font-size:14px;background:var(--card);}
+  .scale input{accent-color:var(--blue);}
+  .btn{margin-top:22px;width:100%;padding:14px;font-size:16px;font-weight:600;border:0;border-radius:10px;background:var(--blue);color:#fff;cursor:pointer;}
+  .btn:hover{background:var(--blue-d);} .btn[disabled]{opacity:.6;cursor:default;}
+  #note{font-size:13.5px;color:var(--muted);margin-top:12px;}
+  .hp{position:absolute;left:-9999px;}
+  footer{padding:34px 0 0;color:var(--muted);font-size:13px;}
+  #done{display:none;text-align:center;padding:40px 10px;}
+  #done .tick{width:60px;height:60px;border-radius:50%;background:#1a7f37;color:#fff;font-size:32px;line-height:60px;margin:0 auto 16px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
+    <div class="links"><a href="/how-it-works/">How it works</a><a href="/pricing/">Pricing</a></div>
+  </nav>
+
+  <div id="form-wrap">
+    <h1>How's JobsPulse working for you?</h1>
+    <p class="lede">You're one of the first to test it — your honest take shapes what it becomes.
+      Two minutes, hugely appreciated.</p>
+
+    <!-- SETUP: create a Formspree form (formspree.io) and paste its id in place of YOUR_FEEDBACK_ID -->
+    <form id="fb" action="https://formspree.io/f/YOUR_FEEDBACK_ID" method="post">
+      <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off">
+
+      <label>How useful were your matches?</label>
+      <div class="scale">
+        <label><input type="radio" name="usefulness" value="1">1 · not useful</label>
+        <label><input type="radio" name="usefulness" value="2">2</label>
+        <label><input type="radio" name="usefulness" value="3">3</label>
+        <label><input type="radio" name="usefulness" value="4">4</label>
+        <label><input type="radio" name="usefulness" value="5">5 · very useful</label>
+      </div>
+
+      <label>What did you like most?</label>
+      <textarea name="liked" placeholder="The gap analysis, the scoring, the honesty…"></textarea>
+
+      <label>What would you change or add?</label>
+      <textarea name="change" placeholder="More roles, better fit, other job sources, tone…"></textarea>
+
+      <label>Would you pay $1/month for premium (weekly + dashboard + tailored CV &amp; cover letter)?</label>
+      <div class="scale">
+        <label><input type="radio" name="would_pay" value="yes">Yes</label>
+        <label><input type="radio" name="would_pay" value="maybe">Maybe</label>
+        <label><input type="radio" name="would_pay" value="no">No</label>
+      </div>
+
+      <label>Anything else? <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+      <textarea name="other" placeholder="Bugs, ideas, first impressions…"></textarea>
+
+      <label>Your email <span style="font-weight:400;color:var(--muted)">(optional — only if you'd like a reply)</span></label>
+      <input type="email" name="email" placeholder="you@email.com" autocomplete="email">
+
+      <button class="btn" id="submit" type="submit">Send feedback</button>
+      <div id="note"></div>
+    </form>
+  </div>
+
+  <div id="done">
+    <div class="tick">&#10003;</div>
+    <h1>Thank you 🙏</h1>
+    <p class="lede">That genuinely helps. <a href="/">Back to JobsPulse</a></p>
+  </div>
+
+  <footer>
+    <a href="/how-it-works/">How it works</a> &middot; <a href="/pricing/">Pricing</a> &middot;
+    <a href="/privacy/">Privacy</a> &middot; <a href="mailto:clinch-vassals.3r@icloud.com">Get in touch</a>
+  </footer>
+</div>
+
+<script>
+  var form = document.getElementById('fb'), note = document.getElementById('note'), btn = document.getElementById('submit');
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    if (this.action.indexOf('YOUR_FEEDBACK_ID') !== -1){
+      document.getElementById('form-wrap').style.display='none';
+      document.getElementById('done').style.display='block'; window.scrollTo(0,0);
+      return; // demo mode until the Formspree id is set
+    }
+    btn.disabled = true; note.textContent = 'Sending…';
+    try {
+      var res = await fetch(this.action, { method:'POST', body:new FormData(this), headers:{'Accept':'application/json'} });
+      if (res.ok){ document.getElementById('form-wrap').style.display='none'; document.getElementById('done').style.display='block'; window.scrollTo(0,0); }
+      else { btn.disabled = false; note.textContent = "Hmm, that didn't send — email me directly instead."; }
+    } catch(_) { btn.disabled = false; note.textContent = 'Network hiccup — try again in a moment.'; }
+  });
+</script>
+</body>
+</html>
