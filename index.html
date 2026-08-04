@@ -64,7 +64,6 @@
     <div class="links">
       <a href="/how-it-works/">How it works</a>
       <a href="/pricing/">Pricing</a>
-      <a class="nav-cta" href="#waitlist">Join</a>
     </div>
   </nav>
   <header>
@@ -72,14 +71,11 @@
     <p class="lede">One email a week. Every role scored against <em>your</em> profile, not a keyword.
       And for each one, the honest gap: what you'd need, and whether it's learnable or a real wall.</p>
 
-    <!-- SETUP: replace YOUR_FORM_ID with the id from your Formspree form
-         (formspree.io → New form → copy the endpoint's last path segment). -->
-    <form id="waitlist" action="https://formspree.io/f/maqrdkvq" method="post">
-      <input type="email" name="email" placeholder="you@email.com" required aria-label="Email address">
-      <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
-      <button type="submit">Join the waitlist</button>
-    </form>
-    <div class="fine" id="formnote">No spam, no selling your data. One click to leave, ever.</div>
+    <div class="card" id="waitlist" style="margin-top:14px;">
+      <h3>The beta waitlist is now closed</h3>
+      <p style="margin-top:6px;color:var(--muted);">Thank you to everyone who signed up — we've reached
+      capacity for the private beta and aren't taking new sign-ups for now.</p>
+    </div>
   </header>
 
   <div class="grid">
@@ -114,32 +110,5 @@
 
 </div>
 
-<script>
-  // Submits to Formspree via AJAX so the user stays on the page.
-  // Until the form action still contains YOUR_FORM_ID it runs in demo mode.
-  var form = document.getElementById('waitlist');
-  var note = document.getElementById('formnote');
-  form.addEventListener('submit', async function(e){
-    e.preventDefault();
-    var email = (this.email.value || '').trim();
-    if(!email) return;
-    if(this.action.indexOf('YOUR_FORM_ID') !== -1){
-      note.textContent = "Thanks — you're on the list. (Demo mode: add your Formspree id to go live.)";
-      this.reset(); return;
-    }
-    note.textContent = "Adding you…";
-    try{
-      var res = await fetch(this.action, {
-        method:'POST', body:new FormData(this), headers:{'Accept':'application/json'}
-      });
-      note.textContent = res.ok
-        ? "You're on the list. Thanks — I'll be in touch."
-        : "Hmm, that didn't go through. Email me directly instead.";
-      if(res.ok) this.reset();
-    }catch(_){
-      note.textContent = "Network hiccup — try again, or email me directly.";
-    }
-  });
-</script>
 </body>
 </html>
