@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-i18n-title="pv.title">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -37,6 +37,9 @@
   .links a.nav-cta{background:var(--blue);color:#fff;}
   footer{max-width:680px;margin:0 auto;padding:30px 22px 60px;color:var(--muted);font-size:13px;}
   footer a{color:var(--blue);}
+  .footrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  #lang-switch{font:inherit;font-size:13px;color:var(--muted);background:var(--card);
+    border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -44,54 +47,73 @@
   <nav>
     <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
     <div class="links">
-      <a href="/how-it-works/">How it works</a>
-      <a href="/pricing/">Pricing</a>
-      <a class="nav-cta" href="/#waitlist">Join</a>
+      <a href="/how-it-works/" data-i18n="nav.how">How it works</a>
+      <a href="/pricing/" data-i18n="nav.pricing">Pricing</a>
+      <a class="nav-cta" href="/#waitlist" data-i18n="nav.join">Join</a>
     </div>
   </nav>
-  <h1>Privacy Notice</h1>
-  <p class="muted">JobsPulse (beta) · Last updated: 2026-07-29</p>
+  <h1 data-i18n="pv.h1">Privacy Notice</h1>
+  <p class="muted" data-i18n="pv.updated">JobsPulse (beta) · Last updated: 2026-08-04</p>
 
-  <h2>Who we are</h2>
-  <p>JobsPulse is a personal project operated by Albert Reina i Buxó, based in Barcelona, Spain,
+  <h2 data-i18n="pv.h2a">Who are we?</h2>
+  <p data-i18n="pv.pa">JobsPulse is a personal project operated by Albert Reina i Buxó, based in Barcelona, Spain,
   acting as the data controller. Contact: <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>.</p>
 
-  <h2>What we collect</h2>
-  <p>Only what we need to match you to jobs: your first name and email; your current role, years of
+  <h2 data-i18n="pv.h2b">What do we collect?</h2>
+  <p data-i18n="pv.pb">Only what we need to match you to jobs: your first name and email; your current role, years of
   experience and skills; the roles, locations and work styles you're targeting; and optionally a
   salary floor, deal-breakers, your CV text or LinkedIn URL, and any documents you
   upload (CV, cover letters, certificates). We do not collect your ID number,
   date of birth, home address, photo, or any special-category data.</p>
 
-  <h2>Why, and our legal basis</h2>
-  <p>We use it to generate your personalised weekly job-match email. Our legal basis is your
+  <h2 data-i18n="pv.h2c">Why, and on what legal basis?</h2>
+  <p data-i18n="pv.pc">We use it to generate your personalised weekly job-match email. Our legal basis is your
   <strong>consent</strong>, given by ticking the box at sign-up. You can withdraw it at any time.</p>
 
-  <h2>Who else processes it</h2>
-  <p>We rely on a small number of processors, each under a data processing agreement:</p>
+  <h2 data-i18n="pv.h2auto">Automated matching</h2>
+  <p data-i18n="pv.pauto">We score and rank jobs against your profile automatically — this is profiling. It produces
+  suggestions, not decisions with legal or similarly significant effects, and you can flag any result for a human to review.</p>
+
+  <h2 data-i18n="pv.h2d">Who else processes it?</h2>
+  <p data-i18n="pv.pd">We rely on a small number of processors, each under a data processing agreement:</p>
   <ul>
-    <li><strong>Supabase</strong> — stores your profile and any uploaded documents, hosted in the EU and encrypted.</li>
-    <li><strong>Resend</strong> — delivers your weekly job-match email (your email address and the match content).</li>
+    <li data-i18n="pv.li1"><strong>Supabase</strong> — stores your profile and any uploaded documents, hosted in the EU and encrypted.</li>
+    <li data-i18n="pv.li2"><strong>Resend</strong> — delivers your weekly job-match email (your email address and the match content).</li>
   </ul>
-  <p>We will name any additional providers here before they process your data. We never sell your
+  <p data-i18n="pv.pd2">We will name any additional providers here before they process your data. We never sell your
   data or use it for advertising.</p>
 
-  <h2>How long we keep it</h2>
-  <p>Until you ask us to delete it, and we auto-delete after 12 months of inactivity.</p>
+  <h2 data-i18n="pv.h2trans">Where is it processed?</h2>
+  <p data-i18n="pv.ptrans">Your profile and documents are stored by Supabase in the EU (Frankfurt). Resend, which sends
+  your emails, processes data in the United States; that transfer is protected by the EU Standard Contractual Clauses and
+  Resend's EU-US Data Privacy Framework certification. Both providers are bound by a signed data processing agreement.</p>
 
-  <h2>Your rights</h2>
-  <p>At any time, for free, you can access, correct, delete, restrict, or object to the processing
+  <h2 data-i18n="pv.h2e">How long do we keep it?</h2>
+  <p data-i18n="pv.pe">Until you ask us to delete it, and we auto-delete after 12 months of inactivity.</p>
+
+  <h2 data-i18n="pv.h2cook">Cookies &amp; local storage</h2>
+  <p data-i18n="pv.pcook">We don't use tracking or advertising cookies. We save your language choice in your browser's
+  local storage so the site remembers it; you can clear it at any time.</p>
+
+  <h2 data-i18n="pv.h2f">What are your rights?</h2>
+  <p data-i18n="pv.pf">At any time, for free, you can access, correct, delete, restrict, receive in a portable format, or object to the processing
   of your data, and withdraw consent. Email <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>
   and we'll action it within one month. You can also complain to the Spanish authority, the
   <a href="https://www.aepd.es" target="_blank" rel="noopener">AEPD</a>.</p>
 
-  <h2>Security</h2>
-  <p>We encrypt your data in transit and at rest and restrict access to it.</p>
+  <h2 data-i18n="pv.h2g">Security</h2>
+  <p data-i18n="pv.pg">We encrypt your data in transit and at rest and restrict access to it.</p>
 
 </div>
 <footer>
-  <a href="/how-it-works/">How it works</a> &middot; <a href="/pricing/">Pricing</a> &middot;
-  <a href="/privacy/">Privacy</a> &middot; <a href="mailto:privacy@jobspulseapp.com">Get in touch</a>
+  <div class="footrow">
+    <div>
+      <a href="/how-it-works/" data-i18n="footer.how">How it works</a> &middot; <a href="/pricing/" data-i18n="footer.pricing">Pricing</a> &middot;
+      <a href="/privacy/" data-i18n="footer.privacy">Privacy</a> &middot; <a href="mailto:privacy@jobspulseapp.com" data-i18n="footer.contact">Get in touch</a>
+    </div>
+    <select id="lang-switch" data-i18n-aria="lang.label" aria-label="Language"></select>
+  </div>
 </footer>
+<script src="/assets/i18n.js" defer></script>
 </body>
 </html>

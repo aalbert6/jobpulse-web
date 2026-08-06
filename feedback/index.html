@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-i18n-title="fb.title">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -47,68 +47,91 @@
   footer{padding:34px 0 0;color:var(--muted);font-size:13px;}
   #done{display:none;text-align:center;padding:40px 10px;}
   #done .tick{width:60px;height:60px;border-radius:50%;background:#1a7f37;color:#fff;font-size:32px;line-height:60px;margin:0 auto 16px;}
+  .footrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  #lang-switch{font:inherit;font-size:13px;color:var(--muted);background:var(--card);
+    border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav>
     <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
-    <div class="links"><a href="/how-it-works/">How it works</a><a href="/pricing/">Pricing</a></div>
+    <div class="links"><a href="/how-it-works/" data-i18n="nav.how">How it works</a><a href="/pricing/" data-i18n="nav.pricing">Pricing</a></div>
   </nav>
 
   <div id="form-wrap">
-    <h1>How's JobsPulse working for you?</h1>
-    <p class="lede">You're one of the first to test it — your honest take shapes what it becomes.
+    <h1 data-i18n="fb.h1">How's JobsPulse working for you?</h1>
+    <p class="lede" data-i18n="fb.lede">You're one of the first to test it — your honest take shapes what it becomes.
       Two minutes, hugely appreciated.</p>
 
     <!-- SETUP: create a Formspree form (formspree.io) and paste its id in place of YOUR_FEEDBACK_ID -->
     <form id="fb" action="https://formspree.io/f/YOUR_FEEDBACK_ID" method="post">
       <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off">
 
-      <label>How useful were your matches?</label>
+      <label data-i18n="fb.q1">How useful were your matches?</label>
       <div class="scale">
-        <label><input type="radio" name="usefulness" value="1">1 · not useful</label>
+        <label><input type="radio" name="usefulness" value="1"><span data-i18n="fb.scale1">1 · not useful</span></label>
         <label><input type="radio" name="usefulness" value="2">2</label>
         <label><input type="radio" name="usefulness" value="3">3</label>
         <label><input type="radio" name="usefulness" value="4">4</label>
-        <label><input type="radio" name="usefulness" value="5">5 · very useful</label>
+        <label><input type="radio" name="usefulness" value="5"><span data-i18n="fb.scale5">5 · very useful</span></label>
       </div>
 
-      <label>What did you like most?</label>
-      <textarea name="liked" placeholder="The gap analysis, the scoring, the honesty…"></textarea>
-
-      <label>What would you change or add?</label>
-      <textarea name="change" placeholder="More roles, better fit, other job sources, tone…"></textarea>
-
-      <label>Would you pay $1/month for premium (weekly + dashboard + tailored CV &amp; cover letter)?</label>
+      <label data-i18n="fb.easy">Was it easy to use?</label>
       <div class="scale">
-        <label><input type="radio" name="would_pay" value="yes">Yes</label>
-        <label><input type="radio" name="would_pay" value="maybe">Maybe</label>
-        <label><input type="radio" name="would_pay" value="no">No</label>
+        <label><input type="radio" name="easy" value="yes"><span data-i18n="fb.easyyes">Yes</span></label>
+        <label><input type="radio" name="easy" value="somewhat"><span data-i18n="fb.easysome">Somewhat</span></label>
+        <label><input type="radio" name="easy" value="no"><span data-i18n="fb.easyno">No</span></label>
       </div>
 
-      <label>Anything else? <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-      <textarea name="other" placeholder="Bugs, ideas, first impressions…"></textarea>
+      <label data-i18n="fb.format">Did you prefer getting matches by email over a web dashboard?</label>
+      <div class="scale">
+        <label><input type="radio" name="format_pref" value="email"><span data-i18n="fb.fmtemail">Email</span></label>
+        <label><input type="radio" name="format_pref" value="web"><span data-i18n="fb.fmtweb">Web dashboard</span></label>
+        <label><input type="radio" name="format_pref" value="no_pref"><span data-i18n="fb.fmtnopref">No preference</span></label>
+      </div>
 
-      <label>Your email <span style="font-weight:400;color:var(--muted)">(optional — only if you'd like a reply)</span></label>
-      <input type="email" name="email" placeholder="you@email.com" autocomplete="email">
+      <label data-i18n="fb.q2">What did you like most?</label>
+      <textarea name="liked" data-i18n-ph="fb.q2ph" placeholder="The gap analysis, the scoring, the honesty…"></textarea>
 
-      <button class="btn" id="submit" type="submit">Send feedback</button>
+      <label data-i18n="fb.q3">What would you change or add?</label>
+      <textarea name="change" data-i18n-ph="fb.q3ph" placeholder="More roles, better fit, other job sources, tone…"></textarea>
+
+      <label data-i18n="fb.q4">Would you pay $1/month for premium (weekly + dashboard + tailored CV &amp; cover letter)?</label>
+      <div class="scale">
+        <label><input type="radio" name="would_pay" value="yes"><span data-i18n="fb.payyes">Yes</span></label>
+        <label><input type="radio" name="would_pay" value="maybe"><span data-i18n="fb.paymaybe">Maybe</span></label>
+        <label><input type="radio" name="would_pay" value="no"><span data-i18n="fb.payno">No</span></label>
+      </div>
+
+      <label data-i18n="fb.q5">Anything else? <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+      <textarea name="other" data-i18n-ph="fb.q5ph" placeholder="Bugs, ideas, first impressions…"></textarea>
+
+      <label data-i18n="fb.email">Your email <span style="font-weight:400;color:var(--muted)">(optional — only if you'd like a reply)</span></label>
+      <input type="email" name="email" data-i18n-ph="fb.emailph" placeholder="you@email.com" autocomplete="email">
+
+      <button class="btn" id="submit" type="submit" data-i18n="fb.submit">Send feedback</button>
       <div id="note"></div>
     </form>
   </div>
 
   <div id="done">
     <div class="tick">&#10003;</div>
-    <h1>Thank you 🙏</h1>
-    <p class="lede">That genuinely helps. <a href="/">Back to JobsPulse</a></p>
+    <h1 data-i18n="fb.doneh">Thank you 🙏</h1>
+    <p class="lede" data-i18n="fb.donep">That genuinely helps. <a href="/">Back to JobsPulse</a></p>
   </div>
 
   <footer>
-    <a href="/how-it-works/">How it works</a> &middot; <a href="/pricing/">Pricing</a> &middot;
-    <a href="/privacy/">Privacy</a> &middot; <a href="mailto:privacy@jobspulseapp.com">Get in touch</a>
+    <div class="footrow">
+      <div>
+        <a href="/how-it-works/" data-i18n="footer.how">How it works</a> &middot; <a href="/pricing/" data-i18n="footer.pricing">Pricing</a> &middot;
+        <a href="/privacy/" data-i18n="footer.privacy">Privacy</a> &middot; <a href="mailto:privacy@jobspulseapp.com" data-i18n="footer.contact">Get in touch</a>
+      </div>
+      <select id="lang-switch" data-i18n-aria="lang.label" aria-label="Language"></select>
+    </div>
   </footer>
 </div>
+<script src="/assets/i18n.js" defer></script>
 
 <script>
   var form = document.getElementById('fb'), note = document.getElementById('note'), btn = document.getElementById('submit');

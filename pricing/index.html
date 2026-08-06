@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-i18n-title="pricing.title">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -54,58 +54,64 @@
   .cta.soon{background:var(--line);color:var(--muted);cursor:default;}
   .fine{color:var(--muted);font-size:13px;margin:20px 0 0;}
   footer{padding:36px 0 60px;color:var(--muted);font-size:13px;}
+  .footrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  #lang-switch{font:inherit;font-size:13px;color:var(--muted);background:var(--card);
+    border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav>
     <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
-    <div class="links"><a href="/how-it-works/">How it works</a><a href="/pricing/">Pricing</a><a class="nav-cta" href="/#waitlist">Join</a></div>
+    <div class="links"><a href="/how-it-works/" data-i18n="nav.how">How it works</a><a href="/pricing/" data-i18n="nav.pricing">Pricing</a><a class="nav-cta" href="/#waitlist" data-i18n="nav.join">Join</a></div>
   </nav>
 
-  <h1>Simple pricing</h1>
-  <p class="lede">Start free. Upgrade only if the honest shortlist is worth a coffee a month.</p>
+  <h1 data-i18n="pricing.h1">Simple pricing</h1>
+  <p class="lede" data-i18n="pricing.lede">Start free. Upgrade only if the honest shortlist is worth a coffee a month.</p>
 
   <div class="grid">
     <div class="plan">
-      <span class="tag">Free</span>
+      <span class="tag" data-i18n="pricing.free.tag">Base · free</span>
       <div class="price">€0</div>
-      <p class="note">The honest shortlist, in your inbox.</p>
+      <p class="note" data-i18n="pricing.free.note">The honest shortlist, in your inbox.</p>
       <ul>
-        <li>One gap-aware digest per month</li>
-        <li>Roles scored against your profile</li>
-        <li>An honest gap on every match</li>
-        <li class="no">Weekly digests</li>
-        <li class="no">Dashboard (save &amp; flag)</li>
-        <li class="no">Tailored CV &amp; cover letter</li>
+        <li data-i18n="pricing.free.f1">One gap-aware digest per month</li>
+        <li data-i18n="pricing.free.f2">Roles scored against your profile</li>
+        <li data-i18n="pricing.free.f3">An honest gap on every match</li>
+        <li class="no" data-i18n="pricing.free.f4">Weekly digests</li>
+        <li class="no" data-i18n="pricing.free.f5">Dashboard (save &amp; flag)</li>
+        <li class="no" data-i18n="pricing.free.f6">Tailored CV &amp; cover letter</li>
       </ul>
-      <a class="cta ghost" href="/#waitlist">Start free</a>
+      <a class="cta ghost" href="/#waitlist" data-i18n="pricing.free.cta">Start free</a>
     </div>
 
     <div class="plan pro">
-      <span class="tag">Premium · beta</span>
-      <div class="price">$1<small> / month</small></div>
-      <p class="note">Everything in Free, plus the tools to act on it.</p>
+      <span class="tag" data-i18n="pricing.pro.tag">Professional · beta</span>
+      <div class="price">$1<small data-i18n="pricing.pro.month"> / month</small></div>
+      <p class="note" data-i18n="pricing.pro.note">Everything in Base, plus the four things that let you act on it:</p>
       <ul>
-        <li>Weekly gap-aware digests</li>
-        <li>Private dashboard — save &amp; flag matches</li>
-        <li>A tailored CV &amp; cover letter for each saved role</li>
-        <li>Re-match when you update your profile</li>
-        <li>Roles scored against your profile</li>
-        <li>An honest gap on every match</li>
+        <li data-i18n="pricing.pro.f1">Weekly digests — 4 emails a month (vs 1)</li>
+        <li data-i18n="pricing.pro.f2">Private dashboard — save &amp; flag matches</li>
+        <li data-i18n="pricing.pro.f3">A tailored CV &amp; cover letter for each saved role</li>
+        <li data-i18n="pricing.pro.f4">Re-match when you update your profile</li>
       </ul>
-      <span class="cta soon" aria-disabled="true">Premium — coming soon</span>
+      <span class="cta soon" aria-disabled="true" data-i18n="pricing.pro.cta">Professional — coming soon</span>
     </div>
   </div>
 
-  <p class="fine">Prices are for the private beta and are set to cover running costs, not for
-  profit. No card needed to start free; you can delete your data anytime.
-  <a href="/how-it-works/">See how it works</a> &middot; <a href="/privacy/">Privacy notice</a>.</p>
+  <p class="fine" data-i18n="pricing.fine">Prices are for the private beta and are set to cover running costs, not for
+  profit. No card needed to start free; you can delete your data anytime.</p>
 
   <footer>
-    <a href="/how-it-works/">How it works</a> &middot; <a href="/privacy/">Privacy notice</a> &middot;
-    <a href="mailto:privacy@jobspulseapp.com">Get in touch</a>
+    <div class="footrow">
+      <div>
+        <a href="/how-it-works/" data-i18n="footer.how">How it works</a> &middot; <a href="/privacy/" data-i18n="footer.privacy">Privacy notice</a> &middot;
+        <a href="mailto:privacy@jobspulseapp.com" data-i18n="footer.contact">Get in touch</a>
+      </div>
+      <select id="lang-switch" data-i18n-aria="lang.label" aria-label="Language"></select>
+    </div>
   </footer>
 </div>
+<script src="/assets/i18n.js" defer></script>
 </body>
 </html>

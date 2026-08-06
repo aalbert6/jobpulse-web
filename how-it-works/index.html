@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-i18n-title="hw.title">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -46,61 +46,70 @@
   .bring{color:var(--green);font-weight:600;} .gap{color:var(--amber);font-weight:600;}
   .cta{display:inline-block;margin:8px 0 0;background:var(--blue);color:#fff;font-weight:600;padding:13px 22px;border-radius:10px;text-decoration:none;}
   footer{padding:36px 0 60px;color:var(--muted);font-size:13px;}
+  .footrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  #lang-switch{font:inherit;font-size:13px;color:var(--muted);background:var(--card);
+    border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav>
     <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
-    <div class="links"><a href="/how-it-works/">How it works</a><a href="/pricing/">Pricing</a><a class="nav-cta" href="/#waitlist">Join</a></div>
+    <div class="links"><a href="/how-it-works/" data-i18n="nav.how">How it works</a><a href="/pricing/" data-i18n="nav.pricing">Pricing</a><a class="nav-cta" href="/#waitlist" data-i18n="nav.join">Join</a></div>
   </nav>
 
-  <h1>How JobsPulse works</h1>
-  <p class="lede">One calm weekly email. Every role scored against <em>your</em> profile — not a
+  <h1 data-i18n="hw.h1">How JobsPulse works</h1>
+  <p class="lede" data-i18n="hw.lede">One calm weekly email. Every role scored against <em>your</em> profile — not a
   keyword — with the honest gap on each. Here's the whole thing.</p>
 
   <div class="step"><div class="num">1</div><div>
-    <h3>Tell us about you, once</h3>
-    <p>A short profile: your skills, target roles, location, salary floor, what energises you.
+    <h3 data-i18n="hw.s1h">Tell us about you, once</h3>
+    <p data-i18n="hw.s1p">A short profile: your skills, target roles, location, salary floor, what energises you.
     That's the yardstick everything is measured against — no CV parsing guesswork.</p></div></div>
 
   <div class="step"><div class="num">2</div><div>
-    <h3>We find real openings every week</h3>
-    <p>We pull live listings that match your target roles and city, and link you straight to
+    <h3 data-i18n="hw.s2h">We find real openings every week</h3>
+    <p data-i18n="hw.s2p">We pull live listings that match your target roles and city, and link you straight to
     the original posting — never a re-hosted copy. No doom-scrolling a job board.</p></div></div>
 
   <div class="step"><div class="num">3</div><div>
-    <h3>Each role is scored against your profile</h3>
-    <p>Not keyword-matching. We weigh the skills the role names, your experience and seniority,
+    <h3 data-i18n="hw.s3h">Each role is scored against your profile</h3>
+    <p data-i18n="hw.s3p">Not keyword-matching. We weigh the skills the role names, your experience and seniority,
     location and salary — and give a fit score and a plain verdict: Strong, Good, Moderate, or a Stretch.</p></div></div>
 
   <div class="step"><div class="num">4</div><div>
-    <h3>...and the honest gap</h3>
-    <p>For every role: what you bring, and what it asks that you don't have yet — flagged as a
+    <h3 data-i18n="hw.s4h">...and the honest gap</h3>
+    <p data-i18n="hw.s4p">For every role: what you bring, and what it asks that you don't have yet — flagged as a
     <span class="bring">learnable tool</span> or a <span class="gap">real stretch</span>. We'd
     rather tell you the truth than pad your inbox.</p></div></div>
 
   <div class="example">
-    <p class="role">Data Analyst — PPG <span class="badge">59 · Good Fit</span></p>
-    <p style="margin:8px 0 4px;"><span class="bring">You bring:</span> you cover 2 of the 3 skills this role names — Python, SQL; the title matches your target role.</p>
-    <p style="margin:0;"><span class="gap">Gap:</span> you'd pick up Power BI — a learnable tool, not a structural gap.</p>
+    <p class="role" data-i18n="hw.exrole">Data Analyst — PPG <span class="badge">59 · Good Fit</span></p>
+    <p style="margin:8px 0 4px;" data-i18n="hw.exbring"><span class="bring">You bring:</span> you cover 2 of the 3 skills this role names — Python, SQL; the title matches your target role.</p>
+    <p style="margin:0;" data-i18n="hw.exgap"><span class="gap">Gap:</span> you'd pick up Power BI — a learnable tool, not a structural gap.</p>
   </div>
 
   <div class="step"><div class="num">5</div><div>
-    <h3>Save the ones worth it</h3>
-    <p>On the premium plan, a private dashboard lets you save roles and flag anything that looks
-    wrong for a human to review — and we tailor a CV and cover letter to each role you save.</p></div></div>
+    <h3 data-i18n="hw.s5h">Save the ones worth it</h3>
+    <p data-i18n="hw.s5p">On the premium plan, a private dashboard lets you save roles and flag anything that looks
+    wrong for a human to review, and we also tailor a CV and cover letter to each role you save.</p></div></div>
 
-  <p style="margin:26px 0 6px;"><strong>Private by design.</strong> We keep the minimum, store it
+  <p style="margin:26px 0 6px;" data-i18n="hw.private"><strong>Private by design.</strong> We keep the minimum, store it
   in the EU, never sell it, and you can delete everything in one click.
   <a href="/privacy/">Privacy notice</a>.</p>
 
-  <p><a class="cta" href="/#waitlist">Join the waitlist</a></p>
+  <p><a class="cta" href="/#waitlist" data-i18n="hw.cta">Join the waitlist</a></p>
 
   <footer>
-    <a href="/pricing/">Pricing</a> &middot; <a href="/privacy/">Privacy notice</a> &middot;
-    <a href="mailto:privacy@jobspulseapp.com">Get in touch</a>
+    <div class="footrow">
+      <div>
+        <a href="/pricing/" data-i18n="footer.pricing">Pricing</a> &middot; <a href="/privacy/" data-i18n="footer.privacy">Privacy notice</a> &middot;
+        <a href="mailto:privacy@jobspulseapp.com" data-i18n="footer.contact">Get in touch</a>
+      </div>
+      <select id="lang-switch" data-i18n-aria="lang.label" aria-label="Language"></select>
+    </div>
   </footer>
+  <script src="/assets/i18n.js" defer></script>
 </div>
 </body>
 </html>

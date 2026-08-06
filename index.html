@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-i18n-title="ld.title">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,7 +9,7 @@
 <style>
   :root{ --blue:#0b5cad; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; }
   @media (prefers-color-scheme: dark){
-    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; }
+    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; }
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
@@ -37,22 +37,26 @@
   .links a:hover{color:var(--blue);}
   .links a.nav-cta{background:var(--blue);color:#fff;}
   h1{font-size:40px;line-height:1.1;margin:26px 0 14px;letter-spacing:-.02em;}
-  .lede{font-size:19px;color:var(--muted);margin:0 0 30px;}
+  @media(max-width:430px){h1{font-size:32px;}}
+  .lede{font-size:19px;color:var(--muted);margin:0 0 22px;}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:16px 0;}
   .card h3{margin:0 0 6px;font-size:16px;}
   .card p{margin:0;color:var(--muted);font-size:14.5px;}
-  form{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 8px;}
-  input[type=email]{flex:1 1 240px;min-width:0;padding:14px 16px;font-size:16px;border-radius:10px;
-    border:1px solid var(--line);background:var(--card);color:var(--ink);}
-  button{padding:14px 22px;font-size:16px;font-weight:600;border:0;border-radius:10px;
-    background:var(--blue);color:#fff;cursor:pointer;}
-  button:hover{filter:brightness(1.07);}
-  .fine{font-size:12.5px;color:var(--muted);margin-top:6px;}
+  .demo{border-color:color-mix(in srgb,var(--blue) 45%,var(--line));
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 10%,transparent);}
+  .demo .tag{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);}
+  .hero-cta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 6px;}
+  .btn-ghost{display:inline-block;padding:12px 20px;font-size:15px;font-weight:600;border-radius:10px;
+    text-decoration:none;border:1px solid var(--line);color:var(--blue);background:var(--card);}
+  .btn-ghost:hover{border-color:var(--blue);}
   .grid{display:grid;gap:14px;grid-template-columns:1fr;margin:28px 0;}
   @media(min-width:560px){.grid{grid-template-columns:1fr 1fr 1fr;}}
   .badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;color:#fff;}
   .b-strong{background:#1a7f37} .b-stretch{background:#b8860b} .b-skip{background:#8a94a0}
   footer{padding:40px 0 60px;color:var(--muted);font-size:13px;}
+  .footrow{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  #lang-switch{font:inherit;font-size:13px;color:var(--muted);background:var(--card);
+    border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
   a{color:var(--blue);}
 </style>
 </head>
@@ -62,54 +66,67 @@
   <nav>
     <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
     <div class="links">
-      <a href="/how-it-works/">How it works</a>
-      <a href="/pricing/">Pricing</a>
-      <a class="nav-cta" href="#waitlist">Join</a>
+      <a href="/how-it-works/" data-i18n="nav.how">How it works</a>
+      <a href="/pricing/" data-i18n="nav.pricing">Pricing</a>
+      <a class="nav-cta" href="#waitlist" data-i18n="nav.join">Join</a>
     </div>
   </nav>
-  <header>
-    <h1>Job matches that tell you the truth.</h1>
-    <p class="lede">One email a week. Every role scored against <em>your</em> profile, not a keyword.
-      And for each one, the honest gap: what you'd need, and whether it's learnable or a real wall.</p>
 
-    <div class="card" id="waitlist" style="margin-top:14px;">
-      <h3>The beta waitlist is now closed</h3>
-      <p style="margin-top:6px;color:var(--muted);">Thank you to everyone who signed up — we've reached
+  <header>
+    <h1 data-i18n="ld.h1">See what an honest match looks like.</h1>
+    <p class="lede" data-i18n="ld.lede">Every week, roles scored against <em>your</em> profile — not a keyword —
+      each with the honest gap: what you bring, and whether what's missing is learnable or a real wall.</p>
+
+    <div class="card demo">
+      <span class="tag" data-i18n="ld.sampleh">A real weekly match, scored</span>
+      <div data-i18n="ld.samplebody">
+        <p style="margin-top:10px;color:var(--ink);"><strong>Quality Engineer — Apple, Cork</strong> &nbsp;<span class="badge b-strong">81 · Strong</span><br>
+        <span style="color:var(--muted)">Your escalation + testing work maps almost 1:1. Gap: Swift, XCTest — both preferred, not required.</span></p>
+        <p style="margin-top:14px;color:var(--ink);"><strong>Agentic AI Engineer — MANGO</strong> &nbsp;<span class="badge b-stretch">57 · Stretch</span><br>
+        <span style="color:var(--muted)">Strong on agentic + AI security. Wall: they want 3+ years backend Python you don't have yet.</span></p>
+        <p style="margin-top:14px;color:var(--ink);"><strong>Senior ML Engineer — (example)</strong> &nbsp;<span class="badge b-skip">31 · Skip</span><br>
+        <span style="color:var(--muted)">Needs production model training. Not close — we won't waste your week on it.</span></p>
+      </div>
+    </div>
+
+    <div class="hero-cta">
+      <!-- Beta is full: primary "Get started -> intake" CTA returns here when the waitlist reopens. -->
+      <a class="btn-ghost" href="/how-it-works/" data-i18n="ld.seehow">See how it works</a>
+    </div>
+
+    <div class="card" id="waitlist" style="margin-top:16px;">
+      <h3 data-i18n="ld.closedh">The beta waitlist is now closed</h3>
+      <p style="margin-top:6px;color:var(--muted);" data-i18n="ld.closedp">Thank you to everyone who signed up — we've reached
       capacity for the private beta and aren't taking new sign-ups for now.</p>
     </div>
   </header>
 
   <div class="grid">
-    <div class="card"><h3>Scored, not searched</h3><p>Each role gets a fit score from your skills, experience and goals — the way a good recruiter would read it.</p></div>
-    <div class="card"><h3>Gap analysis</h3><p>Missing a requirement? We say which one, and whether a weekend of learning fixes it or it's structural.</p></div>
-    <div class="card"><h3>Once a week</h3><p>A calm weekly digest. No doom-scrolling a job board, no 40 near-duplicate alerts.</p></div>
+    <div class="card"><h3 data-i18n="ld.v1h">Scored, not searched</h3><p data-i18n="ld.v1p">Each role gets a fit score from your skills, experience and goals — the way a good recruiter would read it.</p></div>
+    <div class="card"><h3 data-i18n="ld.v2h">Gap analysis</h3><p data-i18n="ld.v2p">Missing a requirement? We say which one, and whether a weekend of learning fixes it or it's structural.</p></div>
+    <div class="card"><h3 data-i18n="ld.v3h">Once a week</h3><p data-i18n="ld.v3p">A calm weekly digest. No doom-scrolling a job board, no 40 near-duplicate alerts.</p></div>
   </div>
 
   <div class="card">
-    <h3>Private by design</h3>
-    <p style="margin-top:8px;">We keep the minimum: your profile, to match you — and only the
+    <h3 data-i18n="ld.privh">Private by design</h3>
+    <p style="margin-top:8px;" data-i18n="ld.privp">We keep the minimum: your profile, to match you — and only the
     listings <em>you choose to save</em>. Matches you don't save are deleted automatically, we
     never store the full job text, and we never sell your data. Delete everything in one click.
     Stored in the EU. An algorithm curates your list, and a human will review any result you flag.</p>
   </div>
 
-  <div class="card">
-    <h3>What a match looks like</h3>
-    <p style="margin-top:10px;color:var(--ink);"><strong>Quality Engineer — Apple, Cork</strong> &nbsp;<span class="badge b-strong">81 · Strong</span><br>
-    <span style="color:var(--muted)">Your escalation + testing work maps almost 1:1. Gap: Swift, XCTest — both preferred, not required.</span></p>
-    <p style="margin-top:14px;color:var(--ink);"><strong>Agentic AI Engineer — MANGO</strong> &nbsp;<span class="badge b-stretch">57 · Stretch</span><br>
-    <span style="color:var(--muted)">Strong on agentic + AI security. Wall: they want 3+ years backend Python you don't have yet.</span></p>
-    <p style="margin-top:14px;color:var(--ink);"><strong>Senior ML Engineer — (example)</strong> &nbsp;<span class="badge b-skip">31 · Skip</span><br>
-    <span style="color:var(--muted)">Needs production model training. Not close — we won't waste your week on it.</span></p>
-  </div>
-
   <footer>
-    <a href="/how-it-works/">How it works</a> &middot; <a href="/pricing/">Pricing</a> &middot;
-    <a href="/privacy/">Privacy</a> &middot; <a href="mailto:privacy@jobspulseapp.com">Get in touch</a><br>
-    <span style="opacity:.75;">Private beta. Building in the open, carefully.</span>
+    <div class="footrow">
+      <div>
+        <a href="/how-it-works/" data-i18n="footer.how">How it works</a> &middot; <a href="/pricing/" data-i18n="footer.pricing">Pricing</a> &middot;
+        <a href="/privacy/" data-i18n="footer.privacy">Privacy</a> &middot; <a href="mailto:privacy@jobspulseapp.com" data-i18n="footer.contact">Get in touch</a><br>
+        <span style="opacity:.75;" data-i18n="ld.tagline">Private beta. Building in the open, carefully.</span>
+      </div>
+      <select id="lang-switch" data-i18n-aria="lang.label" aria-label="Language"></select>
+    </div>
   </footer>
 
 </div>
-
+<script src="/assets/i18n.js" defer></script>
 </body>
 </html>
