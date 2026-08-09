@@ -64,8 +64,8 @@
     <p class="lede" data-i18n="fb.lede">You're one of the first to test it — your honest take shapes what it becomes.
       Two minutes, hugely appreciated.</p>
 
-    <!-- SETUP: create a Formspree form (formspree.io) and paste its id in place of YOUR_FEEDBACK_ID -->
-    <form id="fb" action="https://formspree.io/f/YOUR_FEEDBACK_ID" method="post">
+    <!-- Feedback is stored in our own Supabase via the feedback edge function. -->
+    <form id="fb" action="https://rkuiprrginjullnzskkg.supabase.co/functions/v1/feedback" method="post">
       <input type="text" name="_gotcha" class="hp" tabindex="-1" autocomplete="off">
 
       <label data-i18n="fb.q1">How useful were your matches?</label>
@@ -137,11 +137,6 @@
   var form = document.getElementById('fb'), note = document.getElementById('note'), btn = document.getElementById('submit');
   form.addEventListener('submit', async function(e){
     e.preventDefault();
-    if (this.action.indexOf('YOUR_FEEDBACK_ID') !== -1){
-      document.getElementById('form-wrap').style.display='none';
-      document.getElementById('done').style.display='block'; window.scrollTo(0,0);
-      return; // demo mode until the Formspree id is set
-    }
     btn.disabled = true; note.textContent = 'Sending…';
     try {
       var res = await fetch(this.action, { method:'POST', body:new FormData(this), headers:{'Accept':'application/json'} });
