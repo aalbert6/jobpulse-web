@@ -66,6 +66,19 @@
   .actions a.view:hover{background:var(--blue-d);border-color:var(--blue-d);}
   .save.on{color:var(--green);border-color:var(--green);} .flag.on{color:var(--amber);border-color:var(--amber);}
 
+  .app-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .editbtn{padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:transparent;
+    color:var(--ink);font-weight:600;font-size:13px;cursor:pointer;}
+  .editbtn:hover{border-color:var(--blue);color:var(--blue);}
+  #editpanel label{display:block;font-weight:600;font-size:13px;margin:12px 0 4px;}
+  #editpanel input,#editpanel textarea{width:100%;padding:9px 11px;border-radius:8px;
+    border:1px solid var(--line);background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;}
+  #editpanel textarea{min-height:52px;resize:vertical;}
+  #editpanel .ro{color:var(--muted);font-size:12.5px;margin:0 0 4px;}
+  #editpanel .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media(max-width:520px){#editpanel .row2{grid-template-columns:1fr;}}
+  #editpanel .save-row{margin-top:16px;display:flex;gap:10px;align-items:center;}
+  #editmsg{font-size:13px;color:var(--muted);}
   .notice{font-size:12px;color:var(--muted);margin-top:22px;line-height:1.65;border-top:1px solid var(--line);padding-top:14px;}
   #msg{font-size:13.5px;color:var(--muted);margin-top:10px;}
   .lead{font-size:15px;margin:0 0 12px;}
@@ -98,8 +111,15 @@
 
   <!-- Signed-in: the matches -->
   <div id="app" hidden>
-    <h1>Your matches</h1>
+    <div class="app-top">
+      <h1>Your matches</h1>
+      <button class="editbtn" id="editbtn">✎ Update my info</button>
+    </div>
     <p class="sub" id="count">Scored against your profile. Save the ones worth keeping.</p>
+
+    <!-- Profile editor (hidden until "Update my info"); JS fills + saves it. -->
+    <div id="editpanel" class="card" hidden></div>
+
     <div id="matches"></div>
     <div id="empty" hidden class="card">No matches yet — your first digest is on the way.</div>
   </div>
@@ -126,11 +146,30 @@
   const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const $ = id => document.getElementById(id);
 
+  let myEmail = null, myProfile = null;
+  // Editable profile fields (label + control). Email/id/onboarded/plan are NOT here — the
+  // migration's column grant also blocks them server-side.
+  const PROFILE_FIELDS = [
+    ['first_name','First name','input'], ['role_title','Current role','input'],
+    ['years_experience','Years of experience','input'], ['location','Location','input'],
+    ['commute','Commute / relocation','input'], ['work_style','Work style','input'],
+    ['salary_floor','Salary floor (€/yr)','input'], ['work_authorization','Work authorization','input'],
+    ['target_roles','Target roles','textarea'], ['target_companies','Target companies','textarea'],
+    ['skills','Skills','textarea'], ['learning_skills','Learning / building','textarea'],
+    ['career_goal','Career goal','textarea'], ['energizers','What energises you','textarea'],
+    ['deal_breakers','Deal-breakers','textarea'], ['thrive_environment','Where you thrive','textarea'],
+    ['drains_energy','What drains you','textarea'], ['cv_or_linkedin','CV / LinkedIn URL','textarea'],
+  ];
+
   async function render() {
     const { data: { session } } = await sb.auth.getSession();
     const inn = !!session;
     $('auth').hidden = inn; $('app').hidden = !inn; $('signout').hidden = !inn;
     if (!inn) return;
+    myEmail = session.user.email;
+    // Load the signed-in user's own profile (RLS scopes this to their row).
+    const { data: prof } = await sb.from('profiles').select('*').limit(1).maybeSingle();
+    myProfile = prof || null;
     const { data, error } = await sb.from('matches')
       .select('id,title,company,location,url,score,reasons,saved_at,flagged_at,source')
       .order('score', { ascending: false });
@@ -173,6 +212,50 @@
     await sb.from('matches').update({ flagged_at: new Date().toISOString(), flag_reason: reason }).eq('id', id);
     render();
   }
+
+  // ── Profile editor ───────────────────────────────────────────────────────────────
+  function buildEditForm() {
+    const p = myProfile || {};
+    const field = ([name, label, type]) => {
+      const v = esc(p[name] == null ? '' : String(p[name]));
+      const ctl = type === 'textarea'
+        ? `<textarea id="pf-${name}">${v}</textarea>`
+        : `<input id="pf-${name}" value="${v}">`;
+      return `<label for="pf-${name}">${label}</label>${ctl}`;
+    };
+    $('editpanel').innerHTML =
+      `<p class="ro">Signed in as <strong>${esc(myEmail || '')}</strong> — your email (sign-in ID) can't be changed here.</p>`
+      + `<div class="row2">${field(PROFILE_FIELDS[0])}${field(PROFILE_FIELDS[1])}</div>`
+      + `<div class="row2">${field(PROFILE_FIELDS[2])}${field(PROFILE_FIELDS[3])}</div>`
+      + `<div class="row2">${field(PROFILE_FIELDS[4])}${field(PROFILE_FIELDS[5])}</div>`
+      + `<div class="row2">${field(PROFILE_FIELDS[6])}${field(PROFILE_FIELDS[7])}</div>`
+      + PROFILE_FIELDS.slice(8).map(field).join('')
+      + `<div class="save-row"><button class="btn" id="pf-save">Save changes</button><span id="editmsg"></span></div>`;
+    $('pf-save').onclick = saveProfile;
+  }
+
+  async function saveProfile() {
+    if (!myProfile || !myProfile.id) { $('editmsg').textContent = 'Could not load your profile — refresh.'; return; }
+    const obj = {};
+    for (const [name] of PROFILE_FIELDS) {
+      let v = $('pf-' + name).value.trim();
+      if (name === 'years_experience') { const n = parseInt(v, 10); obj[name] = Number.isNaN(n) ? null : n; }
+      else obj[name] = v || null;
+    }
+    $('pf-save').disabled = true; $('editmsg').textContent = 'Saving…';
+    // Update the existing row by its primary key (id); RLS also confirms it's the user's own.
+    const { error } = await sb.from('profiles').update(obj).eq('id', myProfile.id);
+    $('pf-save').disabled = false;
+    if (error) { $('editmsg').textContent = 'Could not save: ' + esc(error.message); return; }
+    myProfile = { ...myProfile, ...obj };
+    $('editmsg').textContent = 'Saved ✓ — your next digest will use the updated info.';
+  }
+
+  $('editbtn').onclick = () => {
+    const panel = $('editpanel');
+    if (panel.hidden) { buildEditForm(); panel.hidden = false; }
+    else panel.hidden = true;
+  };
 
   $('send').onclick = async () => {
     const email = $('email').value.trim().toLowerCase();
