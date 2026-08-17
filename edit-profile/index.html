@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="robots" content="noindex">
+<title>JobsPulse — update your info</title>
+<!-- Session-gated profile editor. Requires an active Supabase magic-link session; redirects
+     to the dashboard (to sign in) otherwise. Updates the user's own row by primary key. -->
+<style>
+  :root{ --blue:#0b5cad; --blue-d:#094a8c; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9;
+    --card:#fff; --line:#e3e8ee; --dot:#0b5cad; }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; --blue-d:#2f7fca; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:var(--blue);}
+  header.bar{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line);}
+  .bar-in{max-width:720px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
+  .logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:18px;color:var(--blue);letter-spacing:-.01em;text-decoration:none;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--dot);box-shadow:0 0 0 5px color-mix(in srgb,var(--dot) 18%,transparent);}
+  .bar-actions a,.bar-actions button{padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:transparent;
+    color:var(--ink);font-weight:600;font-size:13px;cursor:pointer;text-decoration:none;}
+  .bar-actions a:hover,.bar-actions button:hover{border-color:var(--blue);color:var(--blue);}
+  .wrap{max-width:720px;margin:0 auto;padding:26px 20px 72px;}
+  h1{font-size:24px;margin:0 0 4px;letter-spacing:-.01em;}
+  .sub{color:var(--muted);margin:0 0 20px;font-size:14.5px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,32,43,.04);}
+  label{display:block;font-weight:600;font-size:13px;margin:12px 0 4px;}
+  input,textarea,select{width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--line);
+    background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;}
+  textarea{min-height:52px;resize:vertical;}
+  .ro{color:var(--muted);font-size:12.5px;margin:0 0 4px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media(max-width:520px){.row2{grid-template-columns:1fr;}}
+  .btn{margin-top:2px;padding:12px 20px;border:0;border-radius:9px;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;font-size:15px;}
+  .btn:hover{background:var(--blue-d);} .btn[disabled]{opacity:.55;cursor:default;}
+  .save-row{margin-top:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  #msg{font-size:13.5px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in">
+    <a class="logo" href="/" aria-label="JobsPulse home"><span class="dot"></span>JobsPulse</a>
+    <div class="bar-actions">
+      <a href="/dashboard/">← Matches</a>
+      <button id="signout" hidden>Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="gate">Checking your session…</div>
+  <div id="app" hidden>
+    <h1>Update your info</h1>
+    <p class="sub">Edit your profile — your next digest will use the updated details.</p>
+    <div class="card" id="form"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  const SUPABASE_URL = 'https://rkuiprrginjullnzskkg.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_jtWlWOLHLw-ebE0BcfHifA_D9PIQy8O';
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const $ = id => document.getElementById(id);
+  const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  // Dropdown options mirror the intake form.
+  const SELECTS = {
+    work_style: ['', 'On-site', 'Hybrid', 'Remote', 'No preference'],
+    work_authorization: ['', 'EU — no sponsorship needed', 'Needs visa sponsorship', 'Remote only', 'Other / will explain'],
+  };
+  const PROFILE_FIELDS = [
+    ['first_name','First name','input'], ['role_title','Current role','input'],
+    ['years_experience','Years of experience','input'], ['location','Location','input'],
+    ['commute','Commute / relocation','input'], ['work_style','Work style','select'],
+    ['salary_floor','Salary floor (€/yr)','input'], ['work_authorization','Work authorization','select'],
+    ['target_roles','Target roles','textarea'], ['target_companies','Target companies','textarea'],
+    ['skills','Skills','textarea'], ['learning_skills','Learning / building','textarea'],
+    ['career_goal','Career goal','textarea'], ['energizers','What energises you','textarea'],
+    ['deal_breakers','Deal-breakers','textarea'], ['thrive_environment','Where you thrive','textarea'],
+    ['drains_energy','What drains you','textarea'], ['cv_or_linkedin','CV / LinkedIn URL','textarea'],
+  ];
+
+  let myEmail = null, myProfile = null;
+
+  function control(name, type, val) {
+    const v = esc(val == null ? '' : String(val));
+    if (type === 'textarea') return `<textarea id="pf-${name}">${v}</textarea>`;
+    if (type === 'select') {
+      let opts = SELECTS[name].slice();
+      if (val && !opts.includes(String(val))) opts = [String(val), ...opts]; // keep existing free-text value
+      const o = opts.map(x => `<option${x===String(val||'')?' selected':''}>${esc(x)||'Select…'}</option>`).join('');
+      return `<select id="pf-${name}">${o}</select>`;
+    }
+    return `<input id="pf-${name}" value="${v}">`;
+  }
+  function field([name,label,type]) {
+    return `<label for="pf-${name}">${label}</label>${control(name,type,(myProfile||{})[name])}`;
+  }
+
+  function buildForm() {
+    $('form').innerHTML =
+      `<p class="ro">Signed in as <strong>${esc(myEmail||'')}</strong> — your email (sign-in ID) can't be changed here.</p>`
+      + `<div class="row2">${field(PROFILE_FIELDS[0])}${field(PROFILE_FIELDS[1])}</div>`
+      + `<div class="row2">${field(PROFILE_FIELDS[2])}${field(PROFILE_FIELDS[3])}</div>`
+      + `<div class="row2">${field(PROFILE_FIELDS[4])}${field(PROFILE_FIELDS[5])}</div>`
+      + `<div class="row2">${field(PROFILE_FIELDS[6])}${field(PROFILE_FIELDS[7])}</div>`
+      + PROFILE_FIELDS.slice(8).map(field).join('')
+      + `<div class="save-row"><button class="btn" id="save">Save changes</button><span id="msg"></span></div>`;
+    $('save').onclick = save;
+  }
+
+  async function save() {
+    if (!myProfile || !myProfile.id) { $('msg').textContent = 'Could not load your profile — refresh.'; return; }
+    const obj = {};
+    for (const [name] of PROFILE_FIELDS) {
+      let val = $('pf-'+name).value.trim();
+      if (name === 'years_experience') { const n = parseInt(val,10); obj[name] = Number.isNaN(n) ? null : n; }
+      else obj[name] = val || null;
+    }
+    $('save').disabled = true; $('msg').textContent = 'Saving…';
+    const { error } = await sb.from('profiles').update(obj).eq('id', myProfile.id); // update own row by primary key
+    $('save').disabled = false;
+    if (error) { $('msg').textContent = 'Could not save: ' + esc(error.message); return; }
+    myProfile = { ...myProfile, ...obj };
+    $('msg').textContent = 'Saved ✓ — your next digest will use the updated info.';
+  }
+
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { location.replace('/dashboard/'); return; }  // gate: no session -> sign in on the dashboard
+    myEmail = session.user.email;
+    const { data: prof } = await sb.from('profiles').select('*').limit(1).maybeSingle();
+    myProfile = prof || null;
+    $('gate').hidden = true; $('app').hidden = false; $('signout').hidden = false;
+    buildForm();
+  }
+  $('signout').onclick = async () => { await sb.auth.signOut(); location.replace('/dashboard/'); };
+  init();
+</script>
+</body>
+</html>
