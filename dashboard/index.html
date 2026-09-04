@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="robots" content="noindex">
 <title>JobsPulse — your matches</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <!--
   Premium dashboard. Magic-link auth via Supabase; RLS (migration 006) scopes every read
   and write to the signed-in user's own rows, matched by the JWT email. The publishable key
@@ -66,6 +66,17 @@
   .actions a.view:hover{background:var(--blue-d);border-color:var(--blue-d);}
   .save.on{color:var(--green);border-color:var(--green);} .flag.on{color:var(--amber);border-color:var(--amber);}
 
+  /* Filter / sort bar */
+  .filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 6px;}
+  .filters .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;}
+  .filters .seg button{padding:7px 13px;border:0;background:transparent;color:var(--muted);
+    font-weight:600;font-size:13px;cursor:pointer;border-right:1px solid var(--line);}
+  .filters .seg button:last-child{border-right:0;}
+  .filters .seg button.on{background:var(--blue);color:#fff;}
+  .filters label{font-size:12.5px;color:var(--muted);margin-left:2px;}
+  .filters select{padding:7px 10px;border:1px solid var(--line);border-radius:9px;
+    background:var(--card);color:var(--ink);font-weight:600;font-size:13px;cursor:pointer;}
+
   .app-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
   .editbtn{padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:transparent;
     color:var(--ink);font-weight:600;font-size:13px;cursor:pointer;text-decoration:none;display:inline-block;}
@@ -108,11 +119,28 @@
     </div>
     <p class="sub" id="count">Scored against your profile. Save the ones worth keeping.</p>
 
+    <div class="filters">
+      <span class="seg" id="scope">
+        <button data-scope="all" class="on">All</button>
+        <button data-scope="saved">Saved</button>
+        <button data-scope="flagged">Flagged</button>
+      </span>
+      <label for="sort">Sort</label>
+      <select id="sort">
+        <option value="score">Best match</option>
+        <option value="newest">Newest first</option>
+        <option value="company">Company (A–Z)</option>
+      </select>
+    </div>
+
     <div id="matches"></div>
     <div id="empty" hidden class="card">No matches yet — your first digest is on the way.</div>
   </div>
 
   <div class="notice">
+    <strong>Matches are kept for 1 month.</strong> New roles are added with every digest; unsaved
+    matches older than 30 days are cleared automatically. <strong>Save</strong> the ones you want to
+    keep — saved matches never expire.<br><br>
     Your matches are <strong>curated by an automated algorithm</strong> (scored on skills, roles,
     location and salary — never on personal traits). Think a result is wrong? Use <em>Flag</em> and a
     human will review it. Reply to your digest anytime to update or delete your data &middot;
@@ -134,19 +162,41 @@
   const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const $ = id => document.getElementById(id);
 
+  let ALL = [];                 // every match for the signed-in user (loaded once per render)
+  let scope = 'all', sort = 'score';
+
   async function render() {
     const { data: { session } } = await sb.auth.getSession();
     const inn = !!session;
     $('auth').hidden = inn; $('app').hidden = !inn; $('signout').hidden = !inn;
     if (!inn) return;
     const { data, error } = await sb.from('matches')
-      .select('id,title,company,location,url,score,reasons,saved_at,flagged_at,source')
+      .select('id,title,company,location,url,score,reasons,saved_at,flagged_at,source,created_at')
       .order('score', { ascending: false });
     if (error) { $('matches').innerHTML = '<div class="card">Could not load matches: ' + esc(error.message) + '</div>'; return; }
-    $('empty').hidden = data.length > 0;
-    $('count').textContent = data.length + ' role' + (data.length===1?'':'s') + ' scored against your profile. Save the ones worth keeping.';
-    $('matches').innerHTML = data.map(card).join('');
-    for (const m of data) { $('save-'+m.id).onclick = () => save(m.id); $('flag-'+m.id).onclick = () => flag(m.id); }
+    ALL = data || [];
+    paint();
+  }
+
+  // Apply the current filter + sort to the already-loaded matches, then draw. No refetch —
+  // switching filters is instant.
+  function paint() {
+    let rows = ALL.slice();
+    if (scope === 'saved')   rows = rows.filter(m => m.saved_at);
+    else if (scope === 'flagged') rows = rows.filter(m => m.flagged_at);
+    if (sort === 'newest')       rows.sort((a,b) => (b.created_at||'').localeCompare(a.created_at||''));
+    else if (sort === 'company') rows.sort((a,b) => (a.company||'').localeCompare(b.company||'', undefined, {sensitivity:'base'}));
+    else                         rows.sort((a,b) => (b.score||0) - (a.score||0));
+
+    const total = ALL.length, shown = rows.length;
+    $('empty').hidden = total > 0;
+    $('count').textContent = scope === 'all'
+      ? `${total} role${total===1?'':'s'} scored against your profile. Save the ones worth keeping.`
+      : `${shown} ${scope} of ${total} match${total===1?'':'es'}.`;
+    $('matches').innerHTML = shown
+      ? rows.map(card).join('')
+      : (total ? `<div class="card">No ${esc(scope)} matches yet.</div>` : '');
+    for (const m of rows) { $('save-'+m.id).onclick = () => save(m.id); $('flag-'+m.id).onclick = () => flag(m.id); }
   }
 
   function card(m) {
@@ -172,15 +222,27 @@
   }
 
   async function save(id) {
-    await sb.from('matches').update({ saved_at: new Date().toISOString(), status: 'saved' }).eq('id', id);
-    render();
+    const now = new Date().toISOString();
+    await sb.from('matches').update({ saved_at: now, status: 'saved' }).eq('id', id);
+    const m = ALL.find(x => x.id === id); if (m) m.saved_at = now;  // update in place, keep filter/sort
+    paint();
   }
   async function flag(id) {
     const reason = prompt('What looks wrong about this match? (a human will review it)');
     if (reason === null) return;
-    await sb.from('matches').update({ flagged_at: new Date().toISOString(), flag_reason: reason }).eq('id', id);
-    render();
+    const now = new Date().toISOString();
+    await sb.from('matches').update({ flagged_at: now, flag_reason: reason }).eq('id', id);
+    const m = ALL.find(x => x.id === id); if (m) m.flagged_at = now;
+    paint();
   }
+
+  // Filter/sort controls — repaint the loaded matches, no refetch.
+  document.querySelectorAll('#scope button').forEach(b => b.onclick = () => {
+    scope = b.dataset.scope;
+    document.querySelectorAll('#scope button').forEach(x => x.classList.toggle('on', x === b));
+    paint();
+  });
+  $('sort').onchange = e => { sort = e.target.value; paint(); };
 
   $('send').onclick = async () => {
     const email = $('email').value.trim().toLowerCase();
