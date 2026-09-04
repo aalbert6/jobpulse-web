@@ -56,7 +56,7 @@
 <div class="wrap">
   <nav>
     <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
-    <div class="links"><a href="/how-it-works/" data-i18n="nav.how">How it works</a><a href="/pricing/" data-i18n="nav.pricing">Pricing</a><a href="/dashboard/" id="navauth">Sign in</a></div>
+    <div class="links"><a href="/how-it-works/" data-i18n="nav.how">How it works</a><a href="/pricing/" data-i18n="nav.pricing">Pricing</a><a href="/dashboard/" id="navauth" data-i18n="nav.signin">Sign in</a></div>
   </nav>
 
   <div id="form-wrap">
@@ -147,7 +147,7 @@
 </script>
   <script>
     // Swap the nav link to "Dashboard" when a Supabase session exists (localStorage, no SDK).
-    (function(){try{var raw=localStorage.getItem("sb-rkuiprrginjullnzskkg-auth-token");if(!raw)return;var s=JSON.parse(raw);var exp=s&&(s.expires_at||(s.currentSession&&s.currentSession.expires_at));if(exp&&exp*1000<Date.now())return;var a=document.getElementById("navauth");if(a)a.textContent="Dashboard";}catch(e){}})();
+    (function(){try{var raw=localStorage.getItem("sb-rkuiprrginjullnzskkg-auth-token");if(!raw)return;var s=JSON.parse(raw);var exp=s&&(s.expires_at||(s.currentSession&&s.currentSession.expires_at));if(exp&&exp*1000<Date.now())return;var a=document.getElementById("navauth");if(a){a.setAttribute("data-i18n","nav.dashboard");a.textContent="Dashboard";}}catch(e){}})();
   </script>
 </body>
 </html>

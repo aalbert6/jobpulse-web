@@ -70,6 +70,13 @@
         </div>
       </div>
 
+      <label>Email language <span class="hint">the language for your digest &amp; emails</span></label>
+      <select name="language" id="language">
+        <option value="ca">Català</option>
+        <option value="es">Español</option>
+        <option value="en">English</option>
+      </select>
+
       <label>Current role / title</label>
       <input name="current_role" placeholder="e.g. Software Engineer" maxlength="120" required>
 
@@ -196,6 +203,7 @@
   var note = document.getElementById('note');
 
   // Submit stays disabled until consent is explicitly given.
+  (function(){var sel=document.getElementById('language');if(!sel)return;var nl=(navigator.language||'en').slice(0,2).toLowerCase();sel.value=(nl==='ca'||nl==='es')?nl:'en';})();
   box.addEventListener('change', function(){ btn.disabled = !box.checked; });
 
   var MAX_FILE = 5 * 1024 * 1024; // 5 MB per file
@@ -222,8 +230,7 @@
 
     var data = new FormData(form);
     data.append('consent_timestamp', new Date().toISOString());
-    var nl = (navigator.language || 'en').slice(0,2).toLowerCase();
-    data.append('language', (nl === 'ca' || nl === 'es') ? nl : 'en'); // record when consent was given
+    // language is a form field (email language); FormData includes it automatically. // record when consent was given
     note.textContent = "Saving your profile…";
     try{
       var res = await fetch(form.action, {method:'POST', body:data, headers:{'Accept':'application/json'}});
