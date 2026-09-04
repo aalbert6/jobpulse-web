@@ -221,7 +221,9 @@
     }
 
     var data = new FormData(form);
-    data.append('consent_timestamp', new Date().toISOString()); // record when consent was given
+    data.append('consent_timestamp', new Date().toISOString());
+    var nl = (navigator.language || 'en').slice(0,2).toLowerCase();
+    data.append('language', (nl === 'ca' || nl === 'es') ? nl : 'en'); // record when consent was given
     note.textContent = "Saving your profile…";
     try{
       var res = await fetch(form.action, {method:'POST', body:data, headers:{'Accept':'application/json'}});
