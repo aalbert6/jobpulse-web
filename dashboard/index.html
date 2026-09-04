@@ -92,6 +92,7 @@
   <div class="bar-in">
     <a class="logo" href="/" aria-label="JobsPulse home"><span class="dot"></span>JobsPulse</a>
     <div class="bar-actions">
+      <a class="editbtn" id="editbtn" href="/edit-profile/" hidden>✎ Update my info</a>
       <button class="signout" id="signout" hidden>Sign out</button>
     </div>
   </div>
@@ -115,7 +116,6 @@
   <div id="app" hidden>
     <div class="app-top">
       <h1>Your matches</h1>
-      <a class="editbtn" href="/edit-profile/">✎ Update my info</a>
     </div>
     <p class="sub" id="count">Scored against your profile. Save the ones worth keeping.</p>
 
@@ -168,7 +168,7 @@
   async function render() {
     const { data: { session } } = await sb.auth.getSession();
     const inn = !!session;
-    $('auth').hidden = inn; $('app').hidden = !inn; $('signout').hidden = !inn;
+    $('auth').hidden = inn; $('app').hidden = !inn; $('signout').hidden = !inn; $('editbtn').hidden = !inn;
     if (!inn) return;
     const { data, error } = await sb.from('matches')
       .select('id,title,company,location,url,score,reasons,saved_at,flagged_at,source,created_at')
