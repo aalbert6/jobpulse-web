@@ -1,18 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-i18n-title="in.title">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="robots" content="noindex, nofollow">
 <title>JobsPulse — set up your profile</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <!--
-  PRODUCT INTAKE FORM. Do NOT deploy live until the storage decision is made and the
-  processor DPAs are in place (see docs/GDPR-COMPLIANCE.md → "the one blocking decision").
-  The `action` below is a placeholder. Point it at YOUR chosen, DPA-covered endpoint
-  (an EU-region function/DB write), NOT at a generic form host holding raw CVs.
-  Design principles applied: data minimization, explicit opt-in consent (submit is
-  disabled until the box is ticked), privacy notice linked before submission, honeypot.
+  PRODUCT INTAKE FORM. Localized EN/ES/CA via /assets/i18n.js (data-i18n / data-i18n-ph;
+  dropdown OPTION VALUES stay canonical English so stored data is language-stable — only the
+  displayed text translates). The `action` points at the DPA-covered EU intake function.
+  Design principles: data minimization, explicit opt-in consent (submit disabled until ticked),
+  privacy notice linked before submission, honeypot.
 -->
 <style>
   :root{ --blue:#0b5cad; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; }
@@ -25,6 +24,9 @@
   .wrap{max-width:600px;margin:0 auto;padding:40px 22px 70px;}
   h1{font-size:28px;margin:0 0 6px;letter-spacing:-.01em;}
   .sub{color:var(--muted);margin:0 0 26px;}
+  .topbar{display:flex;justify-content:flex-end;margin:-24px 0 6px;}
+  #lang-switch{font:inherit;font-size:13px;color:var(--muted);background:var(--card);
+    border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
   .section{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
     color:var(--blue);margin:30px 0 4px;padding-bottom:6px;border-bottom:2px solid var(--line);}
   .section:first-of-type{margin-top:6px;}
@@ -49,8 +51,9 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Set up your profile</h1>
-  <p class="sub">Takes ~6 minutes. The more you tell us, the better the matches. Everything past
+  <div class="topbar"><select id="lang-switch" aria-label="Language"></select></div>
+  <h1 data-i18n="in.h1">Set up your profile</h1>
+  <p class="sub" data-i18n="in.sub">Takes ~6 minutes. The more you tell us, the better the matches. Everything past
     the first two fields is optional — do as much as you like.</p>
 
   <form id="intake" action="https://rkuiprrginjullnzskkg.supabase.co/functions/v1/intake" method="post">
@@ -58,152 +61,174 @@
     <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
 
     <fieldset>
-      <div class="section">About you</div>
+      <div class="section" data-i18n="in.sec.about">About you</div>
       <div class="row">
         <div>
-          <label>First name <span class="hint">for the greeting</span></label>
+          <label data-i18n="in.firstname">First name <span class="hint">for the greeting</span></label>
           <input name="first_name" required maxlength="60">
         </div>
         <div>
-          <label>Email <span class="hint">where the digest goes</span></label>
+          <label data-i18n="in.email">Email <span class="hint">where the digest goes</span></label>
           <input type="email" name="email" required>
         </div>
       </div>
 
-      <label>Email language <span class="hint">the language for your digest &amp; emails</span></label>
+      <label data-i18n="in.emaillang">Email language <span class="hint">the language for your digest &amp; emails</span></label>
       <select name="language" id="language">
         <option value="ca">Català</option>
         <option value="es">Español</option>
         <option value="en">English</option>
       </select>
 
-      <label>Current role / title</label>
-      <input name="current_role" placeholder="e.g. Software Engineer" maxlength="120" required>
+      <label data-i18n="in.role">Current role / title</label>
+      <input name="current_role" data-i18n-ph="in.role_ph" placeholder="e.g. Software Engineer" maxlength="120" required>
 
       <div class="row">
         <div>
-          <label>Years of experience</label>
-          <input name="years_experience" inputmode="numeric" placeholder="e.g. 4" maxlength="4">
+          <label data-i18n="in.years">Years of experience</label>
+          <input name="years_experience" inputmode="numeric" data-i18n-ph="in.years_ph" placeholder="e.g. 4" maxlength="4">
         </div>
         <div>
-          <label>Where can you work? <span class="hint">not nationality</span></label>
+          <label data-i18n="in.workauth">Where can you work? <span class="hint">not nationality</span></label>
           <select name="work_authorization">
-            <option value="">Select…</option>
-            <option>EU — no sponsorship needed</option>
-            <option>Needs visa sponsorship</option>
-            <option>Remote only</option>
-            <option>Other / will explain</option>
+            <option value="" data-i18n="in.opt.select">Select…</option>
+            <option value="EU — no sponsorship needed" data-i18n="in.wa.eu">EU — no sponsorship needed</option>
+            <option value="Needs visa sponsorship" data-i18n="in.wa.visa">Needs visa sponsorship</option>
+            <option value="Remote only" data-i18n="in.wa.remote">Remote only</option>
+            <option value="Other / will explain" data-i18n="in.wa.other">Other / will explain</option>
           </select>
         </div>
       </div>
 
-      <div class="section">Skills</div>
-      <label>Your strongest skills <span class="hint">comma-separated</span></label>
-      <input name="skills" placeholder="e.g. Python, SQL, communication" maxlength="300">
+      <div class="section" data-i18n="in.sec.skills">Skills</div>
+      <label data-i18n="in.skills">Your strongest skills <span class="hint">comma-separated</span></label>
+      <input name="skills" data-i18n-ph="in.skills_ph" placeholder="e.g. Python, SQL, communication" maxlength="300">
 
-      <label>Skills you're building <span class="hint">optional — what you're learning</span></label>
-      <input name="learning_skills" placeholder="e.g. cloud, leadership" maxlength="300">
+      <label data-i18n="in.learning">Skills you're building <span class="hint">optional — what you're learning</span></label>
+      <input name="learning_skills" data-i18n-ph="in.learning_ph" placeholder="e.g. cloud, leadership" maxlength="300">
 
-      <div class="section">What you're looking for</div>
-      <label>Roles you want <span class="hint">what to search for</span></label>
-      <input name="target_roles" placeholder="e.g. Backend Developer, Product Manager" maxlength="200" required>
+      <div class="section" data-i18n="in.sec.looking">What you're looking for</div>
+      <label data-i18n="in.roles">Roles you want <span class="hint">what to search for</span></label>
+      <input name="target_roles" data-i18n-ph="in.roles_ph" placeholder="e.g. Backend Developer, Product Manager" maxlength="200" required>
 
-      <label>Dream companies <span class="hint">optional — any to watch for</span></label>
-      <input name="target_companies" placeholder="e.g. companies you admire" maxlength="200">
+      <label data-i18n="in.companies">Dream companies <span class="hint">optional — any to watch for</span></label>
+      <input name="target_companies" data-i18n-ph="in.companies_ph" placeholder="e.g. companies you admire" maxlength="200">
 
-      <label>Where do you want to grow next? <span class="hint">optional</span></label>
-      <textarea name="career_goal" placeholder="e.g. grow into a senior or lead role over the next few years" maxlength="600"></textarea>
+      <label data-i18n="in.grow">Where do you want to grow next? <span class="hint">optional</span></label>
+      <textarea name="career_goal" data-i18n-ph="in.grow_ph" placeholder="e.g. grow into a senior or lead role over the next few years" maxlength="600"></textarea>
 
-      <label>What kind of work energizes you? <span class="hint">optional</span></label>
-      <textarea name="energizers" placeholder="e.g. building things, solving hard problems with a team" maxlength="600"></textarea>
+      <label data-i18n="in.energize">What kind of work energizes you? <span class="hint">optional</span></label>
+      <textarea name="energizers" data-i18n-ph="in.energize_ph" placeholder="e.g. building things, solving hard problems with a team" maxlength="600"></textarea>
 
-      <div class="section">Logistics</div>
+      <div class="section" data-i18n="in.sec.logistics">Logistics</div>
       <div class="row">
         <div>
-          <label>Location</label>
-          <input name="location" placeholder="e.g. Barcelona" maxlength="80" required>
+          <label data-i18n="in.location">Location</label>
+          <input name="location" data-i18n-ph="in.location_ph" placeholder="e.g. Barcelona" maxlength="80" required>
         </div>
         <div>
-          <label>Work style</label>
+          <label data-i18n="in.workstyle">Work style</label>
           <select name="work_style">
-            <option value="">Select…</option>
-            <option>On-site</option>
-            <option>Hybrid</option>
-            <option>Remote</option>
-            <option>No preference</option>
+            <option value="" data-i18n="in.opt.select">Select…</option>
+            <option value="On-site" data-i18n="in.ws.onsite">On-site</option>
+            <option value="Hybrid" data-i18n="in.ws.hybrid">Hybrid</option>
+            <option value="Remote" data-i18n="in.ws.remote">Remote</option>
+            <option value="No preference" data-i18n="in.ws.nopref">No preference</option>
           </select>
         </div>
       </div>
 
       <div class="row">
         <div>
-          <label>Max commute / relocation <span class="hint">optional</span></label>
-          <input name="commute" placeholder="e.g. up to 30 min, or open to relocating" maxlength="120">
+          <label data-i18n="in.commute">Max commute / relocation <span class="hint">optional</span></label>
+          <input name="commute" data-i18n-ph="in.commute_ph" placeholder="e.g. up to 30 min, or open to relocating" maxlength="120">
         </div>
         <div>
-          <label>Minimum salary <span class="hint">optional</span></label>
-          <input name="salary_floor" placeholder="e.g. €40,000" maxlength="40">
+          <label data-i18n="in.salary">Minimum salary <span class="hint">optional</span></label>
+          <input name="salary_floor" data-i18n-ph="in.salary_ph" placeholder="e.g. €40,000" maxlength="40">
         </div>
       </div>
 
-      <label>Deal-breakers <span class="hint">optional</span></label>
-      <input name="deal_breakers" placeholder="e.g. no relocation, no on-call" maxlength="200">
+      <label data-i18n="in.dealbreakers">Deal-breakers <span class="hint">optional</span></label>
+      <input name="deal_breakers" data-i18n-ph="in.dealbreakers_ph" placeholder="e.g. no relocation, no on-call" maxlength="200">
 
-      <div class="section">How you work <span class="hint" style="font-weight:400">— optional, helps culture fit</span></div>
-      <label>What environments do you thrive in?</label>
-      <textarea name="thrive_environment" placeholder="e.g. collaborative teams with clear goals" maxlength="600"></textarea>
+      <div class="section" data-i18n="in.sec.howwork">How you work <span class="hint" style="font-weight:400">— optional, helps culture fit</span></div>
+      <label data-i18n="in.thrive">What environments do you thrive in?</label>
+      <textarea name="thrive_environment" data-i18n-ph="in.thrive_ph" placeholder="e.g. collaborative teams with clear goals" maxlength="600"></textarea>
 
-      <label>What drains you at work?</label>
-      <textarea name="drains_energy" placeholder="e.g. rigid process, unclear priorities" maxlength="600"></textarea>
+      <label data-i18n="in.drains">What drains you at work?</label>
+      <textarea name="drains_energy" data-i18n-ph="in.drains_ph" placeholder="e.g. rigid process, unclear priorities" maxlength="600"></textarea>
 
-      <div class="section">Your CV</div>
-      <label>CV text or LinkedIn URL <span class="hint">optional — the single biggest boost to matching</span></label>
-      <textarea name="cv_or_linkedin" placeholder="Paste your CV text, or a link to your LinkedIn profile" maxlength="8000"></textarea>
+      <div class="section" data-i18n="in.sec.cv">Your CV</div>
+      <label data-i18n="in.cvtext">CV text or LinkedIn URL <span class="hint">optional — the single biggest boost to matching</span></label>
+      <textarea name="cv_or_linkedin" data-i18n-ph="in.cvtext_ph" placeholder="Paste your CV text, or a link to your LinkedIn profile" maxlength="8000"></textarea>
 
-      <label>Upload your CV <span class="hint">optional — PDF, DOC or image, max 5 MB</span></label>
+      <label data-i18n="in.cvupload">Upload your CV <span class="hint">optional — PDF, DOC or image, max 5 MB</span></label>
       <input type="file" name="cv_file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
 
-      <label>Cover letters, certificates, other <span class="hint">optional — attach several, 5 MB each</span></label>
+      <label data-i18n="in.docs">Cover letters, certificates, other <span class="hint">optional — attach several, 5 MB each</span></label>
       <input type="file" name="documents" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" multiple>
     </fieldset>
 
     <div class="consent">
       <input type="checkbox" id="consent" name="consent" required>
-      <label for="consent">I've read the <a href="/privacy/" target="_blank" rel="noopener">privacy notice</a>
+      <label for="consent" data-i18n="in.consent">I've read the <a href="/privacy/" target="_blank" rel="noopener">privacy notice</a>
         and consent to JobsPulse processing this information to generate my weekly job matches.
         Matches are curated by an <strong>automated algorithm</strong>, scored on skills, roles,
         location and salary — never on personal traits like age, gender or nationality. I can
         ask for a human to review a result, and withdraw or delete my data at any time.</label>
     </div>
 
-    <button id="submit" type="submit" disabled>Create my profile</button>
-    <div class="note" id="note">Your data is used only to match you to jobs. Never sold, deletable anytime.</div>
+    <button id="submit" type="submit" disabled data-i18n="in.submit">Create my profile</button>
+    <div class="note" id="note" data-i18n="in.note">Your data is used only to match you to jobs. Never sold, deletable anytime.</div>
   </form>
 
   <!-- Confirmation shown after a successful submit (replaces the form). -->
   <div id="done" hidden style="text-align:center;padding:50px 10px;">
     <div style="width:64px;height:64px;border-radius:50%;background:#1a7f37;color:#fff;
       font-size:34px;line-height:64px;margin:0 auto 20px;">&#10003;</div>
-    <h1 style="margin:0 0 10px;">You're in!</h1>
-    <p class="sub" style="margin:0 auto;max-width:440px;font-size:16px;">
+    <h1 style="margin:0 0 10px;" data-i18n="in.done.h1">You're in!</h1>
+    <p class="sub" style="margin:0 auto;max-width:440px;font-size:16px;" data-i18n="in.done.p">
       Your profile is saved. We'll start matching you to roles and email your first
       digest soon — an algorithm curates it, and you can reply anytime if a match looks
       wrong and a human will check. You can close this tab — nothing else to do.</p>
-    <p style="margin-top:26px;font-size:14px;">
+    <p style="margin-top:26px;font-size:14px;" data-i18n="in.done.changed">
       Changed your mind? Email <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>
       to update or delete your data anytime &middot; <a href="/privacy/">Privacy notice</a>
     </p>
   </div>
 </div>
 
+<script src="/assets/i18n.js" defer></script>
 <script>
   var form = document.getElementById('intake');
   var box  = document.getElementById('consent');
   var btn  = document.getElementById('submit');
   var note = document.getElementById('note');
 
+  // Localized status messages for the JS-driven notes (read the active language i18n.js persists).
+  var JP_MSG = {
+    en: {toobig:"Over the 5 MB limit — please shrink or remove: ", saving:"Saving your profile…",
+         failed:"That didn't save — please try again or email us.", network:"Network issue — please try again."},
+    es: {toobig:"Supera el límite de 5 MB — reduce o quita: ", saving:"Guardando tu perfil…",
+         failed:"No se pudo guardar — inténtalo de nuevo o escríbenos.", network:"Problema de red — inténtalo de nuevo."},
+    ca: {toobig:"Supera el límit de 5 MB — redueix o treu: ", saving:"Desant el teu perfil…",
+         failed:"No s'ha pogut desar — torna-ho a provar o escriu-nos.", network:"Problema de xarxa — torna-ho a provar."}
+  };
+  function msg(k){
+    var l; try{ l = localStorage.getItem('jp_lang'); }catch(e){}
+    return (JP_MSG[l] || JP_MSG.en)[k];
+  }
+
+  // Default the email-language selector to the browser language (user can change it).
+  (function(){
+    var sel = document.getElementById('language');
+    if (!sel) return;
+    var nl = (navigator.language || 'en').slice(0,2).toLowerCase();
+    sel.value = (nl === 'ca' || nl === 'es') ? nl : 'en';
+  })();
+
   // Submit stays disabled until consent is explicitly given.
-  (function(){var sel=document.getElementById('language');if(!sel)return;var nl=(navigator.language||'en').slice(0,2).toLowerCase();sel.value=(nl==='ca'||nl==='es')?nl:'en';})();
   box.addEventListener('change', function(){ btn.disabled = !box.checked; });
 
   var MAX_FILE = 5 * 1024 * 1024; // 5 MB per file
@@ -224,14 +249,14 @@
       }
     });
     if(tooBig.length){
-      note.textContent = "Over the 5 MB limit — please shrink or remove: " + tooBig.join(", ");
+      note.textContent = msg('toobig') + tooBig.join(", ");
       return;
     }
 
     var data = new FormData(form);
-    data.append('consent_timestamp', new Date().toISOString());
-    // language is a form field (email language); FormData includes it automatically. // record when consent was given
-    note.textContent = "Saving your profile…";
+    data.append('consent_timestamp', new Date().toISOString()); // record when consent was given
+    // language is a form field (email language); FormData includes it automatically.
+    note.textContent = msg('saving');
     try{
       var res = await fetch(form.action, {method:'POST', body:data, headers:{'Accept':'application/json'}});
       if(res.ok){
@@ -242,9 +267,9 @@
         document.getElementById('done').hidden = false;
         window.scrollTo(0, 0);
       } else {
-        note.textContent = "That didn't save — please try again or email us.";
+        note.textContent = msg('failed');
       }
-    }catch(_){ note.textContent = "Network issue — please try again."; }
+    }catch(_){ note.textContent = msg('network'); }
   });
 </script>
 </body>
