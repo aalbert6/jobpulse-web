@@ -220,11 +220,14 @@
     return (JP_MSG[l] || JP_MSG.en)[k];
   }
 
-  // Default the email-language selector to the browser language (user can change it).
+  // Default the email-language selector to the language the user is viewing the site in
+  // (their earlier choice, persisted by i18n.js as jp_lang) — else the device/browser language.
+  // The user can still override it.
   (function(){
     var sel = document.getElementById('language');
     if (!sel) return;
-    var nl = (navigator.language || 'en').slice(0,2).toLowerCase();
+    var saved; try { saved = localStorage.getItem('jp_lang'); } catch (e) {}
+    var nl = (saved || navigator.language || 'en').slice(0,2).toLowerCase();
     sel.value = (nl === 'ca' || nl === 'es') ? nl : 'en';
   })();
 
