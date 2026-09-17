@@ -584,6 +584,10 @@
 
   function pick() {
     try {
+      // ?lang=ca|es|en forces + persists a language — for testing and language-specific
+      // invite links (e.g. /join-r9x2m/?lang=ca), overriding browser detection.
+      var q = new URLSearchParams(location.search).get("lang");
+      if (q) { q = q.slice(0, 2).toLowerCase(); if (DICT[q]) { localStorage.setItem("jp_lang", q); return q; } }
       var saved = localStorage.getItem("jp_lang");
       if (saved && DICT[saved]) return saved;
     } catch (e) {}
