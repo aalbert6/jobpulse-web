@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-i18n-title="db.title">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -92,8 +92,9 @@
   <div class="bar-in">
     <a class="logo" href="/" aria-label="JobsPulse home"><span class="dot"></span>JobsPulse</a>
     <div class="bar-actions">
-      <a class="editbtn" id="editbtn" href="/edit-profile/" hidden>✎ Update my info</a>
-      <button class="signout" id="signout" hidden>Sign out</button>
+      <a class="editbtn" id="editbtn" href="/edit-profile/" hidden data-i18n="db.editinfo">✎ Update my info</a>
+      <select id="lang-switch" class="signout" aria-label="Language"></select>
+      <button class="signout" id="signout" hidden data-i18n="db.signout">Sign out</button>
     </div>
   </div>
 </header>
@@ -102,12 +103,12 @@
 
   <!-- Signed-out: magic-link login -->
   <div id="auth">
-    <h1>Sign in to your matches</h1>
-    <p class="sub">Roles scored against your profile — with the honest gap on each.</p>
+    <h1 data-i18n="db.signin_h1">Sign in to your matches</h1>
+    <p class="sub" data-i18n="db.signin_sub">Roles scored against your profile — with the honest gap on each.</p>
     <div class="card">
-      <p class="lead">Enter the email you signed up with and we'll send a one-tap sign-in link.</p>
-      <input type="email" id="email" placeholder="you@email.com" aria-label="Email" autocomplete="email">
-      <div style="margin-top:10px;"><button class="btn" id="send">Email me a sign-in link</button></div>
+      <p class="lead" data-i18n="db.signin_lead">Enter the email you signed up with and we'll send a one-tap sign-in link.</p>
+      <input type="email" id="email" placeholder="you@email.com" data-i18n-ph="db.email_ph" aria-label="Email" autocomplete="email">
+      <div style="margin-top:10px;"><button class="btn" id="send" data-i18n="db.send_btn">Email me a sign-in link</button></div>
       <div id="msg"></div>
     </div>
   </div>
@@ -115,29 +116,29 @@
   <!-- Signed-in: the matches -->
   <div id="app" hidden>
     <div class="app-top">
-      <h1>Your matches</h1>
+      <h1 data-i18n="db.your_matches">Your matches</h1>
     </div>
     <p class="sub" id="count">Scored against your profile. Save the ones worth keeping.</p>
 
     <div class="filters">
       <span class="seg" id="scope">
-        <button data-scope="all" class="on">All</button>
-        <button data-scope="saved">Saved</button>
-        <button data-scope="flagged">Flagged</button>
+        <button data-scope="all" class="on" data-i18n="db.f_all">All</button>
+        <button data-scope="saved" data-i18n="db.f_saved">Saved</button>
+        <button data-scope="flagged" data-i18n="db.f_flagged">Flagged</button>
       </span>
-      <label for="sort">Sort</label>
+      <label for="sort" data-i18n="db.sort_label">Sort</label>
       <select id="sort">
-        <option value="score">Best match</option>
-        <option value="newest">Newest first</option>
-        <option value="company">Company (A–Z)</option>
+        <option value="score" data-i18n="db.sort_score">Best match</option>
+        <option value="newest" data-i18n="db.sort_newest">Newest first</option>
+        <option value="company" data-i18n="db.sort_company">Company (A–Z)</option>
       </select>
     </div>
 
     <div id="matches"></div>
-    <div id="empty" hidden class="card">No matches yet — your first digest is on the way.</div>
+    <div id="empty" hidden class="card" data-i18n="db.empty">No matches yet — your first digest is on the way.</div>
   </div>
 
-  <div class="notice">
+  <div class="notice" data-i18n="db.notice">
     <strong>Matches are kept for 1 month.</strong> New roles are added with every digest; unsaved
     matches older than 30 days are cleared automatically. <strong>Save</strong> the ones you want to
     keep — saved matches never expire.<br><br>
@@ -148,13 +149,17 @@
   </div>
 </div>
 
+<script src="/assets/i18n.js" defer></script>
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
   const SUPABASE_URL = 'https://rkuiprrginjullnzskkg.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_jtWlWOLHLw-ebE0BcfHifA_D9PIQy8O';  // publishable: public by design; RLS protects data
 
+  // i18n for JS-rendered content (i18n.js only auto-translates static data-i18n elements).
+  const T = k => (window.jpt ? window.jpt(k) : k);
   const BADGE = { 'Strong Fit':'var(--green)','Good Fit':'var(--blue)','Moderate Fit':'var(--amber)','Weak Fit':'var(--grey)','Poor Fit':'var(--grey)' };
+  const BANDKEY = { 'Strong Fit':'db.band_strong','Good Fit':'db.band_good','Moderate Fit':'db.band_moderate','Weak Fit':'db.band_weak','Poor Fit':'db.band_poor' };
   const band = s => s>=75?'Strong Fit':s>=60?'Good Fit':s>=45?'Moderate Fit':s>=30?'Weak Fit':'Poor Fit';
   const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const host = u => { try { return new URL(u).hostname.replace(/^www\./,''); } catch { return ''; } };
@@ -173,7 +178,7 @@
     const { data, error } = await sb.from('matches')
       .select('id,title,company,location,url,score,reasons,saved_at,flagged_at,source,created_at')
       .order('score', { ascending: false });
-    if (error) { $('matches').innerHTML = '<div class="card">Could not load matches: ' + esc(error.message) + '</div>'; return; }
+    if (error) { $('matches').innerHTML = '<div class="card">' + esc(T('db.msg_load_err') + error.message) + '</div>'; return; }
     ALL = data || [];
     paint();
   }
@@ -189,20 +194,26 @@
     else                         rows.sort((a,b) => (b.score||0) - (a.score||0));
 
     const total = ALL.length, shown = rows.length;
+    const scopeLabel = scope === 'saved' ? T('db.f_saved') : T('db.f_flagged');
     $('empty').hidden = total > 0;
     $('count').textContent = scope === 'all'
-      ? `${total} role${total===1?'':'s'} scored against your profile. Save the ones worth keeping.`
-      : `${shown} ${scope} of ${total} match${total===1?'':'es'}.`;
+      ? T(total === 1 ? 'db.count_all_one' : 'db.count_all_many').replace('{n}', total)
+      : T('db.count_filtered').replace('{shown}', shown).replace('{scope}', scopeLabel.toLowerCase()).replace('{total}', total);
     $('matches').innerHTML = shown
       ? rows.map(card).join('')
-      : (total ? `<div class="card">No ${esc(scope)} matches yet.</div>` : '');
+      : (total ? `<div class="card">${esc(T('db.none_scope').replace('{scope}', scopeLabel.toLowerCase()))}</div>` : '');
     for (const m of rows) { $('save-'+m.id).onclick = () => save(m.id); $('flag-'+m.id).onclick = () => flag(m.id); }
   }
 
   function card(m) {
     const v = band(m.score || 0);
-    const why = (m.reasons || '').split(' | ').find(p => p.startsWith('Fits:')) || 'Scored against your profile.';
-    const gap = (m.reasons || '').split(' | ').find(p => p.startsWith('Gaps:'));
+    // reasons content is already in the user's language (matcher); the Fits:/Gaps: markers are
+    // structural — strip them and show the translated "You bring:" / "Gap:" labels.
+    const parts = (m.reasons || '').split(' | ');
+    const fits = parts.find(p => p.startsWith('Fits:'));
+    const gaps = parts.find(p => p.startsWith('Gaps:'));
+    const why = fits ? fits.slice(5).trim() : T('db.default_fit');
+    const gap = gaps ? gaps.slice(5).trim() : '';
     const src = m.source || host(m.url);
     return `<div class="card">
         <div class="m-top">
@@ -210,14 +221,14 @@
             <div class="m-title">${esc(m.title)}${src?`<span class="m-src">${esc(src)}</span>`:''}</div>
             <div class="m-co">${esc(m.company||'')}${m.company&&m.location?' · ':''}${esc(m.location||'')}</div>
           </div>
-          <span class="badge" style="background:${BADGE[v]}">${m.score} · ${v}</span>
+          <span class="badge" style="background:${BADGE[v]}">${m.score} · ${esc(T(BANDKEY[v]))}</span>
         </div>
-        <div class="m-why">${esc(why)}</div>
-        ${gap?`<div class="m-gap">${esc(gap)}</div>`:''}
+        <div class="m-why"><strong style="color:var(--green);">${esc(T('db.youbring'))}</strong> ${esc(why)}</div>
+        ${gap?`<div class="m-gap"><strong>${esc(T('db.gap'))}</strong> ${esc(gap)}</div>`:''}
         <div class="actions">
-          <a class="view" href="${esc(m.url)}" target="_blank" rel="noopener">View listing ↗</a>
-          <button class="save ${m.saved_at?'on':''}" id="save-${m.id}">${m.saved_at?'✓ Saved':'Save'}</button>
-          <button class="flag ${m.flagged_at?'on':''}" id="flag-${m.id}">${m.flagged_at?'⚑ Flagged':'Flag'}</button>
+          <a class="view" href="${esc(m.url)}" target="_blank" rel="noopener">${esc(T('db.view'))}</a>
+          <button class="save ${m.saved_at?'on':''}" id="save-${m.id}">${m.saved_at?esc(T('db.saved')):esc(T('db.save'))}</button>
+          <button class="flag ${m.flagged_at?'on':''}" id="flag-${m.id}">${m.flagged_at?esc(T('db.flagged')):esc(T('db.flag'))}</button>
         </div></div>`;
   }
 
@@ -228,7 +239,7 @@
     paint();
   }
   async function flag(id) {
-    const reason = prompt('What looks wrong about this match? (a human will review it)');
+    const reason = prompt(T('db.flag_prompt'));
     if (reason === null) return;
     const now = new Date().toISOString();
     await sb.from('matches').update({ flagged_at: now, flag_reason: reason }).eq('id', id);
@@ -248,15 +259,19 @@
     const email = $('email').value.trim().toLowerCase();
     if (!email) return;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      $('msg').textContent = "That doesn't look like a valid email — check for typos, spaces, or autofill.";
+      $('msg').textContent = T('db.msg_invalid');
       return;
     }
-    $('send').disabled = true; $('msg').textContent = 'Sending…';
+    $('send').disabled = true; $('msg').textContent = T('db.msg_sending');
     const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href } });
     $('send').disabled = false;
-    $('msg').textContent = error ? ('Could not send: ' + error.message) : 'Check your inbox for the sign-in link.';
+    $('msg').textContent = error ? (T('db.msg_send_err') + error.message) : T('db.msg_sent');
   };
   $('signout').onclick = async () => { await sb.auth.signOut(); render(); };
+
+  // Re-render the JS-built matches when the language switcher changes (i18n.js only
+  // auto-updates static data-i18n elements; cards + count are drawn here).
+  document.addEventListener('jp:lang', () => { if (!$('app').hidden) paint(); });
 
   sb.auth.onAuthStateChange(() => render());
   render();

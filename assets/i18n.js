@@ -8,6 +8,7 @@
  */
 (function () {
   var LANGS = [["en", "EN"], ["es", "ES"], ["ca", "CA"]];
+  var CUR = "en";  // current language; exposed via window.jpt for JS-rendered content (dashboard)
 
   var DICT = {
     en: {
@@ -199,6 +200,47 @@
       "in.done.h1": "You're in!",
       "in.done.p": "Your profile is saved. We'll start matching you to roles and email your first digest soon — an algorithm curates it, and you can reply anytime if a match looks wrong and a human will check. You can close this tab — nothing else to do.",
       "in.done.changed": "Changed your mind? Email <a href=\"mailto:privacy@jobspulseapp.com\">privacy@jobspulseapp.com</a> to update or delete your data anytime &middot; <a href=\"/privacy/\">Privacy notice</a>",
+      "db.title": "JobsPulse — your matches",
+      "db.signin_h1": "Sign in to your matches",
+      "db.signin_sub": "Roles scored against your profile — with the honest gap on each.",
+      "db.signin_lead": "Enter the email you signed up with and we'll send a one-tap sign-in link.",
+      "db.email_ph": "you@email.com",
+      "db.send_btn": "Email me a sign-in link",
+      "db.your_matches": "Your matches",
+      "db.editinfo": "✎ Update my info",
+      "db.signout": "Sign out",
+      "db.f_all": "All",
+      "db.f_saved": "Saved",
+      "db.f_flagged": "Flagged",
+      "db.sort_label": "Sort",
+      "db.sort_score": "Best match",
+      "db.sort_newest": "Newest first",
+      "db.sort_company": "Company (A–Z)",
+      "db.empty": "No matches yet — your first digest is on the way.",
+      "db.notice": "<strong>Matches are kept for 1 month.</strong> New roles are added with every digest; unsaved matches older than 30 days are cleared automatically. <strong>Save</strong> the ones you want to keep — saved matches never expire.<br><br>Your matches are <strong>curated by an automated algorithm</strong> (scored on skills, roles, location and salary — never on personal traits). Think a result is wrong? Use <em>Flag</em> and a human will review it. Reply to your digest anytime to update or delete your data &middot; <a href=\"/privacy/\">Privacy notice</a>",
+      "db.youbring": "You bring:",
+      "db.gap": "Gap:",
+      "db.view": "View listing ↗",
+      "db.save": "Save",
+      "db.saved": "✓ Saved",
+      "db.flag": "Flag",
+      "db.flagged": "⚑ Flagged",
+      "db.default_fit": "Scored against your profile.",
+      "db.band_strong": "Strong Fit",
+      "db.band_good": "Good Fit",
+      "db.band_moderate": "Moderate Fit",
+      "db.band_weak": "Weak Fit",
+      "db.band_poor": "Poor Fit",
+      "db.count_all_one": "{n} role scored against your profile. Save the ones worth keeping.",
+      "db.count_all_many": "{n} roles scored against your profile. Save the ones worth keeping.",
+      "db.count_filtered": "{shown} {scope} of {total} matches.",
+      "db.none_scope": "No {scope} matches yet.",
+      "db.flag_prompt": "What looks wrong about this match? (a human will review it)",
+      "db.msg_invalid": "That doesn't look like a valid email — check for typos, spaces, or autofill.",
+      "db.msg_sending": "Sending…",
+      "db.msg_sent": "Check your inbox for the sign-in link.",
+      "db.msg_send_err": "Could not send: ",
+      "db.msg_load_err": "Could not load matches: ",
     },
     es: {
       /* shared */
@@ -389,6 +431,47 @@
       "in.done.h1": "¡Ya estás dentro!",
       "in.done.p": "Tu perfil está guardado. Empezaremos a buscarte puestos y te enviaremos tu primer resumen pronto — lo selecciona un algoritmo, y puedes responder cuando quieras si una coincidencia no encaja y una persona lo revisará. Puedes cerrar esta pestaña — no hay nada más que hacer.",
       "in.done.changed": "¿Has cambiado de opinión? Escribe a <a href=\"mailto:privacy@jobspulseapp.com\">privacy@jobspulseapp.com</a> para actualizar o eliminar tus datos cuando quieras &middot; <a href=\"/privacy/\">Aviso de privacidad</a>",
+      "db.title": "JobsPulse — tus coincidencias",
+      "db.signin_h1": "Entra a tus coincidencias",
+      "db.signin_sub": "Puestos puntuados según tu perfil — con la carencia honesta en cada uno.",
+      "db.signin_lead": "Introduce el correo con el que te registraste y te enviaremos un enlace de acceso de un toque.",
+      "db.email_ph": "tu@correo.com",
+      "db.send_btn": "Envíame un enlace de acceso",
+      "db.your_matches": "Tus coincidencias",
+      "db.editinfo": "✎ Actualizar mis datos",
+      "db.signout": "Cerrar sesión",
+      "db.f_all": "Todas",
+      "db.f_saved": "Guardadas",
+      "db.f_flagged": "Marcadas",
+      "db.sort_label": "Ordenar",
+      "db.sort_score": "Mejor coincidencia",
+      "db.sort_newest": "Más recientes",
+      "db.sort_company": "Empresa (A–Z)",
+      "db.empty": "Aún no hay coincidencias — tu primer resumen está en camino.",
+      "db.notice": "<strong>Las coincidencias se guardan 1 mes.</strong> Se añaden nuevos puestos con cada resumen; las no guardadas de más de 30 días se eliminan automáticamente. <strong>Guarda</strong> las que quieras conservar — las guardadas no caducan.<br><br>Tus coincidencias las <strong>selecciona un algoritmo automático</strong> (puntuadas por habilidades, puestos, ubicación y salario — nunca por rasgos personales). ¿Crees que un resultado está mal? Usa <em>Marcar</em> y una persona lo revisará. Responde a tu resumen cuando quieras para actualizar o eliminar tus datos &middot; <a href=\"/privacy/\">Aviso de privacidad</a>",
+      "db.youbring": "Aportas:",
+      "db.gap": "Carencia:",
+      "db.view": "Ver oferta ↗",
+      "db.save": "Guardar",
+      "db.saved": "✓ Guardada",
+      "db.flag": "Marcar",
+      "db.flagged": "⚑ Marcada",
+      "db.default_fit": "Puntuado según tu perfil.",
+      "db.band_strong": "Encaje fuerte",
+      "db.band_good": "Buen encaje",
+      "db.band_moderate": "Encaje moderado",
+      "db.band_weak": "Encaje débil",
+      "db.band_poor": "Encaje pobre",
+      "db.count_all_one": "{n} puesto puntuado según tu perfil. Guarda los que valgan la pena.",
+      "db.count_all_many": "{n} puestos puntuados según tu perfil. Guarda los que valgan la pena.",
+      "db.count_filtered": "{shown} {scope} de {total} coincidencias.",
+      "db.none_scope": "Aún no hay coincidencias {scope}.",
+      "db.flag_prompt": "¿Qué está mal en esta coincidencia? (una persona lo revisará)",
+      "db.msg_invalid": "Eso no parece un correo válido — revisa erratas, espacios o autocompletado.",
+      "db.msg_sending": "Enviando…",
+      "db.msg_sent": "Revisa tu bandeja de entrada para el enlace de acceso.",
+      "db.msg_send_err": "No se pudo enviar: ",
+      "db.msg_load_err": "No se pudieron cargar las coincidencias: ",
     },
     ca: {
       /* shared */
@@ -579,6 +662,47 @@
       "in.done.h1": "Ja estàs dins!",
       "in.done.p": "El teu perfil està desat. Començarem a buscar-te llocs i t'enviarem el teu primer resum aviat — el selecciona un algorisme, i pots respondre quan vulguis si una coincidència no encaixa i una persona ho revisarà. Pots tancar aquesta pestanya — no hi ha res més a fer.",
       "in.done.changed": "Has canviat d'opinió? Escriu a <a href=\"mailto:privacy@jobspulseapp.com\">privacy@jobspulseapp.com</a> per actualitzar o eliminar les teves dades quan vulguis &middot; <a href=\"/privacy/\">Avís de privadesa</a>",
+      "db.title": "JobsPulse — les teves coincidències",
+      "db.signin_h1": "Entra a les teves coincidències",
+      "db.signin_sub": "Llocs puntuats segons el teu perfil — amb la mancança sincera de cadascun.",
+      "db.signin_lead": "Introdueix el correu amb què et vas registrar i t'enviarem un enllaç d'accés d'un toc.",
+      "db.email_ph": "tu@correu.com",
+      "db.send_btn": "Envia'm un enllaç d'accés",
+      "db.your_matches": "Les teves coincidències",
+      "db.editinfo": "✎ Actualitzar les meves dades",
+      "db.signout": "Tancar sessió",
+      "db.f_all": "Totes",
+      "db.f_saved": "Desades",
+      "db.f_flagged": "Marcades",
+      "db.sort_label": "Ordena",
+      "db.sort_score": "Millor coincidència",
+      "db.sort_newest": "Més recents",
+      "db.sort_company": "Empresa (A–Z)",
+      "db.empty": "Encara no hi ha coincidències — el teu primer resum està en camí.",
+      "db.notice": "<strong>Les coincidències es desen 1 mes.</strong> S'afegeixen nous llocs amb cada resum; les no desades de més de 30 dies s'eliminen automàticament. <strong>Desa</strong> les que vulguis conservar — les desades no caduquen.<br><br>Les teves coincidències les <strong>selecciona un algorisme automàtic</strong> (puntuades per habilitats, llocs, ubicació i salari — mai per trets personals). Creus que un resultat és incorrecte? Fes servir <em>Marca</em> i una persona ho revisarà. Respon el teu resum quan vulguis per actualitzar o eliminar les teves dades &middot; <a href=\"/privacy/\">Avís de privadesa</a>",
+      "db.youbring": "Aportes:",
+      "db.gap": "Mancança:",
+      "db.view": "Veure oferta ↗",
+      "db.save": "Desa",
+      "db.saved": "✓ Desada",
+      "db.flag": "Marca",
+      "db.flagged": "⚑ Marcada",
+      "db.default_fit": "Puntuat segons el teu perfil.",
+      "db.band_strong": "Encaix fort",
+      "db.band_good": "Bon encaix",
+      "db.band_moderate": "Encaix moderat",
+      "db.band_weak": "Encaix feble",
+      "db.band_poor": "Encaix pobre",
+      "db.count_all_one": "{n} lloc puntuat segons el teu perfil. Desa els que valguin la pena.",
+      "db.count_all_many": "{n} llocs puntuats segons el teu perfil. Desa els que valguin la pena.",
+      "db.count_filtered": "{shown} {scope} de {total} coincidències.",
+      "db.none_scope": "Encara no hi ha coincidències {scope}.",
+      "db.flag_prompt": "Què no encaixa d'aquesta coincidència? (una persona ho revisarà)",
+      "db.msg_invalid": "Això no sembla un correu vàlid — revisa errades, espais o autocompletat.",
+      "db.msg_sending": "Enviant…",
+      "db.msg_sent": "Revisa la teva safata d'entrada per l'enllaç d'accés.",
+      "db.msg_send_err": "No s'ha pogut enviar: ",
+      "db.msg_load_err": "No s'han pogut carregar les coincidències: ",
     }
   };
 
@@ -614,9 +738,17 @@
     var titleKey = document.documentElement.getAttribute("data-i18n-title");
     if (titleKey && d[titleKey] != null) document.title = d[titleKey];
     try { localStorage.setItem("jp_lang", lang); } catch (e) {}
+    CUR = lang;
     var sel = document.getElementById("lang-switch");
     if (sel) sel.value = lang;
+    // Let JS-rendered pages (e.g. the dashboard) translate their dynamic strings + re-render.
+    try { document.dispatchEvent(new CustomEvent("jp:lang", { detail: lang })); } catch (e) {}
   }
+
+  // Public helpers for pages that build content in JS (i18n only auto-translates static
+  // data-i18n elements present at apply() time).
+  window.jpt = function (key) { var d = DICT[CUR] || DICT.en; return d[key] != null ? d[key] : key; };
+  window.jpLang = function () { return CUR; };
 
   function mount() {
     var sel = document.getElementById("lang-switch");
