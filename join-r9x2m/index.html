@@ -79,6 +79,10 @@
         <option value="ca">Català</option>
         <option value="es">Español</option>
         <option value="en">English</option>
+        <option value="de">Deutsch</option>
+        <option value="fr">Français</option>
+        <option value="ja">日本語</option>
+        <option value="zh">中文</option>
       </select>
 
       <label data-i18n="in.role">Current role / title</label>
@@ -239,7 +243,7 @@
     if (!sel) return;
     var saved; try { saved = localStorage.getItem('jp_lang'); } catch (e) {}
     var nl = (saved || navigator.language || 'en').slice(0,2).toLowerCase();
-    sel.value = (nl === 'ca' || nl === 'es') ? nl : 'en';
+    sel.value = ['ca','es','en','de','fr','ja','zh'].indexOf(nl) >= 0 ? nl : 'en';
   })();
 
   // Submit stays disabled until consent is explicitly given.
