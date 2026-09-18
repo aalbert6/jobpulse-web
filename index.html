@@ -140,7 +140,7 @@
         try {
           var r = await fetch('https://rkuiprrginjullnzskkg.supabase.co/functions/v1/waitlist', {method:'POST', body:data, headers:{'Accept':'application/json'}});
           var j = await r.json().catch(function(){ return {}; });
-          if (r.ok && j.ok) { f.reset(); m.textContent = j.member ? T('ld.join_member') : T('ld.join_done'); }
+          if (r.ok && j.ok) { f.reset(); m.textContent = T('ld.join_done'); }
           else { m.textContent = T('ld.join_err'); }
         } catch(err) { m.textContent = T('ld.join_err'); }
         b.disabled = false;

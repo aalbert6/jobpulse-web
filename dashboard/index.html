@@ -335,7 +335,7 @@
     $('flagunflag').hidden = !m.flagged_at;
     if (m.flag_reason) {  // pre-fill an existing flag so it can be changed
       const [chip, ...rest] = m.flag_reason.split(': ');
-      const r = form.querySelector(`input[value="${chip}"]`);
+      const r = Array.from(form.querySelectorAll('input[name="reason"]')).find(x => x.value === chip) || null;
       if (r) { r.checked = true; $('flagnote').value = rest.join(': '); $('flagsend').disabled = false; }
       else { $('flagnote').value = m.flag_reason; }
     }

@@ -169,7 +169,8 @@
     const wk = new Date(Date.now() - 7 * 864e5).toISOString();
     const due = P.filter(x => x.onboarded_at && x.status === 'active' && (!x.last_digest_at || x.last_digest_at < wk)).length;
     const sent7 = M.filter(x => x.sent_at && x.sent_at >= wk).length;
-    const avg = F.length ? (F.reduce((a, r) => a + (+r.usefulness || 0), 0) / F.filter(r => r.usefulness).length).toFixed(1) : '—';
+    const rated = F.filter(r => r.usefulness != null && r.usefulness !== '');
+    const avg = rated.length ? (rated.reduce((a, r) => a + (+r.usefulness || 0), 0) / rated.length).toFixed(1) : '—';
     const pending = W.filter(x => x.status === 'pending').length;
     const kp = [
       ['Users', P.length, `${P.filter(x=>x.onboarded_at).length} onboarded · ${P.filter(x=>x.status!=='active').length} paused`],
