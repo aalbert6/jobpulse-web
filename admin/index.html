@@ -47,6 +47,12 @@
   #msg{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:9px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
   #msg.on{opacity:1}
   .auth{max-width:420px;margin:60px auto;}
+  .charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:12px;}
+  .chart{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
+  .chart h3{font-size:13px;margin:0 0 2px;font-weight:700;} .chart .sub{font-size:12px;color:var(--muted);margin:0 0 8px;}
+  .chart svg{width:100%;height:auto;display:block;font-family:inherit;}
+  .chart text{fill:var(--ink);font-size:11px;} .chart text.mut{fill:var(--muted);} .chart .grid{stroke:var(--line);stroke-width:1;}
+  .chart rect.bar{fill:var(--blue);} .chart rect.bar:hover{fill:var(--blue-d);} .chart rect.bar.dim{opacity:.55}
 </style>
 </head>
 <body>
@@ -97,7 +103,8 @@
 
     <div id="tab-matches" class="card" hidden>
       <div class="row"><select id="mwin"><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="365">All loaded</option></select><span class="small muted" id="mcount"></span></div>
-      <div id="mstats" style="margin-top:10px"></div>
+      <div class="charts" id="mcharts" style="margin-top:10px"></div>
+      <details style="margin-top:8px"><summary>Tables</summary><div id="mstats" style="margin-top:10px"></div></details>
     </div>
 
     <div id="tab-flags" class="card" hidden>
@@ -106,6 +113,7 @@
 
     <div id="tab-feedback" class="card" hidden>
       <div id="fbsummary" class="small muted"></div>
+      <div class="charts" id="fbcharts"></div>
       <div class="tbl" style="margin-top:10px"><table id="fbtable"><thead><tr><th>When</th><th>Useful</th><th>Easy</th><th>Format</th><th>Pay</th><th>Liked</th><th>Change</th><th>Other</th><th>Email</th></tr></thead><tbody></tbody></table></div>
     </div>
 
@@ -161,7 +169,7 @@
     D = { waitlist: w.data || [], profiles: p.data || [], matches: m.data || [], feedback: f.data || [], inbox: i.data || [] };
     for (const [k, r] of Object.entries({ waitlist: w, profiles: p, matches: m, feedback: f, inbox: i })) if (r.error) console.warn(k, r.error.message);
     $('asof').textContent = 'Loaded ' + new Date().toLocaleString('en-GB') + ' · matches window: last 30 days';
-    paintKpis(); paintWaitlist(); paintUsers(); paintMatches(); paintFlags(); paintFeedback(); paintInbox();
+    paintKpis(); paintWaitlist(); paintUsers(); paintMatches(); paintFlags(); paintFeedback(); paintInbox(); paintCharts();
   }
 
   function paintKpis() {
@@ -256,12 +264,67 @@
     $('itable').querySelector('tbody').innerHTML = D.inbox.map(r => `<tr><td class="small muted">${d(r.received_at)}${r.handled?' <span class="pill ok">handled</span>':''}</td><td class="small">${esc(r.from_addr||'')}</td><td class="small">${esc((r.to_addrs||[]).join(', '))}</td><td>${esc(r.subject||'')}</td><td class="small"><details><summary>show</summary>${esc((r.text_body||r.html_body||'').slice(0,2000))}</details></td></tr>`).join('') || '<tr><td colspan="5" class="muted">Empty.</td></tr>';
   }
 
+  // ── charts: plain SVG, one hue, thin rounded bars, hover titles, direct labels ─────────────
+  function barChart(title, sub, rows, opts) {   // rows: [{label, value, hint?}]
+    opts = opts || {};
+    const W = 320, padL = opts.horizontal ? 110 : 8, padR = 8, padT = 6, padB = opts.horizontal ? 6 : 22;
+    const max = Math.max(1, ...rows.map(r => r.value));
+    let svg = '';
+    if (opts.horizontal) {
+      const bh = 14, gap = 6, H = padT + rows.length * (bh + gap) + padB;
+      svg += `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}">`;
+      rows.forEach((r, i) => {
+        const y = padT + i * (bh + gap), w = Math.max(2, (W - padL - padR - 34) * r.value / max);
+        svg += `<text x="${padL - 8}" y="${y + bh - 3}" text-anchor="end" class="mut">${esc(String(r.label).slice(0, 16))}</text>`;
+        svg += `<rect class="bar" x="${padL}" y="${y}" width="${w}" height="${bh}" rx="3"><title>${esc(r.label)}: ${r.value}${r.hint ? ' · ' + esc(r.hint) : ''}</title></rect>`;
+        svg += `<text x="${padL + w + 6}" y="${y + bh - 3}">${r.value}${r.hint ? ` <tspan class="mut">${esc(r.hint)}</tspan>` : ''}</text>`;
+      });
+      svg += '</svg>';
+    } else {
+      const H = 150, n = rows.length, slot = (W - padL - padR) / n, bw = Math.min(28, slot * 0.6);
+      svg += `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}">`;
+      [0.5, 1].forEach(f => { const y = padT + (H - padT - padB) * (1 - f); svg += `<line class="grid" x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}"/>`; });
+      rows.forEach((r, i) => {
+        const h = (H - padT - padB) * r.value / max, x = padL + i * slot + (slot - bw) / 2, y = padT + (H - padT - padB) - h;
+        svg += `<rect class="bar ${r.dim ? 'dim' : ''}" x="${x}" y="${y}" width="${bw}" height="${Math.max(h, 2)}" rx="3"><title>${esc(r.label)}: ${r.value}${r.hint ? ' · ' + esc(r.hint) : ''}</title></rect>`;
+        if (r.value) svg += `<text x="${x + bw / 2}" y="${y - 4}" text-anchor="middle">${r.value}</text>`;
+        svg += `<text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle" class="mut">${esc(String(r.label).slice(0, 8))}</text>`;
+      });
+      svg += '</svg>';
+    }
+    return `<div class="chart"><h3>${esc(title)}</h3><p class="sub">${esc(sub)}</p>${svg}</div>`;
+  }
+  function paintCharts() {
+    const F = D.feedback;
+    const useful = [1, 2, 3, 4, 5].map(v => ({ label: String(v), value: F.filter(r => +r.usefulness === v).length }));
+    const pay = ['yes', 'maybe', 'no'].map(v => ({ label: v, value: F.filter(r => r.would_pay === v).length }));
+    const easy = ['yes', 'somewhat', 'no'].map(v => ({ label: v, value: F.filter(r => r.easy === v).length }));
+    const fmt = ['email', 'web', 'no_pref'].map(v => ({ label: v, value: F.filter(r => r.format_pref === v).length }));
+    $('fbcharts').innerHTML = barChart('Usefulness (1–5)', `${F.length} responses`, useful)
+      + barChart('Would pay €1/mo', 'yes / maybe / no', pay) + barChart('Easy to use', 'yes / somewhat / no', easy) + barChart('Email vs web', 'preferred format', fmt);
+
+    const days = +$('mwin').value, since = new Date(Date.now() - days * 864e5).toISOString();
+    const M = D.matches.filter(m => m.created_at >= since), S = M.filter(m => m.sent_at);
+    // sent per ISO week (last 8 weeks)
+    const wk = s => { const d = new Date(s); const day = (d.getUTCDay() + 6) % 7; d.setUTCDate(d.getUTCDate() - day); return d.toISOString().slice(5, 10); };
+    const weeks = []; for (let i = 7; i >= 0; i--) { const d = new Date(Date.now() - i * 7 * 864e5); weeks.push(wk(d.toISOString())); }
+    const perWeek = weeks.map(w => ({ label: w, value: S.filter(m => wk(m.sent_at) === w).length }));
+    const bands = ['Strong', 'Good', 'Moderate', 'Weak'].map(b => ({ label: b, value: S.filter(m => band(m.score) === b).length, hint: S.length ? Math.round(100 * S.filter(m => band(m.score) === b).length / S.length) + '%' : '' }));
+    const bySrc = {}; for (const m of S) bySrc[m.source || '?'] = (bySrc[m.source || '?'] || 0) + 1;
+    const srcRows = Object.entries(bySrc).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => ({ label: k, value: v, hint: Math.round(100 * v / (S.length || 1)) + '%' }));
+    const saved = S.filter(m => m.saved_at).length, flagged = S.filter(m => m.flagged_at).length;
+    $('mcharts').innerHTML = barChart('Matches sent per week', 'week starting (MM-DD)', perWeek)
+      + barChart('Sent by fit band', `${S.length} sent · Strong share ${S.length ? Math.round(100 * bands[0].value / S.length) : 0}%`, bands, { horizontal: true })
+      + barChart('Sent by source', 'share of sent matches', srcRows, { horizontal: true })
+      + barChart('Engagement', 'of sent matches', [{ label: 'saved', value: saved, hint: S.length ? Math.round(100 * saved / S.length) + '%' : '' }, { label: 'flagged', value: flagged, hint: S.length ? Math.round(100 * flagged / S.length) + '%' : '' }], { horizontal: true });
+  }
+
   // tabs + controls
   document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
     document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
     for (const t of ['waitlist','users','matches','flags','feedback','inbox']) $('tab-' + t).hidden = t !== b.dataset.tab;
   });
-  $('wlfilter').onchange = paintWaitlist; $('usearch').oninput = paintUsers; $('mwin').onchange = paintMatches;
+  $('wlfilter').onchange = paintWaitlist; $('usearch').oninput = paintUsers; $('mwin').onchange = () => { paintMatches(); paintCharts(); };
   $('directinvite').onsubmit = async (e) => {
     e.preventDefault();
     try { const j = await call('invite_email', { email: $('di_email').value.trim(), first_name: $('di_name').value.trim(), language: $('di_lang').value }); toast(j.resend_id ? 'Invitation sent' : 'Stored; email not confirmed'); $('di_email').value = ''; $('di_name').value = ''; await load(); }

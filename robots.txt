@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /edit-profile/
+Disallow: /join-r9x2m/
+Disallow: /feedback/
+Sitemap: https://jobspulseapp.com/sitemap.xml
