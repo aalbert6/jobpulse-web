@@ -57,6 +57,7 @@
     the first two fields is optional — do as much as you like.</p>
 
   <form id="intake" action="https://rkuiprrginjullnzskkg.supabase.co/functions/v1/intake" method="post">
+    <input type="hidden" name="invite" id="invite" value="">
     <!-- honeypot -->
     <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
 
@@ -204,6 +205,16 @@
   var form = document.getElementById('intake');
   var box  = document.getElementById('consent');
   var btn  = document.getElementById('submit');
+  // Invitation link: /join-r9x2m/?invite=<token>&email=<addr> (admin function). The token is
+  // required server-side for new members; a returning member can submit without it.
+  (function(){
+    var q = new URLSearchParams(location.search);
+    var tok = (q.get('invite') || '').trim();
+    if (tok) document.getElementById('invite').value = tok;
+    var em = (q.get('email') || '').trim();
+    var emailEl = form.querySelector('input[name="email"]');
+    if (em && emailEl && !emailEl.value) emailEl.value = em;
+  })();
   var note = document.getElementById('note');
 
   // Localized status messages for the JS-driven notes (read the active language i18n.js persists).

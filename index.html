@@ -44,6 +44,7 @@
   .card p{margin:0;color:var(--muted);font-size:14.5px;}
   .demo{border-color:color-mix(in srgb,var(--blue) 45%,var(--line));
     box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 10%,transparent);}
+  .eyebrow{font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin:0 0 10px;}
   .demo .tag{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);}
   .hero-cta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 6px;}
   .btn-ghost{display:inline-block;padding:12px 20px;font-size:15px;font-weight:600;border-radius:10px;
@@ -68,11 +69,28 @@
     <div class="links">
       <a href="/how-it-works/" data-i18n="nav.how">How it works</a>
       <a href="/pricing/" data-i18n="nav.pricing">Pricing</a>
-      <a href="/dashboard/" id="navauth" data-i18n="nav.signin">Sign in</a><a class="nav-cta" href="#waitlist" data-i18n="nav.join">Join</a>
+      <a href="/dashboard/" id="navauth" data-i18n="nav.signin">Sign in</a>
+      <a class="nav-cta" href="#waitlist" data-i18n="nav.join">Join</a>
     </div>
   </nav>
+  <script>
+    // Swap the nav link to "Dashboard" when a Supabase session exists (read from localStorage —
+    // no SDK needed). Both states link to /dashboard/, which shows login or the user's matches.
+    (function(){
+      try{
+        var raw = localStorage.getItem('sb-rkuiprrginjullnzskkg-auth-token');
+        if(!raw) return;
+        var s = JSON.parse(raw);
+        var exp = s && (s.expires_at || (s.currentSession && s.currentSession.expires_at));
+        if(exp && exp*1000 < Date.now()) return;         // session expired
+        var a = document.getElementById('navauth');
+        if(a){ a.setAttribute('data-i18n','nav.dashboard'); a.textContent = 'Dashboard'; }
+      }catch(e){}
+    })();
+  </script>
 
   <header>
+    <p class="eyebrow" data-i18n="ld.slogan">Relentless pursuit.</p>
     <h1 data-i18n="ld.h1">See what an honest match looks like.</h1>
     <p class="lede" data-i18n="ld.lede">Every week, roles scored against <em>your</em> profile — not a keyword —
       each with the honest gap: what you bring, and whether what's missing is learnable or a real wall.</p>
@@ -95,10 +113,40 @@
     </div>
 
     <div class="card" id="waitlist" style="margin-top:16px;">
-      <h3 data-i18n="ld.closedh">The beta waitlist is now closed</h3>
-      <p style="margin-top:6px;color:var(--muted);" data-i18n="ld.closedp">Thank you to everyone who signed up — we've reached
-      capacity for the private beta and aren't taking new sign-ups for now.</p>
+      <h3 data-i18n="ld.joinh">Request an invitation</h3>
+      <p style="margin-top:6px;color:var(--muted);" data-i18n="ld.joinp">We open the door a few people at a time so every match stays honest and personal. Leave your email and you'll get a personal link as soon as there's a spot.</p>
+      <form id="joinform" style="margin-top:14px;display:grid;gap:10px;">
+        <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;" aria-hidden="true">
+        <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr;">
+          <input type="text" name="first_name" maxlength="80" data-i18n-ph="ld.join_name" placeholder="First name" style="width:100%;padding:12px 14px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;">
+          <input type="email" name="email" required maxlength="120" data-i18n-ph="ld.join_email" placeholder="Email" style="width:100%;padding:12px 14px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;">
+        </div>
+        <input type="text" name="message" maxlength="200" data-i18n-ph="ld.join_msg" placeholder="What are you looking for? (optional)" style="width:100%;padding:12px 14px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <button type="submit" class="btn-primary" id="joinbtn" data-i18n="ld.join_btn">Request my invitation</button>
+          <span id="joinmsg" style="font-size:13.5px;color:var(--muted);"></span>
+        </div>
+      </form>
     </div>
+    <script>
+    (function(){
+      var f = document.getElementById('joinform'), b = document.getElementById('joinbtn'), m = document.getElementById('joinmsg');
+      var T = function(k){ return window.jpt ? window.jpt(k) : k; };
+      f.addEventListener('submit', async function(e){
+        e.preventDefault();
+        b.disabled = true; m.textContent = T('ld.join_sending');
+        var data = new FormData(f);
+        data.append('language', (localStorage.getItem('jp_lang') || navigator.language || 'en').slice(0,2));
+        try {
+          var r = await fetch('https://rkuiprrginjullnzskkg.supabase.co/functions/v1/waitlist', {method:'POST', body:data, headers:{'Accept':'application/json'}});
+          var j = await r.json().catch(function(){ return {}; });
+          if (r.ok && j.ok) { f.reset(); m.textContent = j.member ? T('ld.join_member') : T('ld.join_done'); }
+          else { m.textContent = T('ld.join_err'); }
+        } catch(err) { m.textContent = T('ld.join_err'); }
+        b.disabled = false;
+      });
+    })();
+    </script>
   </header>
 
   <div class="grid">
@@ -128,9 +176,5 @@
 
 </div>
 <script src="/assets/i18n.js" defer></script>
-  <script>
-    // Swap the nav link to "Dashboard" when a Supabase session exists (localStorage, no SDK).
-    (function(){try{var raw=localStorage.getItem("sb-rkuiprrginjullnzskkg-auth-token");if(!raw)return;var s=JSON.parse(raw);var exp=s&&(s.expires_at||(s.currentSession&&s.currentSession.expires_at));if(exp&&exp*1000<Date.now())return;var a=document.getElementById("navauth");if(a){a.setAttribute("data-i18n","nav.dashboard");a.textContent="Dashboard";}}catch(e){}})();
-  </script>
 </body>
 </html>

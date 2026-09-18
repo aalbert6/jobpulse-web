@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>JobsPulse — admin</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<!--
+  Operator dashboard (Albert). Magic-link sign-in; the page only works for emails listed in
+  public.admins: READS use the admin RLS policies (migration 015), WRITES with side effects
+  (invitations, status, GDPR delete) go through the `admin` edge function, which re-checks the
+  admin list with the service role. The publishable key below is public by design.
+-->
+<style>
+  :root{ --blue:#0b5cad; --blue-d:#094a8c; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee;
+    --green:#1a7f37; --amber:#b26a00; --red:#b3261e; --grey:#7a7a7a; }
+  @media (prefers-color-scheme: dark){ :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; --blue-d:#2f7fca; } }
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.45;-webkit-font-smoothing:antialiased;}
+  a{color:var(--blue)} input,button,select,textarea{font-family:inherit;font-size:14px;}
+  header.bar{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line);}
+  .bar-in{max-width:1100px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:18px;color:var(--blue);text-decoration:none;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px color-mix(in srgb,var(--blue) 18%,transparent);}
+  .tag{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:2px 7px;margin-left:8px;vertical-align:2px;}
+  .wrap{max-width:1100px;margin:0 auto;padding:22px 20px 80px;}
+  h1{font-size:22px;margin:0 0 4px} h2{font-size:16px;margin:26px 0 10px;display:flex;align-items:center;gap:10px;} .sub{color:var(--muted);margin:0 0 18px;font-size:14px;}
+  .btn{padding:9px 14px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--ink);font-weight:600;cursor:pointer;font-size:13px;}
+  .btn:hover{border-color:var(--blue);color:var(--blue)} .btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)} .btn.primary:hover{background:var(--blue-d)}
+  .btn.danger{color:var(--red);border-color:var(--red)} .btn[disabled]{opacity:.5;cursor:default}
+  .btn.sm{padding:5px 10px;font-size:12px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:10px 0;}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .kpi .n{font-size:26px;font-weight:800;letter-spacing:-.02em} .kpi .l{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  table{width:100%;border-collapse:collapse;font-size:13px;} th,td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;cursor:pointer;user-select:none;}
+  tr:hover td{background:color-mix(in srgb,var(--blue) 5%,transparent)}
+  .tbl{overflow-x:auto;} .muted{color:var(--muted)} .small{font-size:12px}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .pill.ok{color:var(--green);border-color:var(--green)} .pill.warn{color:var(--amber);border-color:var(--amber)} .pill.bad{color:var(--red);border-color:var(--red)} .pill.info{color:var(--blue);border-color:var(--blue)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  input[type=email],input[type=text],input[type=search],select{padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 6px;} .tabs button{padding:8px 13px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--muted);font-weight:600;cursor:pointer;}
+  .tabs button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+  details summary{cursor:pointer;color:var(--blue);font-size:13px}
+  #msg{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:9px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+  #msg.on{opacity:1}
+  .auth{max-width:420px;margin:60px auto;}
+</style>
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <a class="logo" href="/"><span class="dot"></span>JobsPulse<span class="tag">admin</span></a>
+  <div class="row"><a class="btn" href="/dashboard/">User dashboard</a><button class="btn" id="signout" hidden>Sign out</button></div>
+</div></header>
+
+<div class="wrap">
+  <section id="auth" class="auth card" hidden>
+    <h1>Admin sign-in</h1>
+    <p class="sub">Magic link to an address listed in <code>admins</code>. Anyone else sees nothing.</p>
+    <div class="row"><input type="email" id="email" placeholder="you@example.com" style="flex:1"><button class="btn primary" id="send">Send link</button></div>
+    <p class="small muted" id="authmsg" style="margin-top:10px"></p>
+  </section>
+
+  <section id="denied" class="auth card" hidden>
+    <h1>Not an admin</h1><p class="sub">This account is signed in but not listed in <code>admins</code>.</p>
+  </section>
+
+  <section id="app" hidden>
+    <h1>Operator dashboard</h1>
+    <p class="sub" id="asof"></p>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="tabs" id="tabs">
+      <button data-tab="waitlist" class="on">Waitlist</button>
+      <button data-tab="users">Users</button>
+      <button data-tab="matches">Matches</button>
+      <button data-tab="flags">Flags</button>
+      <button data-tab="feedback">Feedback</button>
+      <button data-tab="inbox">Inbox</button>
+    </div>
+
+    <div id="tab-waitlist" class="card">
+      <div class="row" style="justify-content:space-between">
+        <div class="row"><select id="wlfilter"><option value="pending">Pending</option><option value="invited">Invited</option><option value="joined">Joined</option><option value="rejected">Rejected</option><option value="">All</option></select><span class="small muted" id="wlcount"></span></div>
+        <form class="row" id="directinvite"><input type="text" id="di_name" placeholder="First name" style="width:120px"><input type="email" id="di_email" placeholder="email to invite directly" required style="width:240px"><select id="di_lang"><option value="en">EN</option><option value="es">ES</option><option value="ca">CA</option></select><button class="btn primary sm" type="submit">Invite</button></form>
+      </div>
+      <div class="tbl" style="margin-top:10px"><table id="wltable"><thead><tr><th>Requested</th><th>Name</th><th>Email</th><th>Lang</th><th>Message</th><th>Status</th><th>Note</th><th></th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div id="tab-users" class="card" hidden>
+      <div class="row"><input type="search" id="usearch" placeholder="search name / email / roles / location" style="flex:1;min-width:220px"><span class="small muted" id="ucount"></span></div>
+      <div class="tbl" style="margin-top:10px"><table id="utable"><thead><tr><th>Joined</th><th>Name</th><th>Email</th><th>Lang</th><th>Targets</th><th>Location</th><th>Yrs</th><th>Status</th><th>Onboarded</th><th>Last digest</th><th>Matches</th><th>Saved</th><th>Flagged</th><th></th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div id="tab-matches" class="card" hidden>
+      <div class="row"><select id="mwin"><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="365">All loaded</option></select><span class="small muted" id="mcount"></span></div>
+      <div id="mstats" style="margin-top:10px"></div>
+    </div>
+
+    <div id="tab-flags" class="card" hidden>
+      <div class="tbl"><table id="ftable"><thead><tr><th>Flagged</th><th>User</th><th>Title</th><th>Company</th><th>Score</th><th>Reason</th><th>Link</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div id="tab-feedback" class="card" hidden>
+      <div id="fbsummary" class="small muted"></div>
+      <div class="tbl" style="margin-top:10px"><table id="fbtable"><thead><tr><th>When</th><th>Useful</th><th>Easy</th><th>Format</th><th>Pay</th><th>Liked</th><th>Change</th><th>Other</th><th>Email</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div id="tab-inbox" class="card" hidden>
+      <div class="tbl"><table id="itable"><thead><tr><th>Received</th><th>From</th><th>To</th><th>Subject</th><th>Text</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+</div>
+<div id="msg"></div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  const SUPABASE_URL = 'https://rkuiprrginjullnzskkg.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_jtWlWOLHLw-ebE0BcfHifA_D9PIQy8O';  // publishable: public by design; RLS protects data
+  const FN = SUPABASE_URL + '/functions/v1/admin';
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const d = s => s ? new Date(s).toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) + ' ' + new Date(s).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const day = s => s ? new Date(s).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'2-digit'}) : '—';
+  const band = s => s>=75?'Strong':s>=60?'Good':s>=45?'Moderate':'Weak';
+  let toastT; const toast = t => { $('msg').textContent = t; $('msg').classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => $('msg').classList.remove('on'), 2600); };
+
+  let SESSION = null, D = { waitlist: [], profiles: [], matches: [], feedback: [], inbox: [] };
+
+  async function call(action, payload) {
+    const r = await fetch(FN, { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SESSION.access_token }, body: JSON.stringify({ action, ...payload }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+    return j;
+  }
+
+  async function render() {
+    const { data: { session } } = await sb.auth.getSession();
+    SESSION = session;
+    $('auth').hidden = !!session; $('signout').hidden = !session; $('app').hidden = true; $('denied').hidden = true;
+    if (!session) return;
+    const { data: adm } = await sb.from('admins').select('email').limit(1);
+    if (!adm || !adm.length) { $('denied').hidden = false; return; }
+    $('app').hidden = false;
+    await load();
+  }
+
+  async function load() {
+    const since30 = new Date(Date.now() - 30 * 864e5).toISOString();
+    const [w, p, m, f, i] = await Promise.all([
+      sb.from('waitlist').select('*').order('created_at', { ascending: false }),
+      sb.from('profiles').select('id,created_at,first_name,email,language,target_roles,role_title,location,years_experience,status,onboarded_at,last_digest_at,plan').order('created_at', { ascending: false }),
+      sb.from('matches').select('id,profile_id,title,company,location,url,score,source,status,created_at,sent_at,saved_at,flagged_at,flag_reason').gte('created_at', since30).order('created_at', { ascending: false }).limit(5000),
+      sb.from('feedback').select('*').order('created_at', { ascending: false }),
+      sb.from('inbound_emails').select('*').order('received_at', { ascending: false }).limit(50),
+    ]);
+    D = { waitlist: w.data || [], profiles: p.data || [], matches: m.data || [], feedback: f.data || [], inbox: i.data || [] };
+    for (const [k, r] of Object.entries({ waitlist: w, profiles: p, matches: m, feedback: f, inbox: i })) if (r.error) console.warn(k, r.error.message);
+    $('asof').textContent = 'Loaded ' + new Date().toLocaleString('en-GB') + ' · matches window: last 30 days';
+    paintKpis(); paintWaitlist(); paintUsers(); paintMatches(); paintFlags(); paintFeedback(); paintInbox();
+  }
+
+  function paintKpis() {
+    const P = D.profiles, M = D.matches, W = D.waitlist, F = D.feedback;
+    const wk = new Date(Date.now() - 7 * 864e5).toISOString();
+    const due = P.filter(x => x.onboarded_at && x.status === 'active' && (!x.last_digest_at || x.last_digest_at < wk)).length;
+    const sent7 = M.filter(x => x.sent_at && x.sent_at >= wk).length;
+    const avg = F.length ? (F.reduce((a, r) => a + (+r.usefulness || 0), 0) / F.filter(r => r.usefulness).length).toFixed(1) : '—';
+    const pending = W.filter(x => x.status === 'pending').length;
+    const kp = [
+      ['Users', P.length, `${P.filter(x=>x.onboarded_at).length} onboarded · ${P.filter(x=>x.status!=='active').length} paused`],
+      ['Pending invites', pending, `${W.filter(x=>x.status==='invited').length} invited · ${W.filter(x=>x.status==='joined').length} joined`],
+      ['Due for digest', due, 'onboarded, >7 days since last'],
+      ['Matches sent 7d', sent7, `${M.filter(x=>x.status==='new').length} stored unsent`],
+      ['Strong fit share', M.filter(x=>x.sent_at).length ? Math.round(100*M.filter(x=>x.sent_at && x.score>=75).length/M.filter(x=>x.sent_at).length)+'%' : '—', 'of sent, last 30 d'],
+      ['Feedback', F.length, `usefulness avg ${avg}`],
+      ['Flagged', M.filter(x=>x.flagged_at).length, 'last 30 d'],
+    ];
+    $('kpis').innerHTML = kp.map(([l, n, s]) => `<div class="kpi"><div class="n">${esc(n)}</div><div class="l">${esc(l)}</div><div class="small muted">${esc(s)}</div></div>`).join('');
+  }
+
+  const STATUSPILL = { pending: 'warn', invited: 'info', joined: 'ok', rejected: 'bad', active: 'ok', paused: 'warn' };
+  function paintWaitlist() {
+    const f = $('wlfilter').value;
+    const rows = D.waitlist.filter(r => !f || r.status === f);
+    $('wlcount').textContent = `${rows.length} of ${D.waitlist.length}`;
+    $('wltable').querySelector('tbody').innerHTML = rows.map(r => `<tr>
+      <td class="small muted">${d(r.created_at)}</td><td>${esc(r.first_name||'')}</td><td>${esc(r.email)}</td><td>${esc(r.language||'')}</td>
+      <td class="small">${esc(r.message||'')}</td><td><span class="pill ${STATUSPILL[r.status]||''}">${esc(r.status)}</span>${r.invited_at?`<div class="small muted">${d(r.invited_at)}</div>`:''}</td>
+      <td><input type="text" class="wlnote" data-id="${r.id}" value="${esc(r.note||'')}" placeholder="note" style="width:120px;padding:5px 8px"></td>
+      <td class="row">${r.status==='pending'||r.status==='rejected'?`<button class="btn primary sm" data-act="invite" data-id="${r.id}">Invite</button>`:''}${r.status==='invited'?`<button class="btn sm" data-act="resend" data-id="${r.id}">Resend</button>`:''}${r.status!=='rejected'&&r.status!=='joined'?`<button class="btn sm" data-act="reject" data-id="${r.id}">Reject</button>`:''}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">Nothing here.</td></tr>';
+    $('wltable').querySelectorAll('button[data-act]').forEach(b => b.onclick = async () => {
+      b.disabled = true;
+      try { const j = await call(b.dataset.act, { id: b.dataset.id }); toast(b.dataset.act === 'reject' ? 'Rejected' : (j.resend_id ? 'Invitation sent' : 'Marked invited (email not confirmed)')); await load(); }
+      catch (e) { toast('Failed: ' + e.message); b.disabled = false; }
+    });
+    $('wltable').querySelectorAll('input.wlnote').forEach(inp => inp.onchange = async () => {
+      const { error } = await sb.from('waitlist').update({ note: inp.value }).eq('id', inp.dataset.id);
+      toast(error ? 'Note failed: ' + error.message : 'Note saved');
+    });
+  }
+
+  function paintUsers() {
+    const q = ($('usearch').value || '').toLowerCase();
+    const per = {}; for (const m of D.matches) { const s = per[m.profile_id] ||= { n: 0, saved: 0, flagged: 0 }; if (m.sent_at) s.n++; if (m.saved_at) s.saved++; if (m.flagged_at) s.flagged++; }
+    const rows = D.profiles.filter(p => !q || [p.first_name, p.email, p.target_roles, p.role_title, p.location].join(' ').toLowerCase().includes(q));
+    $('ucount').textContent = `${rows.length} of ${D.profiles.length}`;
+    $('utable').querySelector('tbody').innerHTML = rows.map(p => { const s = per[p.id] || { n: 0, saved: 0, flagged: 0 }; return `<tr>
+      <td class="small muted">${day(p.created_at)}</td><td>${esc(p.first_name||'')}</td><td class="small">${esc(p.email)}</td><td>${esc(p.language||'')}</td>
+      <td class="small">${esc((p.target_roles||'').slice(0,60))}<div class="muted">${esc((p.role_title||'').slice(0,40))}</div></td><td class="small">${esc(p.location||'')}</td><td>${esc(p.years_experience??'')}</td>
+      <td><span class="pill ${STATUSPILL[p.status]||''}">${esc(p.status)}</span>${p.plan&&p.plan!=='free'?` <span class="pill info">${esc(p.plan)}</span>`:''}</td>
+      <td class="small muted">${day(p.onboarded_at)}</td><td class="small muted">${day(p.last_digest_at)}</td><td>${s.n}</td><td>${s.saved}</td><td>${s.flagged}</td>
+      <td class="row"><button class="btn sm" data-act="set_status" data-id="${p.id}" data-st="${p.status==='active'?'paused':'active'}">${p.status==='active'?'Pause':'Activate'}</button><button class="btn sm danger" data-act="delete_user" data-id="${p.id}" data-email="${esc(p.email)}">Delete</button></td></tr>`; }).join('');
+    $('utable').querySelectorAll('button[data-act]').forEach(b => b.onclick = async () => {
+      if (b.dataset.act === 'delete_user') {
+        const typed = prompt(`GDPR purge: deletes the profile, all matches and uploaded files for\n${b.dataset.email}\n\nType the email to confirm:`);
+        if (!typed) return;
+        b.disabled = true;
+        try { const j = await call('delete_user', { profile_id: b.dataset.id, confirm: typed.trim() }); toast(`Deleted (${j.files_deleted} file(s))`); await load(); }
+        catch (e) { toast('Failed: ' + e.message); b.disabled = false; }
+        return;
+      }
+      b.disabled = true;
+      try { await call('set_status', { profile_id: b.dataset.id, status: b.dataset.st }); toast('Status: ' + b.dataset.st); await load(); }
+      catch (e) { toast('Failed: ' + e.message); b.disabled = false; }
+    });
+  }
+
+  function paintMatches() {
+    const days = +$('mwin').value; const since = new Date(Date.now() - days * 864e5).toISOString();
+    const M = D.matches.filter(m => m.created_at >= since), S = M.filter(m => m.sent_at);
+    $('mcount').textContent = `${M.length} stored · ${S.length} sent`;
+    const by = (arr, k) => { const o = {}; for (const x of arr) o[k(x)] = (o[k(x)] || 0) + 1; return Object.entries(o).sort((a, b) => b[1] - a[1]); };
+    const tbl = (title, rows, tot) => `<h2>${title}</h2><table><tbody>${rows.map(([k, n]) => `<tr><td>${esc(k)}</td><td>${n}</td><td class="muted">${tot ? Math.round(100 * n / tot) + '%' : ''}</td></tr>`).join('') || '<tr><td class="muted">—</td></tr>'}</tbody></table>`;
+    $('mstats').innerHTML = tbl('Sent by band', by(S, m => band(m.score)), S.length) + tbl('Sent by source', by(S, m => m.source || '?'), S.length) + tbl('Stored by source (all)', by(M, m => m.source || '?'), M.length);
+  }
+
+  function paintFlags() {
+    const P = Object.fromEntries(D.profiles.map(p => [p.id, p]));
+    const rows = D.matches.filter(m => m.flagged_at).sort((a, b) => (b.flagged_at || '').localeCompare(a.flagged_at || ''));
+    $('ftable').querySelector('tbody').innerHTML = rows.map(m => `<tr><td class="small muted">${d(m.flagged_at)}</td><td class="small">${esc(P[m.profile_id]?.first_name||'')} <span class="muted">${esc(P[m.profile_id]?.email||'')}</span></td><td>${esc(m.title)}</td><td class="small">${esc(m.company||'')}</td><td>${m.score}</td><td>${esc(m.flag_reason||'')}</td><td><a href="${esc(m.url)}" target="_blank" rel="noopener">open</a></td></tr>`).join('') || '<tr><td colspan="7" class="muted">No flags in the last 30 days.</td></tr>';
+  }
+
+  function paintFeedback() {
+    const F = D.feedback; const c = (k) => { const o = {}; for (const r of F) if (r[k] != null) o[r[k]] = (o[r[k]] || 0) + 1; return Object.entries(o).map(([a, b]) => `${a}:${b}`).join(', '); };
+    $('fbsummary').textContent = F.length ? `${F.length} responses · usefulness ${c('usefulness')} · easy ${c('easy')} · format ${c('format_pref')} · pay ${c('would_pay')}` : 'No feedback yet.';
+    $('fbtable').querySelector('tbody').innerHTML = F.map(r => `<tr><td class="small muted">${d(r.created_at)}</td><td>${esc(r.usefulness??'')}</td><td>${esc(r.easy||'')}</td><td>${esc(r.format_pref||'')}</td><td>${esc(r.would_pay||'')}</td><td class="small">${esc(r.liked||'')}</td><td class="small">${esc(r.change_req||'')}</td><td class="small">${esc(r.other||'')}</td><td class="small">${esc(r.email||'')}</td></tr>`).join('');
+  }
+
+  function paintInbox() {
+    $('itable').querySelector('tbody').innerHTML = D.inbox.map(r => `<tr><td class="small muted">${d(r.received_at)}${r.handled?' <span class="pill ok">handled</span>':''}</td><td class="small">${esc(r.from_addr||'')}</td><td class="small">${esc((r.to_addrs||[]).join(', '))}</td><td>${esc(r.subject||'')}</td><td class="small"><details><summary>show</summary>${esc((r.text_body||r.html_body||'').slice(0,2000))}</details></td></tr>`).join('') || '<tr><td colspan="5" class="muted">Empty.</td></tr>';
+  }
+
+  // tabs + controls
+  document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+    for (const t of ['waitlist','users','matches','flags','feedback','inbox']) $('tab-' + t).hidden = t !== b.dataset.tab;
+  });
+  $('wlfilter').onchange = paintWaitlist; $('usearch').oninput = paintUsers; $('mwin').onchange = paintMatches;
+  $('directinvite').onsubmit = async (e) => {
+    e.preventDefault();
+    try { const j = await call('invite_email', { email: $('di_email').value.trim(), first_name: $('di_name').value.trim(), language: $('di_lang').value }); toast(j.resend_id ? 'Invitation sent' : 'Stored; email not confirmed'); $('di_email').value = ''; $('di_name').value = ''; await load(); }
+    catch (err) { toast('Failed: ' + err.message); }
+  };
+  $('send').onclick = async () => {
+    const email = $('email').value.trim().toLowerCase(); if (!email) return;
+    $('send').disabled = true; $('authmsg').textContent = 'Sending…';
+    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href } });
+    $('send').disabled = false; $('authmsg').textContent = error ? 'Could not send: ' + error.message : 'Check your inbox for the link.';
+  };
+  $('signout').onclick = async () => { await sb.auth.signOut(); render(); };
+  sb.auth.onAuthStateChange(() => render());
+  render();
+</script>
+</body>
+</html>
