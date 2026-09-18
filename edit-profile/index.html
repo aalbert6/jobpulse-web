@@ -1,149 +1,270 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-i18n-title="db.title">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="robots" content="noindex">
 <title>JobsPulse — update your info</title>
-<!-- Session-gated profile editor. Requires an active Supabase magic-link session; redirects
-     to the dashboard (to sign in) otherwise. Updates the user's own row by primary key. -->
+<!--
+  DRAFT (2026-09-19) — "Dottie in edit mode". NOT deployed until Albert approves.
+
+  Session-gated (magic link). Dottie greets the user with everything on file as a list of
+  question → answer rows. Tapping a row expands it IN PLACE into the same control the intake
+  uses (chips, town suggestions, cleaned lists, custom salary); save writes that one column via
+  RLS (own row by primary key) and the row collapses with a "saved" tick; Dottie slides next to
+  the row being edited and pulses while saving. Email language is editable; the CV can be
+  replaced (through the `profile` edge function — the bucket is private). Seven languages.
+-->
 <style>
-  :root{ --blue:#0b5cad; --blue-d:#094a8c; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9;
-    --card:#fff; --line:#e3e8ee; --dot:#0b5cad; }
-  @media (prefers-color-scheme: dark){
-    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; --blue-d:#2f7fca; }
-  }
+  :root{ --blue:#0b5cad; --blue-d:#094a8c; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; --green:#1a7f37; --err:#b3261e; }
+  @media (prefers-color-scheme: dark){ :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; --blue-d:#2f7fca; } }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;}
-  a{color:var(--blue);}
-  header.bar{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line);}
-  .bar-in{max-width:720px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
-  .logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:18px;color:var(--blue);letter-spacing:-.01em;text-decoration:none;}
-  .dot{width:11px;height:11px;border-radius:50%;background:var(--dot);box-shadow:0 0 0 5px color-mix(in srgb,var(--dot) 18%,transparent);}
-  .bar-actions a,.bar-actions button{padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:transparent;
-    color:var(--ink);font-weight:600;font-size:13px;cursor:pointer;text-decoration:none;}
-  .bar-actions a:hover,.bar-actions button:hover{border-color:var(--blue);color:var(--blue);}
-  .wrap{max-width:720px;margin:0 auto;padding:26px 20px 72px;}
-  h1{font-size:24px;margin:0 0 4px;letter-spacing:-.01em;}
-  .sub{color:var(--muted);margin:0 0 20px;font-size:14.5px;}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:0 1px 2px rgba(20,32,43,.04);}
-  label{display:block;font-weight:600;font-size:13px;margin:12px 0 4px;}
-  input,textarea,select{width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--line);
-    background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;}
-  textarea{min-height:52px;resize:vertical;}
-  .ro{color:var(--muted);font-size:12.5px;margin:0 0 4px;}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  @media(max-width:520px){.row2{grid-template-columns:1fr;}}
-  .btn{margin-top:2px;padding:12px 20px;border:0;border-radius:9px;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;font-size:15px;}
-  .btn:hover{background:var(--blue-d);} .btn[disabled]{opacity:.55;cursor:default;}
-  .save-row{margin-top:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
-  #msg{font-size:13.5px;color:var(--muted);}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:var(--blue)}
+  header{position:sticky;top:0;z-index:6;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:space-between;padding:14px 20px;}
+  .brand{font-weight:800;font-size:16px;color:var(--blue);text-decoration:none}
+  .hdr{display:flex;gap:8px;align-items:center}
+  #lang-switch,.hbtn{font:inherit;font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;text-decoration:none}
+
+  .orb{--s:min(70vmin,560px);position:fixed;left:50%;top:50%;width:var(--s);height:var(--s);z-index:3;pointer-events:none;
+    transform:translate(-50%,-50%) scale(0);transition:transform .8s cubic-bezier(.2,.8,.2,1);}
+  .core{position:relative;overflow:hidden;width:100%;height:100%;border-radius:50%;
+    background:radial-gradient(circle at 38% 34%, color-mix(in srgb,var(--blue) 82%, white) 0%, var(--blue) 45%, var(--blue-d) 100%);
+    box-shadow:0 0 0 calc(var(--s)*.05) color-mix(in srgb,var(--blue) 12%,transparent), 0 14px 40px color-mix(in srgb,var(--blue) 30%,transparent);
+    animation:breathe 4.5s ease-in-out infinite;}
+  .core::after{content:"";position:absolute;inset:0;border-radius:50%;opacity:0;background:radial-gradient(circle at 80% 50%, rgba(255,255,255,.55) 0%, rgba(255,255,255,.18) 18%, transparent 38%);transition:opacity .4s}
+  .thinking .core{animation:heartbeat 1.15s ease-in-out infinite} .thinking .core::after{opacity:1;animation:orbit 1.4s linear infinite}
+  .core.happy{animation:pop .9s cubic-bezier(.2,.9,.3,1.35) 1, breathe 4.5s ease-in-out .9s infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+  @keyframes heartbeat{0%{transform:scale(1)}18%{transform:scale(1.07)}36%{transform:scale(.98)}54%{transform:scale(1.05)}100%{transform:scale(1)}}
+  @keyframes orbit{to{transform:rotate(360deg)}}
+  @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.25)}100%{transform:scale(1)}}
+  @media (prefers-reduced-motion: reduce){ .core,.core::after{animation:none !important} .orb{transition:none} }
+
+  main{position:relative;z-index:2;max-width:720px;margin:0 auto;padding:26px 20px 80px;}
+  .greet{display:grid;grid-template-columns:auto 1fr;column-gap:14px;align-items:start;margin:8px 0 6px;}
+  .gslot{width:1.15em;height:1.15em;font-size:clamp(22px,3.2vw,30px);margin-top:.03em}
+  .greet h1{font-size:clamp(22px,3.2vw,30px);font-weight:800;letter-spacing:-.02em;line-height:1.2;margin:0}
+  .hint{color:var(--muted);font-size:14px;margin:0 0 18px 0}
+  .ro{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+  .sec{font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px}
+  .row{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:0 0 8px;overflow:hidden;opacity:0;transform:translateY(8px);transition:opacity .4s ease, transform .4s ease, box-shadow .2s;}
+  .row.in{opacity:1;transform:none}
+  .row .head{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:13px 16px;cursor:pointer;}
+  .row .head:hover{background:color-mix(in srgb,var(--blue) 5%,transparent)}
+  .row .q{font-size:13px;color:var(--muted);margin:0 0 2px}
+  .row .a{font-size:15.5px;font-weight:600;margin:0;color:var(--ink);white-space:pre-wrap}
+  .row .a.empty{color:var(--muted);font-weight:400;font-style:italic}
+  .row .tick{font-size:12px;color:var(--green);font-weight:700;opacity:0;transition:opacity .3s} .row .tick.on{opacity:1}
+  .row .edit{display:none;padding:4px 16px 14px;border-top:1px solid var(--line)}
+  .row.open{box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 18%,transparent)} .row.open .edit{display:block} .row.open .head{cursor:default}
+  .row.open .head{display:none}
+  .edit .eq{display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:start;margin:8px 0 12px}
+  .edit .slot{width:1.15em;height:1.15em;font-size:clamp(18px,2.6vw,22px);margin-top:.05em}
+  .edit .eq p{font-size:clamp(18px,2.6vw,22px);font-weight:800;letter-spacing:-.01em;margin:0;line-height:1.2}
+  .edit input[type=text],.edit input[type=email],.edit input[type=number],.edit textarea{width:100%;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);outline:none}
+  .edit textarea{min-height:90px;resize:none}
+  .edit :is(input,textarea):focus{border-color:var(--blue);box-shadow:0 0 0 4px color-mix(in srgb,var(--blue) 15%,transparent)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chips label{padding:9px 15px;border-radius:999px;background:var(--bg);color:var(--ink);border:1.5px solid var(--line);cursor:pointer;font-weight:600;font-size:14px}
+  .chips label:hover{border-color:var(--blue)} .chips label:has(input:checked){background:var(--blue);color:#fff;border-color:var(--blue)}
+  .chips input{position:absolute;opacity:0;pointer-events:none}
+  .custom{margin-top:10px;max-width:240px} .custom[hidden]{display:none}
+  .acts{display:flex;gap:16px;align-items:center;margin-top:12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+  .acts button{background:none;border:0;font:inherit;font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:6px 0;color:var(--muted)}
+  .acts button.go{color:var(--blue);font-weight:800}
+  .err{font-size:13px;color:#fff;background:var(--err);display:inline-block;padding:4px 10px;border-radius:8px;margin-top:8px;opacity:0;transition:opacity .2s} .err.on{opacity:1}
+  .pick{background:var(--blue);color:#fff;border:0;border-radius:999px;padding:10px 18px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+  .fhint{font-size:12.5px;color:var(--muted);margin-left:10px}
+  .auth{max-width:420px;margin:60px auto;text-align:center;color:var(--muted)}
 </style>
 </head>
 <body>
-
-<header class="bar">
-  <div class="bar-in">
-    <a class="logo" href="/" aria-label="JobsPulse home"><span class="dot"></span>JobsPulse</a>
-    <div class="bar-actions">
-      <a href="/dashboard/">← Matches</a>
-      <button id="signout" hidden>Sign out</button>
-    </div>
-  </div>
-</header>
-
-<div class="wrap">
-  <div id="gate">Checking your session…</div>
+<header><a class="brand" href="/">● JobsPulse</a><div class="hdr"><a class="hbtn" href="/dashboard/" data-i18n="nav.dashboard">Dashboard</a><select id="lang-switch" aria-label="Language"></select></div></header>
+<div class="orb" id="orb"><div class="core" id="core"></div></div>
+<main>
+  <div class="auth" id="auth" hidden><p data-i18n="jv.signin"></p><p><a href="/dashboard/" data-i18n="nav.signin"></a></p></div>
   <div id="app" hidden>
-    <h1>Update your info</h1>
-    <p class="sub">Edit your profile — your next digest will use the updated details.</p>
-    <div class="card" id="form"></div>
+    <div class="greet"><div class="gslot" id="gslot"></div><h1 id="title"></h1></div>
+    <p class="hint" data-i18n="jv.edit_hint"></p>
+    <p class="ro" id="ro"></p>
+    <div id="rows"></div>
   </div>
-</div>
-
+</main>
+<script src="/assets/i18n.js"></script>
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
   const SUPABASE_URL = 'https://rkuiprrginjullnzskkg.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_jtWlWOLHLw-ebE0BcfHifA_D9PIQy8O';
   const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const T = k => (window.jpt ? window.jpt(k) : k);
   const $ = id => document.getElementById(id);
-  const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-  // Dropdown options mirror the intake form.
-  const SELECTS = {
-    work_style: ['', 'On-site', 'Hybrid', 'Remote', 'No preference'],
-    work_authorization: ['', 'EU — no sponsorship needed', 'Needs visa sponsorship', 'Remote only', 'Other / will explain'],
-  };
-  const PROFILE_FIELDS = [
-    ['first_name','First name','input'], ['role_title','Current role','input'],
-    ['years_experience','Years of experience','input'], ['location','Location','input'],
-    ['commute','Commute / relocation','input'], ['work_style','Work style','select'],
-    ['salary_floor','Salary floor (€/yr)','input'], ['work_authorization','Work authorization','select'],
-    ['target_roles','Target roles','textarea'], ['target_companies','Target companies','textarea'],
-    ['skills','Skills','textarea'], ['learning_skills','Learning / building','textarea'],
-    ['career_goal','Career goal','textarea'], ['energizers','What energises you','textarea'],
-    ['deal_breakers','Deal-breakers','textarea'], ['thrive_environment','Where you thrive','textarea'],
-    ['drains_energy','What drains you','textarea'], ['cv_or_linkedin','CV / LinkedIn URL','textarea'],
+  // Same questions, options and normalisers as the intake (site/join-v2.html), keyed by column.
+  const LANGS = [['en','English'],['es','Español'],['ca','Català'],['de','Deutsch'],['fr','Français'],['ja','日本語'],['zh','中文']];
+  const TOWNS = ["Barcelona","Girona","Madrid","Blanes","Lloret de Mar","Tossa de Mar","Malgrat de Mar","Calella","Pineda de Mar","Arenys de Mar","Mataró","Figueres","Sabadell","Terrassa","Granollers","Vic","Manresa","Vilanova i la Geltrú","Reus","Tarragona","Sitges","Lleida","València","Sevilla","Bilbao","Zaragoza","Málaga","Palma","Alicante","Murcia","Sant Cugat del Vallès","Badalona","L'Hospitalet de Llobregat","Cornellà de Llobregat","Esplugues de Llobregat","Sant Just Desvern","Lliçà d'Amunt","Mollet del Vallès","Rubí","Castelldefels","Gavà","Viladecans","El Prat de Llobregat","Sant Boi de Llobregat","Cerdanyola del Vallès","Santa Coloma de Gramenet","Olot","Palamós","Palafrugell","Sant Feliu de Guíxols","Santa Coloma de Farners","Banyoles","Salt","Cardedeu","Martorell","Igualada","Vilafranca del Penedès","El Vendrell","Tortosa"];
+  const SECTIONS = [
+    ['in.sec.about', [
+      {name:'first_name', type:'text', q:'jv.name', required:true, norm:'name'},
+      {name:'language', type:'chips', q:'jv.lang', required:true, options:LANGS},
+      {name:'role_title', type:'text', q:'jv.role', ph:'in.role_ph', required:true, norm:'title'},
+      {name:'years_experience', type:'chips', q:'jv.years', required:true, options:[['0','jv.y_lt1'],['1','jv.y_1_2'],['3','jv.y_3_5'],['6','jv.y_6_9'],['10','jv.y_10']], snap:[0,1,3,6,10]},
+      {name:'cv', type:'cv', q:'jv.cvfile'},
+    ]],
+    ['in.sec.looking', [
+      {name:'target_roles', type:'text', q:'jv.roles', ph:'in.roles_ph', required:true, norm:'list6'},
+      {name:'skills', type:'text', q:'jv.skills', ph:'in.skills_ph', required:true, norm:'list12'},
+      {name:'target_companies', type:'text', q:'jv.companies', ph:'in.companies_ph', norm:'list8'},
+      {name:'learning_skills', type:'text', q:'jv.learning', ph:'in.learning_ph', norm:'list8'},
+      {name:'salary_floor', type:'chips', q:'jv.salary', custom:'jv.s_other', options:[['','jv.s_none'],['€20,000','€20k'],['€25,000','€25k'],['€30,000','€30k'],['€40,000','€40k'],['€50,000','€50k']]},
+      {name:'deal_breakers', type:'text', q:'jv.dealbreakers', ph:'in.dealbreakers_ph', norm:'trim'},
+    ]],
+    ['in.sec.logistics', [
+      {name:'location', type:'town', q:'jv.location', ph:'in.location_ph', required:true, norm:'title'},
+      {name:'work_style', type:'chips', q:'jv.workstyle', required:true, options:[['On-site','in.ws.onsite'],['Hybrid','in.ws.hybrid'],['Remote','in.ws.remote'],['No preference','in.ws.nopref']]},
+      {name:'commute', type:'chips', q:'jv.commute', required:true, options:[['up to 30 min','jv.c_30'],['up to 1 hour','jv.c_60'],['up to 2 hours','jv.c_120'],['open to relocating','jv.c_reloc']], keepCurrent:true},
+      {name:'work_authorization', type:'chips', q:'jv.workauth', required:true, options:[['EU — no sponsorship needed','in.wa.eu'],['Needs visa sponsorship','in.wa.visa'],['Remote only','in.wa.remote'],['Other / will explain','in.wa.other']]},
+    ]],
+    ['in.sec.howwork', [
+      {name:'career_goal', type:'long', q:'jv.grow', ph:'in.grow_ph', norm:'trim'},
+      {name:'energizers', type:'long', q:'jv.energize', ph:'in.energize_ph', norm:'trim'},
+      {name:'thrive_environment', type:'long', q:'jv.thrive', ph:'in.thrive_ph', norm:'trim'},
+      {name:'drains_energy', type:'long', q:'jv.drains', ph:'in.drains_ph', norm:'trim'},
+      {name:'cv_or_linkedin', type:'long', q:'jv.cv', ph:'in.cvtext_ph', norm:'trim'},
+    ]],
   ];
+  const STEPS = SECTIONS.flatMap(s => s[1]);
+  const list = (v, cap) => { const seen = {}, out = []; v.split(/[,;\n]+/).forEach(x => { x = x.trim().replace(/\s+/g,' ').replace(/^[-•·]\s*/,''); const k = x.toLowerCase(); if (x && !seen[k]) { seen[k] = 1; out.push(x); } }); return out.slice(0, cap).join(', '); };
+  const NORM = { name: v => v.trim().replace(/\s+/g,' ').slice(0,80), title: v => v.trim().replace(/\s+/g,' ').slice(0,120), trim: v => v.trim().slice(0,600), list6: v => list(v,6), list8: v => list(v,8), list12: v => list(v,12) };
 
-  let myEmail = null, myProfile = null;
+  let profile = null, email = '', cv = null, openRow = null;
+  const orb = $('orb'), core = $('core');
+  const BASE = () => Math.min(Math.min(window.innerWidth, window.innerHeight) * 0.7, 560);
+  function placeAt(el) {  // Dottie glides to (and scales to) a slot element
+    if (!el) return; const r = el.getBoundingClientRect(), S = BASE();
+    const dx = r.left + r.width/2 - window.innerWidth/2, dy = r.top + r.height/2 - window.innerHeight/2;
+    orb.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${r.width / S})`;
+  }
+  function placeHome(){ placeAt(openRow ? openRow.querySelector('.slot') : $('gslot')); }
+  window.addEventListener('resize', placeHome); window.addEventListener('scroll', placeHome, {passive:true});
+  if (window.ResizeObserver) new ResizeObserver(placeHome).observe(document.body);
 
-  function control(name, type, val) {
-    const v = esc(val == null ? '' : String(val));
-    if (type === 'textarea') return `<textarea id="pf-${name}">${v}</textarea>`;
-    if (type === 'select') {
-      let opts = SELECTS[name].slice();
-      if (val && !opts.includes(String(val))) opts = [String(val), ...opts]; // keep existing free-text value
-      const o = opts.map(x => `<option${x===String(val||'')?' selected':''}>${esc(x)||'Select…'}</option>`).join('');
-      return `<select id="pf-${name}">${o}</select>`;
+  // ── display value for a row ──
+  function display(s) {
+    if (s.type === 'cv') return cv && cv.has_cv ? `${T('jv.cv_current')}${cv.name ? ' · ' + cv.name : ''}` : T('jv.cv_none');
+    const v = profile[s.name];
+    if (v == null || v === '') return '';
+    if (s.type === 'chips') { const o = s.options.find(o => String(o[0]) === String(v)); if (o) return o[1].includes('.') ? T(o[1]) : o[1]; if (s.name === 'years_experience') return String(v); return String(v); }
+    return String(v);
+  }
+  function rowHtml(s) {
+    const d = display(s);
+    return `<div class="row" data-name="${s.name}"><div class="head"><div><p class="q">${esc(T(s.q))}</p><p class="a ${d ? '' : 'empty'}">${esc(d || T('jv.empty'))}</p></div><span class="tick">✓ ${esc(T('jv.saved'))}</span></div><div class="edit"></div></div>`;
+  }
+  function paint() {
+    $('title').textContent = T('jv.edit_title').replace('{name}', profile.first_name || '');
+    $('ro').textContent = T('jv.edit_email').replace('{email}', email);
+    $('rows').innerHTML = SECTIONS.map(([sec, steps]) => `<p class="sec">${esc(T(sec).replace(/<[^>]+>/g,''))}</p>` + steps.map(rowHtml).join('')).join('');
+    document.querySelectorAll('.row').forEach((r, i) => { setTimeout(() => r.classList.add('in'), 40 + i * 35); r.querySelector('.head').onclick = () => open(r); });
+    setTimeout(placeHome, 60);
+  }
+
+  // ── editing one row in place ──
+  function open(r) {
+    if (openRow === r) return;
+    if (openRow) close(openRow);
+    const s = STEPS.find(x => x.name === r.dataset.name); openRow = r; r.classList.add('open');
+    const v = s.type === 'cv' ? '' : (profile[s.name] ?? '');
+    let ctl = '';
+    const ph = s.ph ? esc(T(s.ph)) : '';
+    if (s.type === 'text') ctl = `<input type="text" placeholder="${ph}" value="${esc(v)}">`;
+    else if (s.type === 'town') ctl = `<input type="text" list="towns" autocomplete="off" placeholder="${ph}" value="${esc(v)}"><datalist id="towns">${TOWNS.map(t => `<option value="${esc(t)}">`).join('')}</datalist>`;
+    else if (s.type === 'long') ctl = `<textarea placeholder="${ph}">${esc(v)}</textarea>`;
+    else if (s.type === 'chips') {
+      let cur = String(v ?? '');
+      if (s.snap && cur !== '') { const n = parseInt(cur, 10); cur = String(s.snap.reduce((a, b) => Math.abs(b - n) <= Math.abs(a - n) ? b : a)); }
+      const known = s.options.some(o => String(o[0]) === cur);
+      const isCustom = !!s.custom && cur !== '' && !known;
+      ctl = `<div class="chips">` + s.options.map(o => `<label><input type="radio" name="c" value="${esc(o[0])}" ${String(o[0]) === cur ? 'checked' : ''}>${o[1].includes('.') ? esc(T(o[1])) : esc(o[1])}</label>`).join('')
+        + (s.keepCurrent && cur && !known ? `<label><input type="radio" name="c" value="${esc(cur)}" checked>${esc(cur)}</label>` : '')
+        + (s.custom ? `<label><input type="radio" name="c" value="__custom" ${isCustom ? 'checked' : ''}>${esc(T(s.custom))}</label>` : '') + `</div>`
+        + (s.custom ? `<div class="custom" ${isCustom ? '' : 'hidden'}><input type="number" min="0" step="1000" placeholder="${esc(T('jv.s_other_ph'))}" value="${isCustom ? cur.replace(/[^0-9]/g,'') : ''}"></div>` : '');
+    } else if (s.type === 'cv') ctl = `<button type="button" class="pick">${esc(T('jv.cv_replace'))}</button><span class="fhint">${esc(T('jv.cvfile_hint'))}</span><input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" hidden>`;
+    r.querySelector('.edit').innerHTML = `<div class="eq"><div class="slot"></div><p>${esc(T(s.q))}</p></div>${ctl}<div class="err"></div><div class="acts"><button type="button" class="go">${esc(T('jv.save'))}</button><button type="button" class="cancel">${esc(T('jv.cancel'))}</button></div>`;
+    const e = r.querySelector('.edit');
+    e.querySelector('.cancel').onclick = () => close(r);
+    e.querySelector('.go').onclick = () => save(r, s);
+    e.querySelectorAll('input[type=radio]').forEach(x => x.onchange = () => { const c = e.querySelector('.custom'); if (c) { c.hidden = x.value !== '__custom'; if (!c.hidden) c.querySelector('input').focus(); } });
+    if (s.type === 'cv') { const inp = e.querySelector('input[type=file]'); e.querySelector('.pick').onclick = () => inp.click(); inp.onchange = () => uploadCv(r, inp.files[0]); e.querySelector('.go').hidden = true; }
+    e.addEventListener('keydown', ev => { if (ev.key === 'Enter' && !(ev.shiftKey && s.type === 'long') && ev.target.tagName !== 'BUTTON' && s.type !== 'long') { ev.preventDefault(); save(r, s); } if (ev.key === 'Escape') close(r); });
+    // bring the row into view, then let Dottie glide to it and focus the control
+    r.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    core.classList.remove('happy'); void core.offsetWidth; placeHome();
+    setTimeout(() => { placeHome(); const f = e.querySelector('input[type=text],input[type=number],textarea'); if (f) f.focus({ preventScroll: true }); }, 450);
+  }
+  function close(r) { r.classList.remove('open'); r.querySelector('.edit').innerHTML = ''; if (openRow === r) openRow = null; placeHome(); }
+  function fail(r, msg) { const e = r.querySelector('.err'); e.textContent = msg; e.classList.add('on'); }
+  async function save(r, s) {
+    const e = r.querySelector('.edit'); let val;
+    if (s.type === 'chips') {
+      const sel = e.querySelector('input[type=radio]:checked'); val = sel ? sel.value : null;
+      if (val === '__custom') { const n = parseInt(e.querySelector('.custom input').value, 10); if (!n || n <= 0) return fail(r, T('jv.err_required')); val = '€' + n.toLocaleString('en-US'); }
+      if (s.required && val == null) return fail(r, T('jv.err_required'));
+      if (s.name === 'years_experience') val = parseInt(val, 10);
+      if (val === '') val = null;
+    } else {
+      val = (e.querySelector('input,textarea').value || '').trim(); if (s.norm) val = NORM[s.norm](val);
+      if (s.required && !val) return fail(r, T('jv.err_required'));
+      if (!val) val = null;
     }
-    return `<input id="pf-${name}" value="${v}">`;
+    orb.classList.add('thinking');
+    const { error } = await sb.from('profiles').update({ [s.name]: val }).eq('id', profile.id);
+    orb.classList.remove('thinking');
+    if (error) return fail(r, error.message);
+    profile[s.name] = val;
+    if (s.name === 'language') { const sel = $('lang-switch'); if (sel) { sel.value = val; sel.dispatchEvent(new Event('change', {bubbles:true})); } }
+    done(r, s);
   }
-  function field([name,label,type]) {
-    return `<label for="pf-${name}">${label}</label>${control(name,type,(myProfile||{})[name])}`;
+  async function uploadCv(r, file) {
+    if (!file) return;
+    const { data: { session } } = await sb.auth.getSession();
+    const fd = new FormData(); fd.append('action', 'upload_cv'); fd.append('file', file);
+    orb.classList.add('thinking');
+    const res = await fetch(SUPABASE_URL + '/functions/v1/profile', { method: 'POST', headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }, body: fd });
+    const j = await res.json().catch(() => ({}));
+    orb.classList.remove('thinking');
+    if (!res.ok) return fail(r, j.error || ('HTTP ' + res.status));
+    cv = { has_cv: true, name: j.name }; done(r, STEPS.find(x => x.name === 'cv'));
   }
-
-  function buildForm() {
-    $('form').innerHTML =
-      `<p class="ro">Signed in as <strong>${esc(myEmail||'')}</strong> — your email (sign-in ID) can't be changed here.</p>`
-      + `<div class="row2">${field(PROFILE_FIELDS[0])}${field(PROFILE_FIELDS[1])}</div>`
-      + `<div class="row2">${field(PROFILE_FIELDS[2])}${field(PROFILE_FIELDS[3])}</div>`
-      + `<div class="row2">${field(PROFILE_FIELDS[4])}${field(PROFILE_FIELDS[5])}</div>`
-      + `<div class="row2">${field(PROFILE_FIELDS[6])}${field(PROFILE_FIELDS[7])}</div>`
-      + PROFILE_FIELDS.slice(8).map(field).join('')
-      + `<div class="save-row"><button class="btn" id="save">Save changes</button><span id="msg"></span></div>`;
-    $('save').onclick = save;
-  }
-
-  async function save() {
-    if (!myProfile || !myProfile.id) { $('msg').textContent = 'Could not load your profile — refresh.'; return; }
-    const obj = {};
-    for (const [name] of PROFILE_FIELDS) {
-      let val = $('pf-'+name).value.trim();
-      if (name === 'years_experience') { const n = parseInt(val,10); obj[name] = Number.isNaN(n) ? null : n; }
-      else obj[name] = val || null;
-    }
-    $('save').disabled = true; $('msg').textContent = 'Saving…';
-    const { error } = await sb.from('profiles').update(obj).eq('id', myProfile.id); // update own row by primary key
-    $('save').disabled = false;
-    if (error) { $('msg').textContent = 'Could not save: ' + esc(error.message); return; }
-    myProfile = { ...myProfile, ...obj };
-    $('msg').textContent = 'Saved ✓ — your next digest will use the updated info.';
+  function done(r, s) {
+    close(r);
+    const d = display(s); const a = r.querySelector('.a'); a.textContent = d || T('jv.empty'); a.classList.toggle('empty', !d);
+    const t = r.querySelector('.tick'); t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2200);
+    core.classList.remove('happy'); void core.offsetWidth; core.classList.add('happy');
   }
 
   async function init() {
     const { data: { session } } = await sb.auth.getSession();
-    if (!session) { location.replace('/dashboard/'); return; }  // gate: no session -> sign in on the dashboard
-    myEmail = session.user.email;
+    if (!session) { $('auth').hidden = false; return; }
+    email = session.user.email;
     const { data: prof } = await sb.from('profiles').select('*').limit(1).maybeSingle();
-    myProfile = prof || null;
-    $('gate').hidden = true; $('app').hidden = false; $('signout').hidden = false;
-    buildForm();
+    if (!prof) { $('auth').hidden = false; return; }
+    profile = prof; $('app').hidden = false;
+    setTimeout(() => placeHome(), 80);
+    try {
+      const res = await fetch(SUPABASE_URL + '/functions/v1/profile', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }, body: JSON.stringify({ action: 'cv_status' }) });
+      cv = res.ok ? await res.json() : null;
+    } catch (e) { cv = null; }
+    paint();
   }
-  $('signout').onclick = async () => { await sb.auth.signOut(); location.replace('/dashboard/'); };
-  init();
+  document.addEventListener('jp:lang', () => { if (profile) { const o = openRow && openRow.dataset.name; paint(); if (o) open(document.querySelector(`.row[data-name="${o}"]`)); } });
+  // preview hook: ?demo=1 renders with a sample profile and no session (local review only)
+  if (new URLSearchParams(location.search).get('demo') === '1') {
+    profile = { id: 'demo', first_name: 'Albert', language: 'ca', role_title: 'Agentic AI Engineer', years_experience: 3, target_roles: 'Data Analyst, Analytics Engineer, AI Engineer', skills: 'Python, SQL, JavaScript, LLMs, RAG', target_companies: 'Apple, IBM, Amazon, Google', learning_skills: '', salary_floor: '€35,000', deal_breakers: '', location: 'Barcelona', work_style: 'Hybrid', commute: 'up to 1 hour', work_authorization: 'EU — no sponsorship needed', career_goal: 'Grow into a lead role', energizers: 'Building things', thrive_environment: '', drains_energy: 'Unclear priorities', cv_or_linkedin: '' };
+    email = 'albert@example.com'; cv = { has_cv: true, name: 'cv_albert.pdf' }; $('app').hidden = false; paint();
+  } else init();
 </script>
 </body>
 </html>
