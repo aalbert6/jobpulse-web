@@ -249,7 +249,7 @@
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { $('auth').hidden = false; return; }
     email = session.user.email;
-    const { data: prof } = await sb.from('profiles').select('*').limit(1).maybeSingle();
+    const { data: prof } = await sb.from('profiles').select('*').eq('email', session.user.email.toLowerCase()).limit(1).maybeSingle();  // own row only — admins can read every row
     if (!prof) { $('auth').hidden = false; return; }
     profile = prof; $('app').hidden = false;
     setTimeout(() => placeHome(), 80);

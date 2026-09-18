@@ -222,20 +222,23 @@
     const inn = !!session;
     $('auth').hidden = inn; $('app').hidden = !inn; $('signout').hidden = !inn; $('editbtn').hidden = !inn;
     if (!inn) return;
+    // Always scope to the signed-in user's OWN profile — never rely on RLS alone: an admin
+    // account can read every row (migration 015), and without this filter it saw everyone's
+    // matches (2026-09-19 incident).
+    const { data: prof, error: perr } = await sb.from('profiles').select('id,location').eq('email', session.user.email.toLowerCase()).limit(1).maybeSingle();
+    if (perr || !prof) { $('matches').innerHTML = '<div class="card">' + esc(T('db.msg_load_err') + (perr ? perr.message : 'no profile')) + '</div>'; return; }
+    ME = prof.id; HOME = prof.location || '';
     const { data, error } = await sb.from('matches')
       .select('id,title,company,location,url,score,reasons,saved_at,flagged_at,flag_reason,source,created_at')
+      .eq('profile_id', ME)
       .order('score', { ascending: false });
     if (error) { $('matches').innerHTML = '<div class="card">' + esc(T('db.msg_load_err') + error.message) + '</div>'; return; }
     ALL = data || [];
-    try {  // own profile row only (RLS) — for the "~35 km" hint on off-city cards
-      const { data: prof } = await sb.from('profiles').select('location').limit(1);
-      HOME = (prof && prof[0] && prof[0].location) || '';
-    } catch { HOME = ''; }
     paint();
   }
 
   // ── Distance hint (feedback: "show the distance") — same offline town table as engine/geo.py
-  let HOME = '';
+  let HOME = '', ME = null;
   const COORDS = {"barcelona":[41.3874,2.1686],"girona":[41.9794,2.8214],"madrid":[40.4168,-3.7038],"blanes":[41.674,2.7903],"lloret de mar":[41.6996,2.8455],"tossa de mar":[41.7196,2.9313],"malgrat de mar":[41.6466,2.7413],"calella":[41.6147,2.6577],"pineda de mar":[41.627,2.69],"arenys de mar":[41.582,2.55],"mataro":[41.5381,2.4445],"figueres":[42.2662,2.9615],"sabadell":[41.5463,2.1086],"terrassa":[41.561,2.0089],"granollers":[41.6083,2.2886],"vic":[41.9303,2.2545],"manresa":[41.7287,1.8261],"vilanova i la geltru":[41.224,1.7257],"reus":[41.156,1.1069],"tarragona":[41.1189,1.2445],"sitges":[41.2372,1.8059],"lleida":[41.6176,0.62],"valencia":[39.4699,-0.3763],"sevilla":[37.3891,-5.9845],"bilbao":[43.263,-2.935],"zaragoza":[41.6488,-0.8891],"malaga":[36.7213,-4.4214],"palma":[39.5696,2.6502],"alicante":[38.3452,-0.481],"murcia":[37.9922,-1.1307],"sant cugat del valles":[41.4728,2.0863],"sant cugat":[41.4728,2.0863],"badalona":[41.45,2.2474],"hospitalet de llobregat":[41.3596,2.1],"l'hospitalet de llobregat":[41.3596,2.1],"cornella de llobregat":[41.356,2.07],"esplugues de llobregat":[41.377,2.088],"sant just desvern":[41.383,2.07],"llica d'amunt":[41.608,2.238],"mollet del valles":[41.54,2.213],"rubi":[41.493,2.033],"castelldefels":[41.28,1.976],"gava":[41.306,2.001],"viladecans":[41.315,2.019],"el prat de llobregat":[41.326,2.095],"sant boi de llobregat":[41.343,2.037],"cerdanyola del valles":[41.491,2.14],"santa coloma de gramenet":[41.4515,2.208],"olot":[42.181,2.49],"palamos":[41.846,3.129],"palafrugell":[41.917,3.163],"sant feliu de guixols":[41.783,3.028],"santa coloma de farners":[41.862,2.665],"banyoles":[42.119,2.766],"salt":[41.974,2.791],"cardedeu":[41.64,2.357],"martorell":[41.474,1.93],"igualada":[41.579,1.617],"vilafranca del penedes":[41.346,1.699],"el vendrell":[41.22,1.534],"tortosa":[40.8126,0.5211],"amsterdam":[52.3676,4.9041]};
   const normTown = s => (s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
   const splitTowns = s => normTown(s).split(/\s*(?:,|;|\/|&|\+|\bor\b|\band\b|\bo\b|\bi\b|\by\b)\s*/)
@@ -316,7 +319,7 @@
     const m = ALL.find(x => x.id === id); if (!m) return;
     const on = !m.saved_at;
     const now = on ? new Date().toISOString() : null;
-    await sb.from('matches').update({ saved_at: now, status: on ? 'saved' : 'sent' }).eq('id', id);
+    await sb.from('matches').update({ saved_at: now, status: on ? 'saved' : 'sent' }).eq('id', id).eq('profile_id', ME);
     m.saved_at = now;  // update in place, keep filter/sort
     paint();
   }
@@ -345,7 +348,7 @@
   $('flagcancel').onclick = () => dlg.close();
   $('flagunflag').onclick = async () => {
     const m = ALL.find(x => x.id === flagId);
-    await sb.from('matches').update({ flagged_at: null, flag_reason: null }).eq('id', flagId);
+    await sb.from('matches').update({ flagged_at: null, flag_reason: null }).eq('id', flagId).eq('profile_id', ME);
     if (m) { m.flagged_at = null; m.flag_reason = null; }
     dlg.close(); paint();
   };
@@ -356,7 +359,7 @@
     const reason = note ? `${chip}: ${note}` : chip;
     const now = new Date().toISOString();
     $('flagsend').disabled = true;
-    await sb.from('matches').update({ flagged_at: now, flag_reason: reason }).eq('id', flagId);
+    await sb.from('matches').update({ flagged_at: now, flag_reason: reason }).eq('id', flagId).eq('profile_id', ME);
     const m = ALL.find(x => x.id === flagId); if (m) { m.flagged_at = now; m.flag_reason = reason; }
     dlg.close(); paint();
   });
