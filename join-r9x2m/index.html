@@ -2,293 +2,361 @@
 <html lang="en" data-i18n-title="in.title">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="noindex">
 <title>JobsPulse — set up your profile</title>
 <!--
-  PRODUCT INTAKE FORM. Localized EN/ES/CA via /assets/i18n.js (data-i18n / data-i18n-ph;
-  dropdown OPTION VALUES stay canonical English so stored data is language-stable — only the
-  displayed text translates). The `action` points at the DPA-covered EU intake function.
-  Design principles: data minimization, explicit opt-in consent (submit disabled until ticked),
-  privacy notice linked before submission, honeypot.
+  DRAFT v2 (task 3, 2026-09-18) — conversational intake. NOT deployed: Albert reviews first.
+
+  The JobsPulse dot fills most of the page and is always alive: it breathes, it swells when it
+  asks, it ripples while it "thinks", and it softens when you answer. The page opens with the dot
+  growing in and a one-line intro, then the first question ("How should we call you?"). One
+  question at a time, written as a conversation (jv.* strings, seven languages), the answer box
+  sitting on the dot, and the navigation kept discreet: a thin arrow row under the answer, a
+  hairline progress bar, Enter to continue, Esc to go back. The last step (consent) is small text
+  with a quiet button, not a form. Same fields, same `intake` edge function, same invite token
+  as intake.html. Progress survives a reload (sessionStorage).
 -->
 <style>
-  :root{ --blue:#0b5cad; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; }
-  @media (prefers-color-scheme: dark){
-    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; }
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;}
-  .wrap{max-width:600px;margin:0 auto;padding:40px 22px 70px;}
-  h1{font-size:28px;margin:0 0 6px;letter-spacing:-.01em;}
-  .sub{color:var(--muted);margin:0 0 26px;}
-  .topbar{display:flex;justify-content:flex-end;margin:-24px 0 6px;}
-  #lang-switch{font:inherit;font-size:13px;color:var(--muted);background:var(--card);
-    border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
-  .section{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
-    color:var(--blue);margin:30px 0 4px;padding-bottom:6px;border-bottom:2px solid var(--line);}
-  .section:first-of-type{margin-top:6px;}
-  label{display:block;font-weight:600;font-size:14px;margin:18px 0 6px;}
-  .hint{font-weight:400;color:var(--muted);font-size:12.5px;}
-  input,select,textarea{width:100%;padding:12px 14px;font-size:15px;border-radius:9px;
-    border:1px solid var(--line);background:var(--card);color:var(--ink);font-family:inherit;}
-  textarea{min-height:96px;resize:vertical;}
-  .row{display:grid;gap:12px;grid-template-columns:1fr 1fr;}
-  @media(max-width:480px){.row{grid-template-columns:1fr;}}
-  .consent{display:flex;gap:10px;align-items:flex-start;margin:26px 0 6px;
-    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
-  .consent input{width:auto;margin-top:3px;}
-  .consent label{margin:0;font-weight:400;font-size:13.5px;color:var(--ink);}
-  button{margin-top:18px;width:100%;padding:14px;font-size:16px;font-weight:600;border:0;
-    border-radius:10px;background:var(--blue);color:#fff;cursor:pointer;}
-  button:disabled{opacity:.45;cursor:not-allowed;}
-  .note{font-size:13px;color:var(--muted);margin-top:12px;text-align:center;}
-  a{color:var(--blue);}
-  fieldset{border:0;padding:0;margin:0;}
+  :root{ --blue:#0b5cad; --blue-d:#094a8c; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; --err:#b3261e; }
+  @media (prefers-color-scheme: dark){ :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; --blue-d:#2f7fca; } }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden;}
+  a{color:var(--blue)}
+
+  header{position:fixed;top:0;left:0;right:0;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;pointer-events:none;}
+  header > *{pointer-events:auto}
+  .brand{font-weight:800;font-size:16px;color:var(--blue);text-decoration:none;letter-spacing:-.01em;opacity:.9}
+  #lang-switch{font:inherit;font-size:12px;padding:4px 8px;border-radius:7px;border:1px solid var(--line);background:transparent;color:var(--muted);}
+
+  /* ── the dot: one element, two places. Big + centred while it "thinks"; small beside the
+     question while you answer. The outer .orb moves/scales (transition), the inner .core
+     breathes/swells (keyframes) so the two never fight. ── */
+  .orb{--s:min(70vmin, 560px);position:fixed;left:50%;top:50%;width:var(--s);height:var(--s);z-index:1;pointer-events:none;
+    transform:translate(-50%,-50%) scale(0);transition:transform .85s cubic-bezier(.2,.8,.2,1);}
+  .core{width:100%;height:100%;border-radius:50%;
+    background:radial-gradient(circle at 38% 34%, color-mix(in srgb,var(--blue) 82%, white) 0%, var(--blue) 45%, var(--blue-d) 100%);
+    box-shadow:0 0 0 calc(var(--s)*.05) color-mix(in srgb,var(--blue) 12%,transparent), 0 0 0 calc(var(--s)*.12) color-mix(in srgb,var(--blue) 5%,transparent), 0 18px 60px color-mix(in srgb,var(--blue) 30%,transparent);
+    animation:breathe 4.5s ease-in-out infinite;transition:filter .6s;}
+  .core.ask{animation:swell 1s cubic-bezier(.2,.85,.2,1) 1, breathe 4.5s ease-in-out 1s infinite;}
+  .core.happy{animation:pop .9s cubic-bezier(.2,.9,.3,1.35) 1, breathe 4.5s ease-in-out .9s infinite;}
+  .orb.calm .core{filter:saturate(.85) brightness(.97);}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+  @keyframes swell{0%{transform:scale(1)}40%{transform:scale(1.22)}100%{transform:scale(1)}}
+  @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.25)}100%{transform:scale(1)}}
+  .ring{position:absolute;inset:0;border-radius:50%;border:2px solid color-mix(in srgb,var(--blue) 40%,transparent);opacity:0;}
+  .thinking .ring{animation:ripple 1.8s ease-out infinite;} .thinking .ring:nth-of-type(2){animation-delay:.6s} .thinking .ring:nth-of-type(3){animation-delay:1.2s}
+  @keyframes ripple{0%{transform:scale(.92);opacity:.6}100%{transform:scale(1.35);opacity:0}}
+  .core{position:relative;overflow:hidden}
+  .core::after{content:"";position:absolute;inset:0;border-radius:50%;opacity:0;
+    background:radial-gradient(circle at 80% 50%, rgba(255,255,255,.55) 0%, rgba(255,255,255,.18) 18%, transparent 38%);transition:opacity .4s;}
+  .thinking .core{animation:heartbeat 1.15s ease-in-out infinite;}
+  .thinking .core::after{opacity:1;animation:orbit 1.4s linear infinite;}
+  @keyframes heartbeat{0%{transform:scale(1)}18%{transform:scale(1.07)}36%{transform:scale(.98)}54%{transform:scale(1.05)}100%{transform:scale(1)}}
+  @keyframes orbit{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion: reduce){ .core,.ring,.core::after{animation:none !important} .orb{transition:none} }
+
+  /* ── the conversation ── */
+  .talk{position:fixed;inset:0;z-index:2;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+  .line{max-width:680px;width:100%;opacity:0;transform:translateY(10px);transition:opacity .45s ease, transform .45s ease;pointer-events:none;}
+  .line.in{opacity:1;transform:none;pointer-events:auto}
+  .line[hidden]{display:none}
+  .intro{text-align:center;display:flex;flex-direction:column;align-items:center;}
+  .introslot{width:min(44vmin,340px);height:min(44vmin,340px);margin-bottom:26px;}
+  .intro .q{font-weight:600;font-size:clamp(18px,2.4vw,22px);color:var(--ink);text-align:center;max-width:520px}
+  .qrow{display:grid;grid-template-columns:auto 1fr;column-gap:14px;align-items:start;}
+  .qrow > .qtext{display:contents}
+  .slot{width:1.15em;height:1.15em;font-size:clamp(22px, 3.2vw, 30px);grid-row:1;align-self:start;margin-top:.03em;}
+  .q{grid-row:1;grid-column:2}
+  .opt{grid-row:2;grid-column:2;justify-self:start}
+  .q{font-size:clamp(22px, 3.2vw, 30px);font-weight:800;letter-spacing:-.02em;line-height:1.2;margin:0;color:var(--ink);text-align:left;}
+  .opt{display:inline-block;margin-top:6px;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  .opt[hidden]{display:none}
+  .answer{margin:18px 0 0 0;width:100%;max-width:560px;}
+  .answer input,.answer textarea{width:100%;font:inherit;font-size:18px;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);outline:none;transition:border-color .2s, box-shadow .2s;}
+  .answer textarea{min-height:110px;resize:none}
+  .answer input:focus,.answer textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px color-mix(in srgb,var(--blue) 15%,transparent)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chips label{padding:11px 18px;border-radius:999px;background:var(--card);color:var(--ink);border:1.5px solid var(--line);cursor:pointer;font-weight:600;font-size:15px;transition:background .2s, border-color .2s;}
+  .chips label:hover{border-color:var(--blue)}
+  .chips label:has(input:checked){background:var(--blue);color:#fff;border-color:var(--blue)}
+  .chips input{position:absolute;opacity:0;pointer-events:none}
+  .custom{margin-top:10px;max-width:260px} .custom[hidden]{display:none}
+  .files{display:grid;gap:10px;color:var(--muted);font-size:14px;text-align:left}
+  .pick{justify-self:start;background:var(--blue);color:#fff;border:0;border-radius:999px;padding:11px 20px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 8px 24px color-mix(in srgb,var(--blue) 30%,transparent)}
+  .pick:hover{background:var(--blue-d)} .fhint{font-size:12.5px;color:var(--muted)}
+  .flist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+  .flist li{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--ink);font-size:14px}
+  .flist li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .flist li small{color:var(--muted)}
+  .flist li button{background:none;border:0;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline}
+  .flist li.none{border-style:dashed;color:var(--muted)}
+  .consent{font-size:13px;line-height:1.5;color:var(--ink);text-align:left;background:var(--card);border:1px solid var(--line);padding:14px 16px;border-radius:12px;display:flex;gap:12px;align-items:flex-start;}
+  .consent input{margin-top:3px;width:18px;height:18px;accent-color:var(--blue);flex:none}
+  .err{min-height:20px;font-size:13px;color:#fff;background:var(--err);display:inline-block;padding:5px 12px;border-radius:8px;margin:10px 0 0 0;opacity:0;transition:opacity .2s;line-height:1.5}
+  .err a{color:#fff;font-weight:700}
+  .err.on{opacity:1}
+
+  /* ── discreet navigation ── */
+  .nav{position:fixed;left:0;right:0;bottom:26px;z-index:4;display:flex;align-items:center;justify-content:center;gap:18px;font-size:12px;color:var(--muted);}
+  .nav[hidden]{display:none}
+  .nav button{background:none;border:0;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;padding:6px 8px;border-radius:8px;letter-spacing:.04em;text-transform:uppercase;opacity:.8}
+  .nav button:hover{color:var(--ink);opacity:1} .nav button[disabled]{opacity:.25;cursor:default}
+  .nav .go{color:var(--blue);font-weight:800;opacity:1}
+  .nav .go.quiet{color:var(--muted);font-weight:600}
+  .bar{position:fixed;left:0;right:0;bottom:0;height:3px;background:transparent}
+  .bar i{display:block;height:100%;background:var(--blue);width:0;transition:width .5s ease;opacity:.7}
+  .start{margin-top:18px;background:var(--blue);color:#fff;border:0;border-radius:999px;padding:13px 26px;font:inherit;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 10px 30px color-mix(in srgb,var(--blue) 35%,transparent)}
+  .done{text-align:center;padding-top:calc(min(70vmin,560px)/2 + 24px)} .done .q{text-align:center;font-size:clamp(20px,3vw,28px)}
+  .done p{color:var(--muted);max-width:480px;margin:12px auto 0;font-size:14px}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="topbar"><select id="lang-switch" aria-label="Language"></select></div>
-  <h1 data-i18n="in.h1">Set up your profile</h1>
-  <p class="sub" data-i18n="in.sub">Takes ~6 minutes. The more you tell us, the better the matches. Everything past
-    the first two fields is optional — do as much as you like.</p>
+<header>
+  <a class="brand" href="/">● JobsPulse</a>
+  <select id="lang-switch" aria-label="Language"></select>
+</header>
 
-  <form id="intake" action="https://rkuiprrginjullnzskkg.supabase.co/functions/v1/intake" method="post">
-    <input type="hidden" name="invite" id="invite" value="">
-    <!-- honeypot -->
-    <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+<div class="orb" id="orb"><i class="ring"></i><i class="ring"></i><i class="ring"></i><div class="core" id="core"></div></div>
 
-    <fieldset>
-      <div class="section" data-i18n="in.sec.about">About you</div>
-      <div class="row">
-        <div>
-          <label data-i18n="in.firstname">First name <span class="hint">for the greeting</span></label>
-          <input name="first_name" required maxlength="60">
-        </div>
-        <div>
-          <label data-i18n="in.email">Email <span class="hint">where the digest goes</span></label>
-          <input type="email" name="email" required>
-        </div>
-      </div>
-
-      <label data-i18n="in.emaillang">Email language <span class="hint">the language for your digest &amp; emails</span></label>
-      <select name="language" id="language">
-        <option value="ca">Català</option>
-        <option value="es">Español</option>
-        <option value="en">English</option>
-        <option value="de">Deutsch</option>
-        <option value="fr">Français</option>
-        <option value="ja">日本語</option>
-        <option value="zh">中文</option>
-      </select>
-
-      <label data-i18n="in.role">Current role / title</label>
-      <input name="current_role" data-i18n-ph="in.role_ph" placeholder="e.g. Software Engineer" maxlength="120" required>
-
-      <div class="row">
-        <div>
-          <label data-i18n="in.years">Years of experience</label>
-          <input name="years_experience" inputmode="numeric" data-i18n-ph="in.years_ph" placeholder="e.g. 4" maxlength="4">
-        </div>
-        <div>
-          <label data-i18n="in.workauth">Where can you work? <span class="hint">not nationality</span></label>
-          <select name="work_authorization">
-            <option value="" data-i18n="in.opt.select">Select…</option>
-            <option value="EU — no sponsorship needed" data-i18n="in.wa.eu">EU — no sponsorship needed</option>
-            <option value="Needs visa sponsorship" data-i18n="in.wa.visa">Needs visa sponsorship</option>
-            <option value="Remote only" data-i18n="in.wa.remote">Remote only</option>
-            <option value="Other / will explain" data-i18n="in.wa.other">Other / will explain</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="section" data-i18n="in.sec.skills">Skills</div>
-      <label data-i18n="in.skills">Your strongest skills <span class="hint">comma-separated</span></label>
-      <input name="skills" data-i18n-ph="in.skills_ph" placeholder="e.g. Python, SQL, communication" maxlength="300">
-
-      <label data-i18n="in.learning">Skills you're building <span class="hint">optional — what you're learning</span></label>
-      <input name="learning_skills" data-i18n-ph="in.learning_ph" placeholder="e.g. cloud, leadership" maxlength="300">
-
-      <div class="section" data-i18n="in.sec.looking">What you're looking for</div>
-      <label data-i18n="in.roles">Roles you want <span class="hint">what to search for</span></label>
-      <input name="target_roles" data-i18n-ph="in.roles_ph" placeholder="e.g. Backend Developer, Product Manager" maxlength="200" required>
-
-      <label data-i18n="in.companies">Dream companies <span class="hint">optional — any to watch for</span></label>
-      <input name="target_companies" data-i18n-ph="in.companies_ph" placeholder="e.g. companies you admire" maxlength="200">
-
-      <label data-i18n="in.grow">Where do you want to grow next? <span class="hint">optional</span></label>
-      <textarea name="career_goal" data-i18n-ph="in.grow_ph" placeholder="e.g. grow into a senior or lead role over the next few years" maxlength="600"></textarea>
-
-      <label data-i18n="in.energize">What kind of work energizes you? <span class="hint">optional</span></label>
-      <textarea name="energizers" data-i18n-ph="in.energize_ph" placeholder="e.g. building things, solving hard problems with a team" maxlength="600"></textarea>
-
-      <div class="section" data-i18n="in.sec.logistics">Logistics</div>
-      <div class="row">
-        <div>
-          <label data-i18n="in.location">Location</label>
-          <input name="location" data-i18n-ph="in.location_ph" placeholder="e.g. Barcelona" maxlength="80" required>
-        </div>
-        <div>
-          <label data-i18n="in.workstyle">Work style</label>
-          <select name="work_style">
-            <option value="" data-i18n="in.opt.select">Select…</option>
-            <option value="On-site" data-i18n="in.ws.onsite">On-site</option>
-            <option value="Hybrid" data-i18n="in.ws.hybrid">Hybrid</option>
-            <option value="Remote" data-i18n="in.ws.remote">Remote</option>
-            <option value="No preference" data-i18n="in.ws.nopref">No preference</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label data-i18n="in.commute">Max commute / relocation <span class="hint">optional</span></label>
-          <input name="commute" data-i18n-ph="in.commute_ph" placeholder="e.g. up to 30 min, or open to relocating" maxlength="120">
-        </div>
-        <div>
-          <label data-i18n="in.salary">Minimum salary <span class="hint">optional</span></label>
-          <input name="salary_floor" data-i18n-ph="in.salary_ph" placeholder="e.g. €40,000" maxlength="40">
-        </div>
-      </div>
-
-      <label data-i18n="in.dealbreakers">Deal-breakers <span class="hint">optional</span></label>
-      <input name="deal_breakers" data-i18n-ph="in.dealbreakers_ph" placeholder="e.g. no relocation, no on-call" maxlength="200">
-
-      <div class="section" data-i18n="in.sec.howwork">How you work <span class="hint" style="font-weight:400">— optional, helps culture fit</span></div>
-      <label data-i18n="in.thrive">What environments do you thrive in?</label>
-      <textarea name="thrive_environment" data-i18n-ph="in.thrive_ph" placeholder="e.g. collaborative teams with clear goals" maxlength="600"></textarea>
-
-      <label data-i18n="in.drains">What drains you at work?</label>
-      <textarea name="drains_energy" data-i18n-ph="in.drains_ph" placeholder="e.g. rigid process, unclear priorities" maxlength="600"></textarea>
-
-      <div class="section" data-i18n="in.sec.cv">Your CV</div>
-      <label data-i18n="in.cvtext">CV text or LinkedIn URL <span class="hint">optional — the single biggest boost to matching</span></label>
-      <textarea name="cv_or_linkedin" data-i18n-ph="in.cvtext_ph" placeholder="Paste your CV text, or a link to your LinkedIn profile" maxlength="8000"></textarea>
-
-      <label data-i18n="in.cvupload">Upload your CV <span class="hint">optional — PDF, DOC or image, max 5 MB</span></label>
-      <input type="file" name="cv_file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
-
-      <label data-i18n="in.docs">Cover letters, certificates, other <span class="hint">optional — attach several, 5 MB each</span></label>
-      <input type="file" name="documents" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" multiple>
-    </fieldset>
-
-    <div class="consent">
-      <input type="checkbox" id="consent" name="consent" required>
-      <label for="consent" data-i18n="in.consent">I've read the <a href="/privacy/" target="_blank" rel="noopener">privacy notice</a>
-        and consent to JobsPulse processing this information to generate my weekly job matches.
-        Matches are curated by an <strong>automated algorithm</strong>, scored on skills, roles,
-        location and salary — never on personal traits like age, gender or nationality. I can
-        ask for a human to review a result, and withdraw or delete my data at any time.</label>
-    </div>
-
-    <button id="submit" type="submit" disabled data-i18n="in.submit">Create my profile</button>
-    <div class="note" id="note" data-i18n="in.note">Your data is used only to match you to jobs. Never sold, deletable anytime.</div>
-  </form>
-
-  <!-- Confirmation shown after a successful submit (replaces the form). -->
-  <div id="done" hidden style="text-align:center;padding:50px 10px;">
-    <div style="width:64px;height:64px;border-radius:50%;background:#1a7f37;color:#fff;
-      font-size:34px;line-height:64px;margin:0 auto 20px;">&#10003;</div>
-    <h1 style="margin:0 0 10px;" data-i18n="in.done.h1">You're in!</h1>
-    <p class="sub" style="margin:0 auto;max-width:440px;font-size:16px;" data-i18n="in.done.p">
-      Your profile is saved. We'll start matching you to roles and email your first
-      digest soon — an algorithm curates it, and you can reply anytime if a match looks
-      wrong and a human will check. You can close this tab — nothing else to do.</p>
-    <p style="margin-top:26px;font-size:14px;" data-i18n="in.done.changed">
-      Changed your mind? Email <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>
-      to update or delete your data anytime &middot; <a href="/privacy/">Privacy notice</a>
-    </p>
+<div class="talk">
+  <div class="line intro" id="intro"><div class="introslot" id="introslot"></div><p class="q" data-i18n="jv.intro"></p><button class="start" id="start" data-i18n="jv.ready">Let's go</button></div>
+  <div class="line" id="step" hidden>
+    <div class="qrow"><div class="slot" id="slot"></div><div class="qtext"><p class="q" id="q"></p><span class="opt" id="opt" hidden></span></div></div>
+    <form id="intake" class="answer" action="https://rkuiprrginjullnzskkg.supabase.co/functions/v1/intake" method="post" enctype="multipart/form-data" novalidate>
+      <input type="hidden" name="invite" id="invite">
+      <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
+      <div id="answer"></div>
+    </form>
+    <span class="err" id="err"></span>
   </div>
+  <div class="line done" id="done" hidden><p class="q" data-i18n="in.done.h1"></p><p data-i18n="jv.done"></p><p data-i18n="in.done.changed"></p></div>
 </div>
 
-<script src="/assets/i18n.js" defer></script>
-<script>
-  var form = document.getElementById('intake');
-  var box  = document.getElementById('consent');
-  var btn  = document.getElementById('submit');
-  // Invitation link: /join-r9x2m/?invite=<token>&email=<addr> (admin function). The token is
-  // required server-side for new members; a returning member can submit without it.
-  (function(){
-    var q = new URLSearchParams(location.search);
-    var tok = (q.get('invite') || '').trim();
-    if (tok) document.getElementById('invite').value = tok;
-    var em = (q.get('email') || '').trim();
-    var emailEl = form.querySelector('input[name="email"]');
-    if (em && emailEl && !emailEl.value) emailEl.value = em;
-  })();
-  var note = document.getElementById('note');
+<div class="nav" id="nav" hidden>
+  <button id="back" type="button" data-i18n="jv.back">back</button>
+  <button id="skip" type="button" data-i18n="jv.skip" hidden>skip</button>
+  <button id="next" type="button" class="go" data-i18n="jv.next">next</button>
+</div>
+<div class="bar"><i id="bar"></i></div>
 
-  // Localized status messages for the JS-driven notes (read the active language i18n.js persists).
-  var JP_MSG = {
-    en: {toobig:"Over the 5 MB limit — please shrink or remove: ", saving:"Saving your profile…",
-         failed:"That didn't save — please try again or email us.", network:"Network issue — please try again."},
-    es: {toobig:"Supera el límite de 5 MB — reduce o quita: ", saving:"Guardando tu perfil…",
-         failed:"No se pudo guardar — inténtalo de nuevo o escríbenos.", network:"Problema de red — inténtalo de nuevo."},
-    ca: {toobig:"Supera el límit de 5 MB — redueix o treu: ", saving:"Desant el teu perfil…",
-         failed:"No s'ha pogut desar — torna-ho a provar o escriu-nos.", network:"Problema de xarxa — torna-ho a provar."}
+<script src="/assets/i18n.js"></script>
+<script>
+(function(){
+  var T = function(k){ return window.jpt ? window.jpt(k) : k; };
+  var $ = function(id){ return document.getElementById(id); };
+  var qs = new URLSearchParams(location.search);
+  $('invite').value = (qs.get('invite')||'').trim();
+
+  // The conversation. Field names + option values are exactly intake.html's (server contract).
+  // Mandatory core first (what the matcher needs, plus the CV), then the optionals that help
+  // rule offers out or feed the LLM tier. Chips store CANONICAL values the engine parses
+  // (years as a number, commute as text engine/geo.py understands, salary as "€NN,000").
+  var STEPS = [
+    {name:'first_name', type:'text', q:'jv.name', required:true, auto:'given-name', norm:'name'},
+    {name:'email', type:'email', q:'jv.email', required:true, auto:'email', prefill:(qs.get('email')||''), norm:'email'},
+    {name:'language_pick', type:'chips', q:'jv.lang', required:true, options:[['en','English'],['es','Español'],['ca','Català'],['de','Deutsch'],['fr','Français'],['ja','日本語'],['zh','中文']]},
+    {name:'current_role', type:'text', q:'jv.role', ph:'in.role_ph', required:true, norm:'title'},
+    {name:'years_experience', type:'chips', q:'jv.years', required:true, options:[['0','jv.y_lt1'],['1','jv.y_1_2'],['3','jv.y_3_5'],['6','jv.y_6_9'],['10','jv.y_10']]},
+    {name:'target_roles', type:'text', q:'jv.roles', ph:'in.roles_ph', required:true, norm:'list6'},
+    {name:'skills', type:'text', q:'jv.skills', ph:'in.skills_ph', required:true, norm:'list12'},
+    {name:'location', type:'town', q:'jv.location', ph:'in.location_ph', required:true, norm:'title'},
+    {name:'work_style', type:'chips', q:'jv.workstyle', required:true, options:[['On-site','in.ws.onsite'],['Hybrid','in.ws.hybrid'],['Remote','in.ws.remote'],['No preference','in.ws.nopref']]},
+    {name:'commute', type:'chips', q:'jv.commute', required:true, options:[['up to 30 min','jv.c_30'],['up to 1 hour','jv.c_60'],['up to 2 hours','jv.c_120'],['open to relocating','jv.c_reloc']]},
+    {name:'work_authorization', type:'chips', q:'jv.workauth', required:true, options:[['EU — no sponsorship needed','in.wa.eu'],['Needs visa sponsorship','in.wa.visa'],['Remote only','in.wa.remote'],['Other / will explain','in.wa.other']]},
+    {name:'cv_file', type:'file', q:'jv.cvfile', required:true},
+    {name:'salary_floor', type:'chips', q:'jv.salary', custom:'jv.s_other', options:[['','jv.s_none'],['€20,000','€20k'],['€25,000','€25k'],['€30,000','€30k'],['€40,000','€40k'],['€50,000','€50k']]},
+    {name:'deal_breakers', type:'text', q:'jv.dealbreakers', ph:'in.dealbreakers_ph', norm:'trim'},
+    {name:'target_companies', type:'text', q:'jv.companies', ph:'in.companies_ph', norm:'list8'},
+    {name:'learning_skills', type:'text', q:'jv.learning', ph:'in.learning_ph', norm:'list8'},
+    {name:'career_goal', type:'long', q:'jv.grow', ph:'in.grow_ph', norm:'trim'},
+    {name:'energizers', type:'long', q:'jv.energize', ph:'in.energize_ph', norm:'trim'},
+    {name:'thrive_environment', type:'long', q:'jv.thrive', ph:'in.thrive_ph', norm:'trim'},
+    {name:'drains_energy', type:'long', q:'jv.drains', ph:'in.drains_ph', norm:'trim'},
+    {name:'cv_or_linkedin', type:'long', q:'jv.cv', ph:'in.cvtext_ph', norm:'trim'},
+    {name:'documents', type:'files', q:'jv.files'},
+    {name:'consent', type:'consent', q:'jv.consent', required:true},
+  ];
+  // Known towns (same table as engine/geo.py) — offered as suggestions so locations come in canonical.
+  var TOWNS = ["Barcelona","Girona","Madrid","Blanes","Lloret de Mar","Tossa de Mar","Malgrat de Mar","Calella","Pineda de Mar","Arenys de Mar","Mataró","Figueres","Sabadell","Terrassa","Granollers","Vic","Manresa","Vilanova i la Geltrú","Reus","Tarragona","Sitges","Lleida","València","Sevilla","Bilbao","Zaragoza","Málaga","Palma","Alicante","Murcia","Sant Cugat del Vallès","Badalona","L'Hospitalet de Llobregat","Cornellà de Llobregat","Esplugues de Llobregat","Sant Just Desvern","Lliçà d'Amunt","Mollet del Vallès","Rubí","Castelldefels","Gavà","Viladecans","El Prat de Llobregat","Sant Boi de Llobregat","Cerdanyola del Vallès","Santa Coloma de Gramenet","Olot","Palamós","Palafrugell","Sant Feliu de Guíxols","Santa Coloma de Farners","Banyoles","Salt","Cardedeu","Martorell","Igualada","Vilafranca del Penedès","El Vendrell","Tortosa"];
+  // What the user types → real information. Lists: split on commas/newlines/";", trim, drop
+  // empties + duplicates (case-insensitive), cap the count, keep the user's own wording.
+  var NORM = {
+    name: function(v){ return v.trim().replace(/\s+/g,' ').slice(0,80); },
+    email: function(v){ return v.trim().toLowerCase(); },
+    title: function(v){ return v.trim().replace(/\s+/g,' ').slice(0,120); },
+    trim: function(v){ return v.trim().slice(0,600); },
+    list6: function(v){ return list(v, 6); }, list8: function(v){ return list(v, 8); }, list12: function(v){ return list(v, 12); },
   };
-  function msg(k){
-    var l; try{ l = localStorage.getItem('jp_lang'); }catch(e){}
-    return (JP_MSG[l] || JP_MSG.en)[k];
+  function list(v, cap){
+    var seen = {}, out = [];
+    v.split(/[,;\n]+/).forEach(function(x){ x = x.trim().replace(/\s+/g,' ').replace(/^[-•·]\s*/,''); var k = x.toLowerCase(); if (x && !seen[k]) { seen[k] = 1; out.push(x); } });
+    return out.slice(0, cap).join(', ');
   }
 
-  // Default the email-language selector to the language the user is viewing the site in
-  // (their earlier choice, persisted by i18n.js as jp_lang) — else the device/browser language.
-  // The user can still override it.
-  (function(){
-    var sel = document.getElementById('language');
-    if (!sel) return;
-    var saved; try { saved = localStorage.getItem('jp_lang'); } catch (e) {}
-    var nl = (saved || navigator.language || 'en').slice(0,2).toLowerCase();
-    sel.value = ['ca','es','en','de','fr','ja','zh'].indexOf(nl) >= 0 ? nl : 'en';
-  })();
 
-  // Submit stays disabled until consent is explicitly given.
-  box.addEventListener('change', function(){ btn.disabled = !box.checked; });
+  var state = {}; try { state = JSON.parse(sessionStorage.getItem('jp_join_v2') || '{}'); } catch(e) {}
+  var i = -1;  // -1 = intro
+  var files = {cv:null, docs:[]};  // cv_file (required, one) + documents (optional, several)
+  function paintFiles(){
+    var ul = $('flist'); if (!ul) return;
+    var list = STEPS[i].type === 'file' ? (files.cv ? [files.cv] : []) : files.docs;
+    ul.innerHTML = list.length ? list.map(function(f, k){ return '<li><span>'+f.name.replace(/</g,'&lt;')+'</span> <small>'+Math.round(f.size/1024)+' KB</small> <button type="button" data-k="'+k+'">'+T('jv.files_remove')+'</button></li>'; }).join('') : '<li class="none">'+T('jv.files_none')+'</li>';
+    ul.querySelectorAll('button').forEach(function(b){ b.onclick = function(){ if (STEPS[i].type === 'file') files.cv = null; else files.docs.splice(+b.dataset.k, 1); paintFiles(); }; });
+  }
+  var orb = $('orb'), core = $('core'), stepEl = $('step'), busy = false;
+  var BASE = function(){ return Math.min(window.innerWidth, window.innerHeight) * 0.70 > 560 ? 560 : Math.min(window.innerWidth, window.innerHeight) * 0.70; };
+  // where the dot is: 'center' (big, thinking / intro / done) or 'side' (small, beside the question)
+  function place(mode){
+    if (mode === 'center') { orb.style.transform = 'translate(-50%,-50%) scale(1)'; return; }
+    var el = $(mode === 'intro' ? 'introslot' : 'slot'), line = el.closest('.line');
+    var prev = line ? line.style.transform : ''; if (line) line.style.transform = 'none';
+    var r = el.getBoundingClientRect(), S = BASE();
+    if (line) line.style.transform = prev;
+    var dx = r.left + r.width/2 - window.innerWidth/2, dy = r.top + r.height/2 - window.innerHeight/2;
+    orb.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) scale(' + (r.width / S) + ')';
+  }
+  window.addEventListener('resize', function(){ if (i < 0) place('intro'); else if (!stepEl.hidden) place('side'); });
+  // Anything that changes the block's height (an error label, a revealed field, wrapped chips,
+  // the file list) re-centres the block — keep Dottie glued to the question line.
+  if (window.ResizeObserver) new ResizeObserver(function(){ if (i >= 0 && !stepEl.hidden && !busy) place('side'); }).observe(stepEl);
 
-  var MAX_FILE = 5 * 1024 * 1024; // 5 MB per file
+  function save(){ state.__i = i; try { sessionStorage.setItem('jp_join_v2', JSON.stringify(state)); } catch(e) {} }
+  function setSiteLang(v){ var sel = $('lang-switch'); if (sel) { sel.value = v; sel.dispatchEvent(new Event('change', {bubbles:true})); } }
+  function pulse(cls){ core.classList.remove('ask','happy'); void core.offsetWidth; core.classList.add(cls); }
+  // next/skip/back: the question fades, the dot glides to the centre and grows, ripples while it
+  // "thinks", then the new question renders (hidden) and the dot glides back beside it.
+  function think(ms, cb){
+    busy = true; stepEl.classList.remove('in'); place('center'); orb.classList.add('thinking');
+    setTimeout(function(){ orb.classList.remove('thinking'); busy = false; cb(); }, ms + 500);
+  }
 
-  form.addEventListener('submit', async function(e){
-    e.preventDefault();
-    if(!box.checked) return;
-
-    // Tell the user up front if any attached file is over the limit,
-    // instead of silently dropping it during upload.
-    var tooBig = [];
-    ['cv_file','documents'].forEach(function(n){
-      var input = form.querySelector('[name="'+n+'"]');
-      if(input && input.files){
-        for(var i=0;i<input.files.length;i++){
-          if(input.files[i].size > MAX_FILE) tooBig.push(input.files[i].name);
-        }
-      }
-    });
-    if(tooBig.length){
-      note.textContent = msg('toobig') + tooBig.join(", ");
-      return;
+  function render(){
+    var s = STEPS[i]; $('intro').hidden = true; $('nav').hidden = false; stepEl.hidden = false;
+    $('q').textContent = T(s.q);
+    $('opt').hidden = !!s.required; $('opt').textContent = T('jv.optional');
+    pulse('ask');
+    var a = $('answer'), v = state[s.name] || '', html = '';
+    var ph = s.ph ? T(s.ph).replace(/"/g,'&quot;') : '';
+    if (s.type === 'text' || s.type === 'email' || s.type === 'number')
+      html = '<input type="'+s.type+'" name="'+s.name+'" autocomplete="'+(s.auto||'off')+'" placeholder="'+ph+'" value="'+String(v || s.prefill || '').replace(/"/g,'&quot;')+'">';
+    else if (s.type === 'town')
+      html = '<input type="text" name="'+s.name+'" list="towns" autocomplete="off" placeholder="'+ph+'" value="'+String(v).replace(/"/g,'&quot;')+'"><datalist id="towns">'+TOWNS.map(function(t){ return '<option value="'+t+'">'; }).join('')+'</datalist>';
+    else if (s.type === 'long')
+      html = '<textarea name="'+s.name+'" placeholder="'+ph+'">'+String(v).replace(/</g,'&lt;')+'</textarea>';
+    else if (s.type === 'chips') {
+      var isCustom = v !== '' && v != null && !s.options.some(function(o){ return o[0] === v; });
+      html = '<div class="chips">' + s.options.map(function(o){ var label = o[1].indexOf('.')>0 ? T(o[1]) : o[1]; return '<label><input type="radio" name="'+s.name+'" value="'+o[0]+'" '+(v===o[0]?'checked':'')+'>'+label+'</label>'; }).join('')
+           + (s.custom ? '<label><input type="radio" name="'+s.name+'" value="__custom" '+(isCustom?'checked':'')+'>'+T(s.custom)+'</label>' : '') + '</div>'
+           + (s.custom ? '<div class="custom" id="custom" '+(isCustom?'':'hidden')+'><input type="number" id="customval" min="0" step="1000" placeholder="'+T('jv.s_other_ph')+'" value="'+(isCustom ? String(v).replace(/[^0-9]/g,'') : '')+'"></div>' : '');
     }
+    else if (s.type === 'files' || s.type === 'file')
+      html = '<div class="files"><button type="button" class="pick" id="pick">'+T(s.type === 'file' ? 'jv.cvfile_btn' : 'jv.files_btn')+'</button><span class="fhint">'+T(s.type === 'file' ? 'jv.cvfile_hint' : 'jv.files_hint')+'</span>'
+           + '<input type="file" id="fileinput" '+(s.type === 'files' ? 'multiple ' : '')+'accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" hidden><ul class="flist" id="flist"></ul></div>';
+    else if (s.type === 'consent')
+      html = '<label class="consent"><input type="checkbox" name="consent" '+(state.consent?'checked':'')+'><span>'+T('in.consent')+'</span></label>';
+    a.innerHTML = html; $('err').classList.remove('on');
+    $('back').disabled = i === 0;
+    $('skip').hidden = !!s.required || s.type === 'consent';
+    var nx = $('next'); nx.textContent = s.type === 'consent' ? T('jv.consent_btn') : T('jv.next'); nx.classList.toggle('quiet', s.type === 'consent');
+    $('bar').style.width = Math.round(100 * (i + 1) / STEPS.length) + '%';
+    requestAnimationFrame(function(){ place('side'); stepEl.classList.add('in'); var f = a.querySelector('input:not([type=radio]):not([type=checkbox]):not([type=file]),textarea'); if (f) f.focus(); });
+    setTimeout(function(){ if (!stepEl.hidden) place('side'); }, 480);  // re-measure once the slide-in has settled
+    a.querySelectorAll('input[type=radio]').forEach(function(r){ r.onchange = function(){
+      if (r.value === '__custom') { $('custom').hidden = false; state[s.name] = '__custom'; $('customval').focus(); return; }
+      if ($('custom')) $('custom').hidden = true;
+      state[s.name] = r.value; if (s.name === 'language_pick') setSiteLang(r.value); save(); orb.classList.add('calm'); setTimeout(next, 320); }; });
+    if (s.type === 'chips') { var cur = a.querySelector('input[type=radio][value="'+String(v).replace(/"/g,'&quot;')+'"]'); if (cur && state[s.name] != null) cur.checked = true; }
+    if (s.type === 'files' || s.type === 'file') {
+      var inp = $('fileinput'); $('pick').onclick = function(){ inp.click(); };
+      inp.onchange = function(){
+        var picked = Array.prototype.slice.call(inp.files).filter(function(f){ return f.size <= 5*1024*1024; });
+        if (s.type === 'file') { files.cv = picked[0] || files.cv; } else { picked.forEach(function(f){ if (files.docs.length < 7) files.docs.push(f); }); }
+        inp.value = ''; paintFiles(); $('err').classList.remove('on');
+      };
+      paintFiles();
+    }
+    a.querySelectorAll('input:not([type=radio]),textarea').forEach(function(el){ el.oninput = function(){ orb.classList.toggle('calm', !!el.value); }; });
+  }
 
-    var data = new FormData(form);
-    data.append('consent_timestamp', new Date().toISOString()); // record when consent was given
-    // language is a form field (email language); FormData includes it automatically.
-    note.textContent = msg('saving');
-    try{
-      var res = await fetch(form.action, {method:'POST', body:data, headers:{'Accept':'application/json'}});
-      if(res.ok){
-        // Swap the form out for the confirmation view.
-        document.querySelector('h1').hidden = true;
-        document.querySelector('.sub').hidden = true;
-        form.hidden = true;
-        document.getElementById('done').hidden = false;
-        window.scrollTo(0, 0);
-      } else {
-        note.textContent = msg('failed');
+  function fail(msg){ var e = $('err'); e.textContent = msg; e.classList.add('on'); var f = $('answer').querySelector('input,textarea'); if (f) f.focus(); }
+  function read(){
+    var s = STEPS[i], a = $('answer');
+    if (s.type === 'files') return true;
+    if (s.type === 'file') { if (s.required && !files.cv) { fail(T('jv.err_cv')); return false; } return true; }
+    if (s.type === 'chips') {
+      if (state[s.name] === '__custom' || ($('customval') && !$('custom').hidden)) {
+        var n = parseInt(($('customval') || {}).value, 10);
+        if (!n || n <= 0) { fail(T('jv.err_required')); return false; }
+        state[s.name] = '€' + n.toLocaleString('en-US');
       }
-    }catch(_){ note.textContent = msg('network'); }
+      if (s.required && state[s.name] == null) { fail(T('jv.err_required')); return false; }
+      return true;
+    }
+    if (s.type === 'consent') { state.consent = !!a.querySelector('input').checked; if (!state.consent) { fail(T('jv.err_required')); return false; } return true; }
+    var el = a.querySelector('input,textarea'); var val = (el.value || '').trim();
+    if (s.norm && NORM[s.norm]) val = NORM[s.norm](val);
+    if (s.required && !val) { fail(T('jv.err_required')); return false; }
+    if (s.type === 'email' && val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) { fail(T('jv.err_email')); return false; }
+    state[s.name] = val; return true;
+  }
+  // Email step: ask the server (with the invite token) whether this address is already a
+  // member or the invitation is for another address — before the user answers 20 questions.
+  async function checkEmail(){
+    var fd = new FormData(); fd.append('check', '1'); fd.append('email', state.email); fd.append('invite', $('invite').value);
+    try {
+      var r = await fetch($('intake').action, {method:'POST', body: fd, headers:{'Accept':'application/json'}});
+      var j = await r.json();
+      if (!j.valid) { fail(T('jv.err_invite')); return false; }
+      if (j.member) { failHtml(T('jv.member').replace('{link}', '<a href="/dashboard/">jobspulseapp.com/dashboard</a>')); return false; }
+      return true;
+    } catch (e) { return true; }  // network hiccup: don't block, the final submit still validates
+  }
+  function failHtml(html){ var e = $('err'); e.innerHTML = html; e.classList.add('on'); }
+  async function next(){
+    if (busy) return;
+    if (!read()) return;
+    if (STEPS[i].name === 'email') { busy = true; orb.classList.add('thinking'); var ok = await checkEmail(); orb.classList.remove('thinking'); busy = false; if (!ok) return; }
+    save(); orb.classList.remove('calm');
+    if (i === STEPS.length - 1) return submit();
+    i++; save(); think(520 + Math.random()*320, render);
+  }
+  function back(){ if (busy || i <= 0) return; read(); i--; save(); think(240, render); }
+  function begin(){ $('intro').classList.remove('in'); i = Math.max(0, Math.min(state.__i || 0, STEPS.length - 1)); think(600, render); }
+
+  $('start').onclick = begin; $('next').onclick = next; $('back').onclick = back;
+  $('skip').onclick = function(){ if (busy) return; i++; save(); think(280, render); };
+  document.addEventListener('keydown', function(e){
+    if (i < 0) { if (e.key === 'Enter') { e.preventDefault(); begin(); } return; }
+    if (e.key === 'Enter' && !(e.shiftKey && STEPS[i].type === 'long') && e.target.tagName !== 'BUTTON') { e.preventDefault(); next(); }
+    if (e.key === 'Escape') back();
   });
+
+  async function submit(){
+    busy = true; stepEl.classList.remove('in'); place('center'); orb.classList.add('thinking'); $('nav').hidden = true;
+    var fd = new FormData();
+    STEPS.forEach(function(s){ if (s.type !== 'files' && s.type !== 'file' && s.type !== 'consent' && s.name !== 'language_pick' && state[s.name] != null && state[s.name] !== '') fd.append(s.name, state[s.name]); });
+    fd.append('consent', 'on'); fd.append('consent_timestamp', new Date().toISOString());
+    fd.append('language', state.language_pick || (localStorage.getItem('jp_lang') || 'en'));
+    fd.append('invite', $('invite').value);
+    if (files.cv) fd.append('cv_file', files.cv); files.docs.forEach(function(f){ fd.append('documents', f); });
+    try {
+      var r = await fetch($('intake').action, {method:'POST', body: fd, headers:{'Accept':'application/json'}});
+      var j = await r.json().catch(function(){ return {}; });
+      if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+      try { sessionStorage.removeItem('jp_join_v2'); } catch(e) {}
+      orb.classList.remove('thinking'); busy = false;
+      setTimeout(function(){ stepEl.hidden = true; $('done').hidden = false; pulse('happy'); requestAnimationFrame(function(){ $('done').classList.add('in'); }); $('bar').style.width = '100%'; }, 450);
+    } catch(err) {
+      orb.classList.remove('thinking'); busy = false; $('nav').hidden = false; place('side'); stepEl.classList.add('in'); fail(err.message);
+    }
+  }
+
+  // intro: the dot grows in at the centre, then the line fades in beneath it
+  requestAnimationFrame(function(){ setTimeout(function(){ place('intro'); }, 60); });
+  setTimeout(function(){ $('intro').classList.add('in'); }, 900);
+  document.addEventListener('jp:lang', function(){ if (i >= 0 && !$('step').hidden) render(); });
+})();
 </script>
 </body>
 </html>
