@@ -64,7 +64,34 @@
     text-decoration:none;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink);}
   .actions a.view{background:var(--blue);color:#fff;border-color:var(--blue);}
   .actions a.view:hover{background:var(--blue-d);border-color:var(--blue-d);}
-  .save.on{color:var(--green);border-color:var(--green);} .flag.on{color:var(--amber);border-color:var(--amber);}
+  .actions .ico{display:inline-flex;align-items:center;justify-content:center;width:38px;height:36px;padding:0;
+    color:var(--muted);}
+  .actions .ico svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linejoin:round;stroke-linecap:round;}
+  .actions .ico:hover{border-color:var(--blue);color:var(--blue);}
+  .save.on{color:var(--green);border-color:var(--green);} .save.on svg{fill:currentColor;}
+  .flag.on{color:var(--amber);border-color:var(--amber);} .flag.on svg{fill:currentColor;}
+
+  /* Flag dialog (replaces the browser prompt) */
+  dialog.flagdlg{border:1px solid var(--line);border-radius:14px;padding:0;background:var(--card);color:var(--ink);
+    width:min(440px,calc(100vw - 32px));box-shadow:0 12px 40px rgba(0,0,0,.25);}
+  dialog.flagdlg::backdrop{background:rgba(10,20,30,.45);}
+  .flagdlg form{padding:20px 22px;}
+  .flagdlg h2{font-size:17px;margin:0 0 4px;}
+  .flagdlg .help{font-size:13px;color:var(--muted);margin:0 0 14px;}
+  .flagdlg .job{font-size:13px;font-weight:600;margin:0 0 12px;color:var(--ink);}
+  .flagdlg .chips{display:flex;flex-direction:column;gap:7px;margin-bottom:12px;}
+  .flagdlg .chips label{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);
+    border-radius:9px;cursor:pointer;font-size:14px;}
+  .flagdlg .chips label:has(input:checked){border-color:var(--blue);background:color-mix(in srgb,var(--blue) 10%,transparent);}
+  .flagdlg .chips input{margin:0;accent-color:var(--blue);}
+  .flagdlg textarea{width:100%;min-height:64px;padding:10px 12px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);color:var(--ink);font-family:inherit;font-size:14px;resize:vertical;}
+  .flagdlg .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap;}
+  .flagdlg .row button{font-size:13px;font-weight:600;padding:9px 14px;border-radius:8px;cursor:pointer;
+    border:1px solid var(--line);background:transparent;color:var(--ink);}
+  .flagdlg .row button.primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .flagdlg .row button.primary[disabled]{opacity:.5;cursor:default;}
+  .flagdlg .row button.danger{color:var(--amber);border-color:var(--amber);margin-right:auto;}
 
   /* Filter / sort bar */
   .filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 6px;}
@@ -136,6 +163,26 @@
 
     <div id="matches"></div>
     <div id="empty" hidden class="card" data-i18n="db.empty">No matches yet — your first digest is on the way.</div>
+    <dialog id="flagdlg" class="flagdlg">
+      <form method="dialog" id="flagform">
+        <h2 data-i18n="db.flag_title">What's wrong with this match?</h2>
+        <p class="help" data-i18n="db.flag_help">Pick one — it tunes your future matches, and a human reviews it.</p>
+        <p class="job" id="flagjob"></p>
+        <div class="chips">
+          <label><input type="radio" name="reason" value="too_far"><span data-i18n="db.flag_far">Too far away</span></label>
+          <label><input type="radio" name="reason" value="wrong_level"><span data-i18n="db.flag_level">Wrong level (too senior / too junior)</span></label>
+          <label><input type="radio" name="reason" value="wrong_field"><span data-i18n="db.flag_field">Not my field</span></label>
+          <label><input type="radio" name="reason" value="already_applied"><span data-i18n="db.flag_applied">Already applied / seen it</span></label>
+          <label><input type="radio" name="reason" value="other"><span data-i18n="db.flag_other">Something else</span></label>
+        </div>
+        <textarea id="flagnote" data-i18n-ph="db.flag_note" placeholder="Anything to add? (optional)"></textarea>
+        <div class="row">
+          <button type="button" class="danger" id="flagunflag" hidden data-i18n="db.flag_unflag">Remove flag</button>
+          <button type="button" id="flagcancel" data-i18n="db.flag_cancel">Cancel</button>
+          <button type="submit" class="primary" id="flagsend" disabled data-i18n="db.flag_send">Send</button>
+        </div>
+      </form>
+    </dialog>
   </div>
 
   <div class="notice" data-i18n="db.notice">
@@ -176,7 +223,7 @@
     $('auth').hidden = inn; $('app').hidden = !inn; $('signout').hidden = !inn; $('editbtn').hidden = !inn;
     if (!inn) return;
     const { data, error } = await sb.from('matches')
-      .select('id,title,company,location,url,score,reasons,saved_at,flagged_at,source,created_at')
+      .select('id,title,company,location,url,score,reasons,saved_at,flagged_at,flag_reason,source,created_at')
       .order('score', { ascending: false });
     if (error) { $('matches').innerHTML = '<div class="card">' + esc(T('db.msg_load_err') + error.message) + '</div>'; return; }
     ALL = data || [];
@@ -256,25 +303,63 @@
         ${gap?`<div class="m-gap"><strong>${esc(T('db.gap'))}</strong> ${esc(gap)}</div>`:''}
         <div class="actions">
           <a class="view" href="${esc(m.url)}" target="_blank" rel="noopener">${esc(T('db.view'))}</a>
-          <button class="save ${m.saved_at?'on':''}" id="save-${m.id}">${m.saved_at?esc(T('db.saved')):esc(T('db.save'))}</button>
-          <button class="flag ${m.flagged_at?'on':''}" id="flag-${m.id}">${m.flagged_at?esc(T('db.flagged')):esc(T('db.flag'))}</button>
+          <button class="ico save ${m.saved_at?'on':''}" id="save-${m.id}" title="${esc(T(m.saved_at?'db.saved_tip':'db.save_tip'))}" aria-label="${esc(T(m.saved_at?'db.saved':'db.save'))}" aria-pressed="${m.saved_at?'true':'false'}">${ICON_SAVE}</button>
+          <button class="ico flag ${m.flagged_at?'on':''}" id="flag-${m.id}" title="${esc(T(m.flagged_at?'db.flagged_tip':'db.flag_tip'))}" aria-label="${esc(T(m.flagged_at?'db.flagged':'db.flag'))}" aria-pressed="${m.flagged_at?'true':'false'}">${ICON_FLAG}</button>
         </div></div>`;
   }
 
+  const ICON_SAVE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>';
+  const ICON_FLAG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/></svg>';
+
+  // Save is a toggle: saved matches never expire (the 30-day scrub skips them).
   async function save(id) {
-    const now = new Date().toISOString();
-    await sb.from('matches').update({ saved_at: now, status: 'saved' }).eq('id', id);
-    const m = ALL.find(x => x.id === id); if (m) m.saved_at = now;  // update in place, keep filter/sort
+    const m = ALL.find(x => x.id === id); if (!m) return;
+    const on = !m.saved_at;
+    const now = on ? new Date().toISOString() : null;
+    await sb.from('matches').update({ saved_at: now, status: on ? 'saved' : 'sent' }).eq('id', id);
+    m.saved_at = now;  // update in place, keep filter/sort
     paint();
   }
-  async function flag(id) {
-    const reason = prompt(T('db.flag_prompt'));
-    if (reason === null) return;
-    const now = new Date().toISOString();
-    await sb.from('matches').update({ flagged_at: now, flag_reason: reason }).eq('id', id);
-    const m = ALL.find(x => x.id === id); if (m) m.flagged_at = now;
-    paint();
+
+  // Flag opens an in-page dialog with reason chips. The reason is stored as
+  // "<chip>: <note>" in matches.flag_reason so the matcher can be tuned on it
+  // (too_far → distance, wrong_level → seniority, wrong_field → relevance).
+  const dlg = $('flagdlg'), form = $('flagform');
+  let flagId = null;
+  function flag(id) {
+    const m = ALL.find(x => x.id === id); if (!m) return;
+    flagId = id;
+    form.reset();
+    $('flagjob').textContent = `${m.title}${m.company ? ' — ' + m.company : ''}`;
+    $('flagsend').disabled = true;
+    $('flagunflag').hidden = !m.flagged_at;
+    if (m.flag_reason) {  // pre-fill an existing flag so it can be changed
+      const [chip, ...rest] = m.flag_reason.split(': ');
+      const r = form.querySelector(`input[value="${chip}"]`);
+      if (r) { r.checked = true; $('flagnote').value = rest.join(': '); $('flagsend').disabled = false; }
+      else { $('flagnote').value = m.flag_reason; }
+    }
+    dlg.showModal();
   }
+  form.addEventListener('change', () => { $('flagsend').disabled = !form.reason.value; });
+  $('flagcancel').onclick = () => dlg.close();
+  $('flagunflag').onclick = async () => {
+    const m = ALL.find(x => x.id === flagId);
+    await sb.from('matches').update({ flagged_at: null, flag_reason: null }).eq('id', flagId);
+    if (m) { m.flagged_at = null; m.flag_reason = null; }
+    dlg.close(); paint();
+  };
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const chip = form.reason.value; if (!chip) return;
+    const note = $('flagnote').value.trim().slice(0, 500);
+    const reason = note ? `${chip}: ${note}` : chip;
+    const now = new Date().toISOString();
+    $('flagsend').disabled = true;
+    await sb.from('matches').update({ flagged_at: now, flag_reason: reason }).eq('id', flagId);
+    const m = ALL.find(x => x.id === flagId); if (m) { m.flagged_at = now; m.flag_reason = reason; }
+    dlg.close(); paint();
+  });
 
   // Filter/sort controls — repaint the loaded matches, no refetch.
   document.querySelectorAll('#scope button').forEach(b => b.onclick = () => {
