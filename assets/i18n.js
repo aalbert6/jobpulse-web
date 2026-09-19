@@ -2333,6 +2333,10 @@
   // data-i18n elements present at apply() time).
   window.jpt = function (key) { var d = DICT[CUR] || DICT.en; return d[key] != null ? d[key] : key; };
   window.jpLang = function () { return CUR; };
+  // Force a language at runtime (e.g. the dashboard applies the user's profile language after
+  // login so the whole page matches their emails + stored match content). Re-translates static
+  // elements and fires jp:lang so JS-rendered content re-renders. Ignores unknown languages.
+  window.jpSetLang = function (lang) { if (lang && DICT[lang]) apply(lang); };
 
   function mount() {
     var sel = document.getElementById("lang-switch");

@@ -225,9 +225,12 @@
     // Always scope to the signed-in user's OWN profile — never rely on RLS alone: an admin
     // account can read every row (migration 015), and without this filter it saw everyone's
     // matches (2026-09-19 incident).
-    const { data: prof, error: perr } = await sb.from('profiles').select('id,location').eq('email', session.user.email.toLowerCase()).limit(1).maybeSingle();
+    const { data: prof, error: perr } = await sb.from('profiles').select('id,location,language').eq('email', session.user.email.toLowerCase()).limit(1).maybeSingle();
     if (perr || !prof) { $('matches').innerHTML = '<div class="card">' + esc(T('db.msg_load_err') + (perr ? perr.message : 'no profile')) + '</div>'; return; }
     ME = prof.id; HOME = prof.location || '';
+    // Show the dashboard in the user's own language (the one their emails + stored match text
+    // use), so the whole experience is consistent. Falls back to browser detection if unset.
+    if (prof.language && window.jpSetLang) window.jpSetLang(prof.language);
     const { data, error } = await sb.from('matches')
       .select('id,title,company,location,url,score,reasons,saved_at,flagged_at,flag_reason,source,created_at')
       .eq('profile_id', ME)
