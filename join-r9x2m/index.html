@@ -107,8 +107,15 @@
   .bar{position:fixed;left:0;right:0;bottom:0;height:3px;background:transparent}
   .bar i{display:block;height:100%;background:var(--blue);width:0;transition:width .5s ease;opacity:.7}
   .start{margin-top:18px;background:var(--blue);color:#fff;border:0;border-radius:999px;padding:13px 26px;font:inherit;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 10px 30px color-mix(in srgb,var(--blue) 35%,transparent)}
-  .done{text-align:center;padding-top:calc(min(70vmin,560px)/2 + 24px)} .done .q{text-align:center;font-size:clamp(20px,3vw,28px)}
-  .done p{color:var(--muted);max-width:480px;margin:12px auto 0;font-size:14px}
+  /* Final screen: the dot is re-centred (place('center') on done) and the message sits over it in
+     white, centred on both axes. The heading overrides the global .q{grid-column:2} so it stays
+     horizontally centred. */
+  .done{text-align:center}
+  .done .q{grid-column:1 / -1;justify-self:center;width:100%;margin:0 auto;text-align:center;
+    font-size:clamp(22px,3.4vw,30px);color:#fff;line-height:1.15;text-shadow:0 1px 10px rgba(9,40,80,.4)}
+  .done p{color:rgba(255,255,255,.94);max-width:440px;margin:12px auto 0;font-size:14px;line-height:1.55;
+    text-shadow:0 1px 8px rgba(9,40,80,.4)}
+  .done p a{color:#fff;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -346,7 +353,7 @@
       if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
       try { sessionStorage.removeItem('jp_join_v2'); } catch(e) {}
       orb.classList.remove('thinking'); busy = false;
-      setTimeout(function(){ stepEl.hidden = true; $('done').hidden = false; pulse('happy'); requestAnimationFrame(function(){ $('done').classList.add('in'); }); $('bar').style.width = '100%'; }, 450);
+      setTimeout(function(){ stepEl.hidden = true; place('center'); $('done').hidden = false; pulse('happy'); requestAnimationFrame(function(){ $('done').classList.add('in'); }); $('bar').style.width = '100%'; }, 450);
     } catch(err) {
       orb.classList.remove('thinking'); busy = false; $('nav').hidden = false; place('side'); stepEl.classList.add('in'); fail(err.message);
     }
