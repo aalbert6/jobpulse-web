@@ -73,7 +73,11 @@
   .custom{margin-top:10px;max-width:240px} .custom[hidden]{display:none}
   .acts{display:flex;gap:16px;align-items:center;margin-top:12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
   .acts button{background:none;border:0;font:inherit;font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:6px 0;color:var(--muted)}
-  .acts button.go{color:var(--blue);font-weight:800}
+  .acts button.go{background:var(--blue);color:#fff;font-weight:700;letter-spacing:0;text-transform:none;font-size:14px;padding:9px 20px;border-radius:999px}
+  .acts button.go:hover{filter:brightness(1.08)}
+  .pick[disabled]{opacity:.6;cursor:default}
+  .toast{position:fixed;left:50%;bottom:calc(64px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);z-index:60;background:var(--green);color:#fff;font-weight:700;font-size:14px;padding:10px 18px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.18);opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;max-width:calc(100vw - 32px);text-align:center}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
   .err{font-size:13px;color:#fff;background:var(--err);display:inline-block;padding:4px 10px;border-radius:8px;margin-top:8px;opacity:0;transition:opacity .2s} .err.on{opacity:1}
   .pick{background:var(--blue);color:#fff;border:0;border-radius:999px;padding:10px 18px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
   .fhint{font-size:12.5px;color:var(--muted);margin-left:10px}
@@ -105,6 +109,7 @@
     <div id="rows"></div>
   </div>
 </main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="/assets/i18n.js"></script>
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -190,9 +195,9 @@
   }
 
   // ── editing one row in place ──
-  function open(r) {
+  async function open(r) {
     if (openRow === r) return;
-    if (openRow) close(openRow);
+    if (openRow && !(await leave(openRow))) return;  // a change in progress is saved, not thrown away
     const s = STEPS.find(x => x.name === r.dataset.name); openRow = r; r.classList.add('open');
     const v = (s.type === 'cv' || s.type === 'docs') ? '' : (profile[s.name] ?? '');
     let ctl = '';
@@ -226,35 +231,60 @@
   }
   function close(r) { r.classList.remove('open'); r.querySelector('.edit').innerHTML = ''; if (openRow === r) openRow = null; placeHome(); }
   function fail(r, msg) { const e = r.querySelector('.err'); e.textContent = msg; e.classList.add('on'); }
-  async function save(r, s) {
+  // The value currently in an open row's control → { val } or { err }.
+  function readVal(r, s) {
     const e = r.querySelector('.edit'); let val;
     if (s.type === 'chips') {
       const sel = e.querySelector('input[type=radio]:checked'); val = sel ? sel.value : null;
-      if (val === '__custom') { const n = parseInt(e.querySelector('.custom input').value, 10); if (!n || n <= 0) return fail(r, T('jv.err_required')); val = '€' + n.toLocaleString('en-US'); }
-      if (s.required && val == null) return fail(r, T('jv.err_required'));
-      if (s.name === 'years_experience') val = parseInt(val, 10);
+      if (val === '__custom') { const n = parseInt(e.querySelector('.custom input').value, 10); if (!n || n <= 0) return { err: T('jv.err_required') }; val = '€' + n.toLocaleString('en-US'); }
+      if (s.required && val == null) return { err: T('jv.err_required') };
+      if (s.name === 'years_experience' && val != null) val = parseInt(val, 10);
       if (val === '') val = null;
     } else {
       val = (e.querySelector('input,textarea').value || '').trim(); if (s.norm) val = NORM[s.norm](val);
-      if (s.required && !val) return fail(r, T('jv.err_required'));
+      if (s.required && !val) return { err: T('jv.err_required') };
       if (!val) val = null;
     }
+    return { val };
+  }
+  const same = (a, b) => String(a ?? '') === String(b ?? '');
+  async function save(r, s) {
+    const { val, err } = readVal(r, s);
+    if (err) { fail(r, err); return false; }
+    if (same(val, profile[s.name])) { close(r); return true; }  // nothing changed
     orb.classList.add('thinking');
     const { error } = DEMO ? { error: null } : await sb.from('profiles').update({ [s.name]: val }).eq('id', profile.id);
     orb.classList.remove('thinking');
-    if (error) return fail(r, error.message);
+    if (error) { fail(r, error.message); return false; }
     profile[s.name] = val;
     if (s.name === 'language') { const sel = $('lang-switch'); if (sel) { sel.value = val; sel.dispatchEvent(new Event('change', {bubbles:true})); } }
-    done(r, s);
+    done(r, s); toast(T('jv.toast_saved'));
+    return true;
   }
+  // Leaving an open row (another row tapped, or a click outside) saves its change; uploads and
+  // removals have already been applied, so those rows just close.
+  async function leave(r) {
+    const s = STEPS.find(x => x.name === r.dataset.name);
+    if (s.type === 'cv' || s.type === 'docs') { close(r); return true; }
+    return save(r, s);
+  }
+  document.addEventListener('click', ev => {
+    if (!openRow || openRow.contains(ev.target) || ev.target.closest('.row') || ev.target.closest('select')) return;
+    leave(openRow);
+  });
+  let toastT = null;
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2800); }
   async function uploadCv(r, file) {
     if (!file) return;
     const fd = new FormData(); fd.append('action', 'upload_cv'); fd.append('file', file);
+    const b = r.querySelector('.pick'); b.disabled = true; b.textContent = T('jv.uploading');
+    r.querySelector('.err').classList.remove('on');
     orb.classList.add('thinking');
-    const { ok } = await api(fd);
-    orb.classList.remove('thinking');
+    const { ok, j } = await api(fd);
+    orb.classList.remove('thinking'); b.disabled = false; b.textContent = T('jv.cv_replace');
     if (!ok) return fail(r, T('jv.err_file').replace('{name}', file.name));
-    cv = { has_cv: true, name: j.name }; done(r, STEPS.find(x => x.name === 'cv'));
+    cv = { has_cv: true, name: j.name || file.name }; done(r, STEPS.find(x => x.name === 'cv'));
+    toast(T('jv.toast_cv').replace('{name}', cv.name));
   }
   async function api(body) {  // signed-in call to the profile edge fn (JSON or FormData)
     if (DEMO) { await new Promise(r => setTimeout(r, 500)); const f = body instanceof FormData ? body.get('file') : null;
@@ -278,21 +308,24 @@
   async function uploadDocs(r, files) {
     if (!files.length) return;
     r.querySelector('.err').classList.remove('on');
-    orb.classList.add('thinking');
+    const b = r.querySelector('.pick'); b.disabled = true; b.textContent = T('jv.uploading');
+    orb.classList.add('thinking'); const added = [];
     for (const f of files) {
       const fd = new FormData(); fd.append('action', 'upload_doc'); fd.append('file', f);
       const { ok, j } = await api(fd);
       if (!ok) { fail(r, T('jv.err_file').replace('{name}', f.name)); continue; }
-      docs.unshift({ key: j.key, name: j.name, uploaded_at: new Date().toISOString() });
+      docs.unshift({ key: j.key, name: j.name, uploaded_at: new Date().toISOString() }); added.push(j.name);
     }
-    orb.classList.remove('thinking'); paintDocs(r); pop(r);
+    orb.classList.remove('thinking'); b.disabled = false; b.textContent = T('jv.docs_add'); paintDocs(r);
+    if (added.length) { pop(r); toast(T('jv.toast_doc').replace('{name}', added.join(', '))); }
   }
   async function removeDoc(r, key) {
     orb.classList.add('thinking');
     const { ok, j } = await api({ action: 'delete_doc', key });
     orb.classList.remove('thinking');
     if (!ok) return fail(r, j.error || 'error');
-    docs = docs.filter(d => d.key !== key); paintDocs(r); pop(r);
+    const gone = docs.find(d => d.key === key); docs = docs.filter(d => d.key !== key); paintDocs(r); pop(r);
+    toast(T('jv.toast_removed').replace('{name}', gone ? gone.name : ''));
   }
   function pop(r) {
     const t = r.querySelector('.tick'); t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2200);
