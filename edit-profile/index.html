@@ -86,7 +86,11 @@
   .dlist li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
   .dlist .dname{overflow-wrap:anywhere}
   .dlist .rm{background:none;border:0;font:inherit;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:pointer;padding:4px 0;white-space:nowrap}
-  .dlist .rm:hover,.dlist .rm.sure{color:var(--err);font-weight:700}
+  .dlist .rm:hover{color:var(--err)}
+  .dlist li.gone .dname{text-decoration:line-through;opacity:.5}
+  .dlist .tag{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-left:6px}
+  .staged{margin:10px 0 0;font-size:14.5px;font-weight:600}
+  .acts button[disabled]{opacity:.6;cursor:default}
   /* Desktop (≥1024px): wider canvas; the profile sections flow in two balanced columns. */
   @media(min-width:1024px){
     main{max-width:1160px;padding:40px 40px 90px}
@@ -161,7 +165,8 @@
   const NORM = { name: v => v.trim().replace(/\s+/g,' ').slice(0,80), title: v => v.trim().replace(/\s+/g,' ').slice(0,120), trim: v => v.trim().slice(0,600), list6: v => list(v,6), list8: v => list(v,8), list12: v => list(v,12) };
 
   const DEMO = new URLSearchParams(location.search).get('demo') === '1';  // design preview: sample data, no reads/writes
-  let profile = null, email = '', cv = null, docs = [], openRow = null;
+  let profile = null, email = '', cv = null, docs = [], openRow = null, pend = null;
+  const kb = n => n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
   const orb = $('orb'), core = $('core');
   const BASE = () => Math.min(Math.min(window.innerWidth, window.innerHeight) * 0.7, 560);
   function placeAt(el) {  // Dottie glides to (and scales to) a slot element
@@ -214,22 +219,27 @@
         + (s.keepCurrent && cur && !known ? `<label><input type="radio" name="c" value="${esc(cur)}" checked>${esc(cur)}</label>` : '')
         + (s.custom ? `<label><input type="radio" name="c" value="__custom" ${isCustom ? 'checked' : ''}>${esc(T(s.custom))}</label>` : '') + `</div>`
         + (s.custom ? `<div class="custom" ${isCustom ? '' : 'hidden'}><input type="number" min="0" step="1000" placeholder="${esc(T('jv.s_other_ph'))}" value="${isCustom ? cur.replace(/[^0-9]/g,'') : ''}"></div>` : '');
-    } else if (s.type === 'cv') ctl = `<button type="button" class="pick">${esc(T('jv.cv_replace'))}</button><span class="fhint">${esc(T('jv.cvfile_hint'))}</span><input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" hidden>`;
+    } else if (s.type === 'cv') ctl = `<button type="button" class="pick">${esc(T('jv.cv_replace'))}</button><span class="fhint">${esc(T('jv.cvfile_hint'))}</span><p class="staged" hidden></p><input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" hidden>`;
     else if (s.type === 'docs') ctl = `<ul class="dlist"></ul><button type="button" class="pick">${esc(T('jv.docs_add'))}</button><span class="fhint">${esc(T('jv.cvfile_hint'))}</span><input type="file" multiple accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" hidden>`;
     r.querySelector('.edit').innerHTML = `<div class="eq"><div class="slot"></div><p>${esc(T(s.q))}</p></div>${ctl}<div class="err"></div><div class="acts"><button type="button" class="go">${esc(T('jv.save'))}</button><button type="button" class="cancel">${esc(T('jv.cancel'))}</button></div>`;
     const e = r.querySelector('.edit');
     e.querySelector('.cancel').onclick = () => close(r);
     e.querySelector('.go').onclick = () => save(r, s);
     e.querySelectorAll('input[type=radio]').forEach(x => x.onchange = () => { const c = e.querySelector('.custom'); if (c) { c.hidden = x.value !== '__custom'; if (!c.hidden) c.querySelector('input').focus(); } });
-    if (s.type === 'cv') { const inp = e.querySelector('input[type=file]'); e.querySelector('.pick').onclick = () => inp.click(); inp.onchange = () => uploadCv(r, inp.files[0]); e.querySelector('.go').hidden = true; }
-    if (s.type === 'docs') { const inp = e.querySelector('input[type=file]'); e.querySelector('.pick').onclick = () => inp.click(); inp.onchange = () => { const fs = [...inp.files]; inp.value = ''; uploadDocs(r, fs); }; e.querySelector('.go').hidden = true; e.querySelector('.cancel').textContent = T('jv.close'); paintDocs(r); }
+    // CV + documents are STAGED: picking a file or tapping remove changes nothing until Save.
+    pend = { cv: null, add: [], remove: new Set() };
+    if (s.type === 'cv') { const inp = e.querySelector('input[type=file]'); e.querySelector('.pick').onclick = () => inp.click();
+      inp.onchange = () => { const f = inp.files[0]; inp.value = ''; if (!f) return; pend.cv = f; r.querySelector('.err').classList.remove('on');
+        const st = e.querySelector('.staged'); st.hidden = false; st.textContent = '📄 ' + T('jv.cv_selected').replace('{name}', `${f.name} (${kb(f.size)})`); }; }
+    if (s.type === 'docs') { const inp = e.querySelector('input[type=file]'); e.querySelector('.pick').onclick = () => inp.click();
+      inp.onchange = () => { pend.add.push(...inp.files); inp.value = ''; r.querySelector('.err').classList.remove('on'); paintDocs(r); }; paintDocs(r); }
     e.addEventListener('keydown', ev => { if (ev.key === 'Enter' && !(ev.shiftKey && s.type === 'long') && ev.target.tagName !== 'BUTTON' && s.type !== 'long') { ev.preventDefault(); save(r, s); } if (ev.key === 'Escape') close(r); });
     // bring the row into view, then let Dottie glide to it and focus the control
     r.scrollIntoView({ behavior: 'smooth', block: 'center' });
     core.classList.remove('happy'); void core.offsetWidth; placeHome();
     setTimeout(() => { placeHome(); const f = e.querySelector('input[type=text],input[type=number],textarea'); if (f) f.focus({ preventScroll: true }); }, 450);
   }
-  function close(r) { r.classList.remove('open'); r.querySelector('.edit').innerHTML = ''; if (openRow === r) openRow = null; placeHome(); }
+  function close(r) { if (openRow === r) pend = null; r.classList.remove('open'); r.querySelector('.edit').innerHTML = ''; if (openRow === r) openRow = null; placeHome(); }
   function fail(r, msg) { const e = r.querySelector('.err'); e.textContent = msg; e.classList.add('on'); }
   // The value currently in an open row's control → { val } or { err }.
   function readVal(r, s) {
@@ -249,6 +259,8 @@
   }
   const same = (a, b) => String(a ?? '') === String(b ?? '');
   async function save(r, s) {
+    if (s.type === 'cv') return saveCv(r);
+    if (s.type === 'docs') return saveDocs(r);
     const { val, err } = readVal(r, s);
     if (err) { fail(r, err); return false; }
     if (same(val, profile[s.name])) { close(r); return true; }  // nothing changed
@@ -261,30 +273,32 @@
     done(r, s); toast(T('jv.toast_saved'));
     return true;
   }
-  // Leaving an open row (another row tapped, or a click outside) saves its change; uploads and
-  // removals have already been applied, so those rows just close.
-  async function leave(r) {
-    const s = STEPS.find(x => x.name === r.dataset.name);
-    if (s.type === 'cv' || s.type === 'docs') { close(r); return true; }
-    return save(r, s);
-  }
+  // Leaving an open row (another row tapped, or a click outside) saves its change — fields and
+  // staged files alike; Cancel / Esc are the only ways to discard.
+  async function leave(r) { return save(r, STEPS.find(x => x.name === r.dataset.name)); }
   document.addEventListener('click', ev => {
-    if (!openRow || openRow.contains(ev.target) || ev.target.closest('.row') || ev.target.closest('select')) return;
+    // composedPath() is captured at dispatch, so it still holds the row even when the click
+    // re-rendered (detached) its own target — e.g. a document's remove/undo button.
+    const path = ev.composedPath();
+    if (!openRow || path.some(n => n.classList && (n.classList.contains('row') || n.tagName === 'SELECT'))) return;
     leave(openRow);
   });
   let toastT = null;
   function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2800); }
-  async function uploadCv(r, file) {
-    if (!file) return;
-    const fd = new FormData(); fd.append('action', 'upload_cv'); fd.append('file', file);
-    const b = r.querySelector('.pick'); b.disabled = true; b.textContent = T('jv.uploading');
-    r.querySelector('.err').classList.remove('on');
-    orb.classList.add('thinking');
+  function busyBtn(r, on) {  // the Save button shows progress while files go up
+    const g = r.querySelector('.go'); g.disabled = on; g.textContent = T(on ? 'jv.uploading' : 'jv.save');
+    r.querySelectorAll('.pick,.cancel').forEach(b => b.disabled = on); orb.classList.toggle('thinking', on);
+  }
+  async function saveCv(r) {
+    if (!pend || !pend.cv) { close(r); return true; }
+    const file = pend.cv, fd = new FormData(); fd.append('action', 'upload_cv'); fd.append('file', file);
+    r.querySelector('.err').classList.remove('on'); busyBtn(r, true);
     const { ok, j } = await api(fd);
-    orb.classList.remove('thinking'); b.disabled = false; b.textContent = T('jv.cv_replace');
-    if (!ok) return fail(r, T('jv.err_file').replace('{name}', file.name));
+    busyBtn(r, false);
+    if (!ok) { fail(r, T('jv.err_file').replace('{name}', file.name)); return false; }
     cv = { has_cv: true, name: j.name || file.name }; done(r, STEPS.find(x => x.name === 'cv'));
     toast(T('jv.toast_cv').replace('{name}', cv.name));
+    return true;
   }
   async function api(body) {  // signed-in call to the profile edge fn (JSON or FormData)
     if (DEMO) { await new Promise(r => setTimeout(r, 500)); const f = body instanceof FormData ? body.get('file') : null;
@@ -295,37 +309,38 @@
     const res = await fetch(SUPABASE_URL + '/functions/v1/profile', { method: 'POST', headers: h, body });
     return { ok: res.ok, status: res.status, j: await res.json().catch(() => ({})) };
   }
-  // ── other documents: listed with a remove control; uploads/removals apply immediately ──
+  // ── other documents: current files (tap remove → struck through, undo) + newly picked files
+  //    (marked "new"); nothing is uploaded or deleted until Save ──
   function paintDocs(r) {
-    const ul = r.querySelector('.dlist'); if (!ul) return;
-    ul.innerHTML = docs.map(d => `<li><span class="dname">📄 ${esc(d.name)}</span><button type="button" class="rm" data-key="${esc(d.key)}">${esc(T('jv.docs_remove'))}</button></li>`).join('');
+    const ul = r.querySelector('.dlist'); if (!ul || !pend) return;
+    ul.innerHTML = docs.map(d => { const gone = pend.remove.has(d.key);
+        return `<li class="${gone ? 'gone' : ''}"><span class="dname">📄 ${esc(d.name)}</span><button type="button" class="rm" data-key="${esc(d.key)}">${esc(T(gone ? 'jv.docs_undo' : 'jv.docs_remove'))}</button></li>`; }).join('')
+      + pend.add.map((f, k) => `<li class="new"><span class="dname">📄 ${esc(f.name)} <span class="tag">${esc(T('jv.docs_new'))}</span></span><button type="button" class="rm" data-add="${k}">${esc(T('jv.docs_remove'))}</button></li>`).join('');
     ul.querySelectorAll('.rm').forEach(b => b.onclick = () => {
-      if (!b.classList.contains('sure')) { b.classList.add('sure'); b.textContent = T('jv.docs_sure'); return; }  // two taps to remove
-      removeDoc(r, b.dataset.key);
+      if (b.dataset.add != null) pend.add.splice(+b.dataset.add, 1);
+      else if (pend.remove.has(b.dataset.key)) pend.remove.delete(b.dataset.key); else pend.remove.add(b.dataset.key);
+      paintDocs(r);
     });
-    const a = r.querySelector('.a'); a.textContent = display(STEPS.find(x => x.name === 'documents')); a.classList.toggle('empty', !docs.length);
   }
-  async function uploadDocs(r, files) {
-    if (!files.length) return;
-    r.querySelector('.err').classList.remove('on');
-    const b = r.querySelector('.pick'); b.disabled = true; b.textContent = T('jv.uploading');
-    orb.classList.add('thinking'); const added = [];
-    for (const f of files) {
+  async function saveDocs(r) {
+    if (!pend || (!pend.add.length && !pend.remove.size)) { close(r); return true; }
+    r.querySelector('.err').classList.remove('on'); busyBtn(r, true);
+    const failed = [];
+    for (const f of pend.add.slice()) {
       const fd = new FormData(); fd.append('action', 'upload_doc'); fd.append('file', f);
       const { ok, j } = await api(fd);
-      if (!ok) { fail(r, T('jv.err_file').replace('{name}', f.name)); continue; }
-      docs.unshift({ key: j.key, name: j.name, uploaded_at: new Date().toISOString() }); added.push(j.name);
+      if (!ok) { failed.push(f.name); continue; }
+      docs.unshift({ key: j.key, name: j.name, uploaded_at: new Date().toISOString() }); pend.add.splice(pend.add.indexOf(f), 1);
     }
-    orb.classList.remove('thinking'); b.disabled = false; b.textContent = T('jv.docs_add'); paintDocs(r);
-    if (added.length) { pop(r); toast(T('jv.toast_doc').replace('{name}', added.join(', '))); }
-  }
-  async function removeDoc(r, key) {
-    orb.classList.add('thinking');
-    const { ok, j } = await api({ action: 'delete_doc', key });
-    orb.classList.remove('thinking');
-    if (!ok) return fail(r, j.error || 'error');
-    const gone = docs.find(d => d.key === key); docs = docs.filter(d => d.key !== key); paintDocs(r); pop(r);
-    toast(T('jv.toast_removed').replace('{name}', gone ? gone.name : ''));
+    for (const key of [...pend.remove]) {
+      const { ok } = await api({ action: 'delete_doc', key });
+      if (!ok) { failed.push((docs.find(d => d.key === key) || {}).name || key); continue; }
+      docs = docs.filter(d => d.key !== key); pend.remove.delete(key);
+    }
+    busyBtn(r, false);
+    if (failed.length) { paintDocs(r); fail(r, T('jv.err_file').replace('{name}', failed.join(', '))); return false; }
+    done(r, STEPS.find(x => x.name === 'documents')); toast(T('jv.toast_docs'));
+    return true;
   }
   function pop(r) {
     const t = r.querySelector('.tick'); t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2200);
