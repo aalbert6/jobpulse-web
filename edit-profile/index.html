@@ -155,6 +155,7 @@
   const list = (v, cap) => { const seen = {}, out = []; v.split(/[,;\n]+/).forEach(x => { x = x.trim().replace(/\s+/g,' ').replace(/^[-•·]\s*/,''); const k = x.toLowerCase(); if (x && !seen[k]) { seen[k] = 1; out.push(x); } }); return out.slice(0, cap).join(', '); };
   const NORM = { name: v => v.trim().replace(/\s+/g,' ').slice(0,80), title: v => v.trim().replace(/\s+/g,' ').slice(0,120), trim: v => v.trim().slice(0,600), list6: v => list(v,6), list8: v => list(v,8), list12: v => list(v,12) };
 
+  const DEMO = new URLSearchParams(location.search).get('demo') === '1';  // design preview: sample data, no reads/writes
   let profile = null, email = '', cv = null, docs = [], openRow = null;
   const orb = $('orb'), core = $('core');
   const BASE = () => Math.min(Math.min(window.innerWidth, window.innerHeight) * 0.7, 560);
@@ -239,7 +240,7 @@
       if (!val) val = null;
     }
     orb.classList.add('thinking');
-    const { error } = await sb.from('profiles').update({ [s.name]: val }).eq('id', profile.id);
+    const { error } = DEMO ? { error: null } : await sb.from('profiles').update({ [s.name]: val }).eq('id', profile.id);
     orb.classList.remove('thinking');
     if (error) return fail(r, error.message);
     profile[s.name] = val;
@@ -256,6 +257,8 @@
     cv = { has_cv: true, name: j.name }; done(r, STEPS.find(x => x.name === 'cv'));
   }
   async function api(body) {  // signed-in call to the profile edge fn (JSON or FormData)
+    if (DEMO) { await new Promise(r => setTimeout(r, 500)); const f = body instanceof FormData ? body.get('file') : null;
+      const n = f ? f.name.replace(/[^a-zA-Z0-9._-]/g, '_') : ''; return { ok: true, status: 200, j: { ok: true, key: 'doc-' + Date.now() + '-' + n, name: n } }; }
     const { data: { session } } = await sb.auth.getSession();
     const h = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token };
     if (!(body instanceof FormData)) { h['Content-Type'] = 'application/json'; body = JSON.stringify(body); }
@@ -317,8 +320,11 @@
     paint();
   }
   document.addEventListener('jp:lang', () => { if (profile) { const o = openRow && openRow.dataset.name; paint(); if (o) open(document.querySelector(`.row[data-name="${o}"]`)); } });
-  // preview hook: ?demo=1 renders with a sample profile and no session (local review only)
-  if (new URLSearchParams(location.search).get('demo') === '1') {
+  // preview hook: ?demo=1 renders a sample profile with no session — for design review; reads
+  // and writes nothing from the database
+  function previewBanner(){ var b=document.createElement('div'); b.setAttribute('data-i18n','jv.preview'); b.textContent=(window.jpt?window.jpt('jv.preview'):'Preview'); b.style.cssText='position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:#14202b;color:#fff;font:600 12.5px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:8px 14px;border-radius:999px;box-shadow:0 4px 16px rgba(0,0,0,.2);pointer-events:none;max-width:calc(100vw - 32px);text-align:center'; document.body.appendChild(b); }
+  if (DEMO) {
+    previewBanner();
     profile = { id: 'demo', first_name: 'Albert', language: 'ca', role_title: 'Agentic AI Engineer', years_experience: 3, target_roles: 'Data Analyst, Analytics Engineer, AI Engineer', skills: 'Python, SQL, JavaScript, LLMs, RAG', target_companies: 'Apple, IBM, Amazon, Google', learning_skills: '', salary_floor: '€35,000', deal_breakers: '', location: 'Barcelona', work_style: 'Hybrid', commute: 'up to 1 hour', work_authorization: 'EU — no sponsorship needed', career_goal: 'Grow into a lead role', energizers: 'Building things', thrive_environment: '', drains_energy: 'Unclear priorities', cv_or_linkedin: '' };
     email = 'albert@example.com'; cv = { has_cv: true, name: 'cv_albert.pdf' }; docs = [{ key: 'doc-1-cover_letter.pdf', name: 'cover_letter.pdf' }, { key: 'doc-2-aws_certificate.pdf', name: 'aws_certificate.pdf' }]; $('app').hidden = false; paint();
   } else init();
