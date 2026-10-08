@@ -69,6 +69,15 @@
   .footrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
   #lang-switch{font:inherit;font-size:13px;color:var(--muted);background:var(--card);
     border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
+  /* Desktop (≥1024px): wider canvas; the five steps + the example sit in a two-column grid. */
+  @media(min-width:1024px){
+    .wrap{max-width:1160px;padding:0 40px;}
+    h1{font-size:46px;margin-top:36px;}
+    .lede{font-size:20px;max-width:760px;}
+    .steps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:28px;}
+    .steps .step,.steps .example{margin:0;}
+    .steps .example{display:flex;flex-direction:column;justify-content:center;}
+  }
 </style>
 </head>
 <body>
@@ -82,6 +91,7 @@
   <p class="lede" data-i18n="hw.lede">One calm weekly email. Every role scored against <em>your</em> profile — not a
   keyword — with the honest gap on each. Here's the whole thing.</p>
 
+  <div class="steps">
   <div class="step"><div class="num">1</div><div>
     <h3 data-i18n="hw.s1h">Tell us about you, once</h3>
     <p data-i18n="hw.s1p">A short profile: your skills, target roles, location, salary floor, what energises you.
@@ -113,6 +123,7 @@
     <h3 data-i18n="hw.s5h">Save the ones worth it</h3>
     <p data-i18n="hw.s5p">On the premium plan, a private dashboard lets you save roles and flag anything that looks
     wrong for a human to review, and we also tailor a CV and cover letter to each role you save.</p></div></div>
+  </div>
 
   <p style="margin:26px 0 6px;" data-i18n="hw.private"><strong>Private by design.</strong> We keep the minimum, store it
   in the EU, never sell it, and you can delete everything in one click.

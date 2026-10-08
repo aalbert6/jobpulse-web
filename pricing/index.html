@@ -77,6 +77,13 @@
   .footrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
   #lang-switch{font:inherit;font-size:13px;color:var(--muted);background:var(--card);
     border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
+  /* Desktop (≥1024px): wider canvas and roomier plan cards. */
+  @media(min-width:1024px){
+    .wrap{max-width:1040px;padding:0 40px;}
+    h1{font-size:46px;margin-top:36px;}
+    .grid{gap:28px;margin-top:20px;}
+    .plan{padding:34px 36px;}
+  }
 </style>
 </head>
 <body>

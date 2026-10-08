@@ -78,6 +78,19 @@
   .pick{background:var(--blue);color:#fff;border:0;border-radius:999px;padding:10px 18px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
   .fhint{font-size:12.5px;color:var(--muted);margin-left:10px}
   .auth{max-width:420px;margin:60px auto;text-align:center;color:var(--muted)}
+  .dlist{list-style:none;margin:0 0 12px;padding:0}
+  .dlist li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+  .dlist .dname{overflow-wrap:anywhere}
+  .dlist .rm{background:none;border:0;font:inherit;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:pointer;padding:4px 0;white-space:nowrap}
+  .dlist .rm:hover,.dlist .rm.sure{color:var(--err);font-weight:700}
+  /* Desktop (≥1024px): wider canvas; the profile sections flow in two balanced columns. */
+  @media(min-width:1024px){
+    main{max-width:1160px;padding:40px 40px 90px}
+    .hint,.ro{max-width:760px}
+    #rows{columns:2;column-gap:32px}
+    .grp{break-inside:avoid;padding-top:1px;margin-bottom:26px}
+    .grp .sec{margin-top:6px}
+  }
 </style>
 </head>
 <body>
@@ -111,7 +124,10 @@
       {name:'language', type:'chips', q:'jv.lang', required:true, options:LANGS},
       {name:'role_title', type:'text', q:'jv.role', ph:'in.role_ph', required:true, norm:'title'},
       {name:'years_experience', type:'chips', q:'jv.years', required:true, options:[['0','jv.y_lt1'],['1','jv.y_1_2'],['3','jv.y_3_5'],['6','jv.y_6_9'],['10','jv.y_10']], snap:[0,1,3,6,10]},
+    ]],
+    ['jv.sec_docs', [
       {name:'cv', type:'cv', q:'jv.cvfile'},
+      {name:'documents', type:'docs', q:'jv.files'},
     ]],
     ['in.sec.looking', [
       {name:'target_roles', type:'text', q:'jv.roles', ph:'in.roles_ph', required:true, norm:'list6'},
@@ -139,7 +155,7 @@
   const list = (v, cap) => { const seen = {}, out = []; v.split(/[,;\n]+/).forEach(x => { x = x.trim().replace(/\s+/g,' ').replace(/^[-•·]\s*/,''); const k = x.toLowerCase(); if (x && !seen[k]) { seen[k] = 1; out.push(x); } }); return out.slice(0, cap).join(', '); };
   const NORM = { name: v => v.trim().replace(/\s+/g,' ').slice(0,80), title: v => v.trim().replace(/\s+/g,' ').slice(0,120), trim: v => v.trim().slice(0,600), list6: v => list(v,6), list8: v => list(v,8), list12: v => list(v,12) };
 
-  let profile = null, email = '', cv = null, openRow = null;
+  let profile = null, email = '', cv = null, docs = [], openRow = null;
   const orb = $('orb'), core = $('core');
   const BASE = () => Math.min(Math.min(window.innerWidth, window.innerHeight) * 0.7, 560);
   function placeAt(el) {  // Dottie glides to (and scales to) a slot element
@@ -154,6 +170,7 @@
   // ── display value for a row ──
   function display(s) {
     if (s.type === 'cv') return cv && cv.has_cv ? `${T('jv.cv_current')}${cv.name ? ' · ' + cv.name : ''}` : T('jv.cv_none');
+    if (s.type === 'docs') return docs.length ? docs.map(d => d.name).join('\n') : T('jv.docs_none');
     const v = profile[s.name];
     if (v == null || v === '') return '';
     if (s.type === 'chips') { const o = s.options.find(o => String(o[0]) === String(v)); if (o) return o[1].includes('.') ? T(o[1]) : o[1]; if (s.name === 'years_experience') return String(v); return String(v); }
@@ -166,7 +183,7 @@
   function paint() {
     $('title').textContent = T('jv.edit_title').replace('{name}', profile.first_name || '');
     $('ro').textContent = T('jv.edit_email').replace('{email}', email);
-    $('rows').innerHTML = SECTIONS.map(([sec, steps]) => `<p class="sec">${esc(T(sec).replace(/<[^>]+>/g,''))}</p>` + steps.map(rowHtml).join('')).join('');
+    $('rows').innerHTML = SECTIONS.map(([sec, steps]) => `<section class="grp"><p class="sec">${esc(T(sec).replace(/<[^>]+>/g,''))}</p>` + steps.map(rowHtml).join('') + `</section>`).join('');
     document.querySelectorAll('.row').forEach((r, i) => { setTimeout(() => r.classList.add('in'), 40 + i * 35); r.querySelector('.head').onclick = () => open(r); });
     setTimeout(placeHome, 60);
   }
@@ -176,7 +193,7 @@
     if (openRow === r) return;
     if (openRow) close(openRow);
     const s = STEPS.find(x => x.name === r.dataset.name); openRow = r; r.classList.add('open');
-    const v = s.type === 'cv' ? '' : (profile[s.name] ?? '');
+    const v = (s.type === 'cv' || s.type === 'docs') ? '' : (profile[s.name] ?? '');
     let ctl = '';
     const ph = s.ph ? esc(T(s.ph)) : '';
     if (s.type === 'text') ctl = `<input type="text" placeholder="${ph}" value="${esc(v)}">`;
@@ -192,12 +209,14 @@
         + (s.custom ? `<label><input type="radio" name="c" value="__custom" ${isCustom ? 'checked' : ''}>${esc(T(s.custom))}</label>` : '') + `</div>`
         + (s.custom ? `<div class="custom" ${isCustom ? '' : 'hidden'}><input type="number" min="0" step="1000" placeholder="${esc(T('jv.s_other_ph'))}" value="${isCustom ? cur.replace(/[^0-9]/g,'') : ''}"></div>` : '');
     } else if (s.type === 'cv') ctl = `<button type="button" class="pick">${esc(T('jv.cv_replace'))}</button><span class="fhint">${esc(T('jv.cvfile_hint'))}</span><input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" hidden>`;
+    else if (s.type === 'docs') ctl = `<ul class="dlist"></ul><button type="button" class="pick">${esc(T('jv.docs_add'))}</button><span class="fhint">${esc(T('jv.cvfile_hint'))}</span><input type="file" multiple accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" hidden>`;
     r.querySelector('.edit').innerHTML = `<div class="eq"><div class="slot"></div><p>${esc(T(s.q))}</p></div>${ctl}<div class="err"></div><div class="acts"><button type="button" class="go">${esc(T('jv.save'))}</button><button type="button" class="cancel">${esc(T('jv.cancel'))}</button></div>`;
     const e = r.querySelector('.edit');
     e.querySelector('.cancel').onclick = () => close(r);
     e.querySelector('.go').onclick = () => save(r, s);
     e.querySelectorAll('input[type=radio]').forEach(x => x.onchange = () => { const c = e.querySelector('.custom'); if (c) { c.hidden = x.value !== '__custom'; if (!c.hidden) c.querySelector('input').focus(); } });
     if (s.type === 'cv') { const inp = e.querySelector('input[type=file]'); e.querySelector('.pick').onclick = () => inp.click(); inp.onchange = () => uploadCv(r, inp.files[0]); e.querySelector('.go').hidden = true; }
+    if (s.type === 'docs') { const inp = e.querySelector('input[type=file]'); e.querySelector('.pick').onclick = () => inp.click(); inp.onchange = () => { const fs = [...inp.files]; inp.value = ''; uploadDocs(r, fs); }; e.querySelector('.go').hidden = true; e.querySelector('.cancel').textContent = T('jv.close'); paintDocs(r); }
     e.addEventListener('keydown', ev => { if (ev.key === 'Enter' && !(ev.shiftKey && s.type === 'long') && ev.target.tagName !== 'BUTTON' && s.type !== 'long') { ev.preventDefault(); save(r, s); } if (ev.key === 'Escape') close(r); });
     // bring the row into view, then let Dottie glide to it and focus the control
     r.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -229,14 +248,52 @@
   }
   async function uploadCv(r, file) {
     if (!file) return;
-    const { data: { session } } = await sb.auth.getSession();
     const fd = new FormData(); fd.append('action', 'upload_cv'); fd.append('file', file);
     orb.classList.add('thinking');
-    const res = await fetch(SUPABASE_URL + '/functions/v1/profile', { method: 'POST', headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }, body: fd });
-    const j = await res.json().catch(() => ({}));
+    const { ok } = await api(fd);
     orb.classList.remove('thinking');
-    if (!res.ok) return fail(r, j.error || ('HTTP ' + res.status));
+    if (!ok) return fail(r, T('jv.err_file').replace('{name}', file.name));
     cv = { has_cv: true, name: j.name }; done(r, STEPS.find(x => x.name === 'cv'));
+  }
+  async function api(body) {  // signed-in call to the profile edge fn (JSON or FormData)
+    const { data: { session } } = await sb.auth.getSession();
+    const h = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token };
+    if (!(body instanceof FormData)) { h['Content-Type'] = 'application/json'; body = JSON.stringify(body); }
+    const res = await fetch(SUPABASE_URL + '/functions/v1/profile', { method: 'POST', headers: h, body });
+    return { ok: res.ok, status: res.status, j: await res.json().catch(() => ({})) };
+  }
+  // ── other documents: listed with a remove control; uploads/removals apply immediately ──
+  function paintDocs(r) {
+    const ul = r.querySelector('.dlist'); if (!ul) return;
+    ul.innerHTML = docs.map(d => `<li><span class="dname">📄 ${esc(d.name)}</span><button type="button" class="rm" data-key="${esc(d.key)}">${esc(T('jv.docs_remove'))}</button></li>`).join('');
+    ul.querySelectorAll('.rm').forEach(b => b.onclick = () => {
+      if (!b.classList.contains('sure')) { b.classList.add('sure'); b.textContent = T('jv.docs_sure'); return; }  // two taps to remove
+      removeDoc(r, b.dataset.key);
+    });
+    const a = r.querySelector('.a'); a.textContent = display(STEPS.find(x => x.name === 'documents')); a.classList.toggle('empty', !docs.length);
+  }
+  async function uploadDocs(r, files) {
+    if (!files.length) return;
+    r.querySelector('.err').classList.remove('on');
+    orb.classList.add('thinking');
+    for (const f of files) {
+      const fd = new FormData(); fd.append('action', 'upload_doc'); fd.append('file', f);
+      const { ok, j } = await api(fd);
+      if (!ok) { fail(r, T('jv.err_file').replace('{name}', f.name)); continue; }
+      docs.unshift({ key: j.key, name: j.name, uploaded_at: new Date().toISOString() });
+    }
+    orb.classList.remove('thinking'); paintDocs(r); pop(r);
+  }
+  async function removeDoc(r, key) {
+    orb.classList.add('thinking');
+    const { ok, j } = await api({ action: 'delete_doc', key });
+    orb.classList.remove('thinking');
+    if (!ok) return fail(r, j.error || 'error');
+    docs = docs.filter(d => d.key !== key); paintDocs(r); pop(r);
+  }
+  function pop(r) {
+    const t = r.querySelector('.tick'); t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2200);
+    core.classList.remove('happy'); void core.offsetWidth; core.classList.add('happy');
   }
   function done(r, s) {
     close(r);
@@ -254,8 +311,8 @@
     profile = prof; $('app').hidden = false;
     setTimeout(() => placeHome(), 80);
     try {
-      const res = await fetch(SUPABASE_URL + '/functions/v1/profile', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }, body: JSON.stringify({ action: 'cv_status' }) });
-      cv = res.ok ? await res.json() : null;
+      const { ok, j } = await api({ action: 'docs_status' });
+      if (ok) { cv = j.cv ? { has_cv: true, name: j.cv.name } : { has_cv: false }; docs = j.docs || []; }
     } catch (e) { cv = null; }
     paint();
   }
@@ -263,7 +320,7 @@
   // preview hook: ?demo=1 renders with a sample profile and no session (local review only)
   if (new URLSearchParams(location.search).get('demo') === '1') {
     profile = { id: 'demo', first_name: 'Albert', language: 'ca', role_title: 'Agentic AI Engineer', years_experience: 3, target_roles: 'Data Analyst, Analytics Engineer, AI Engineer', skills: 'Python, SQL, JavaScript, LLMs, RAG', target_companies: 'Apple, IBM, Amazon, Google', learning_skills: '', salary_floor: '€35,000', deal_breakers: '', location: 'Barcelona', work_style: 'Hybrid', commute: 'up to 1 hour', work_authorization: 'EU — no sponsorship needed', career_goal: 'Grow into a lead role', energizers: 'Building things', thrive_environment: '', drains_energy: 'Unclear priorities', cv_or_linkedin: '' };
-    email = 'albert@example.com'; cv = { has_cv: true, name: 'cv_albert.pdf' }; $('app').hidden = false; paint();
+    email = 'albert@example.com'; cv = { has_cv: true, name: 'cv_albert.pdf' }; docs = [{ key: 'doc-1-cover_letter.pdf', name: 'cover_letter.pdf' }, { key: 'doc-2-aws_certificate.pdf', name: 'aws_certificate.pdf' }]; $('app').hidden = false; paint();
   } else init();
 </script>
 </body>
