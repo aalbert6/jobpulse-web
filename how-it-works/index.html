@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <link rel="canonical" href="https://jobspulseapp.com/how-it-works/">
 <meta name="description" content="How JobsPulse scores real job openings against your profile and gives you an honest gap on each one.">
 <meta name="theme-color" content="#0b5cad">
@@ -17,13 +19,13 @@
 <meta name="twitter:title" content="JobsPulse — honest weekly job matches">
 <meta name="twitter:description" content="How JobsPulse scores real job openings against your profile and gives you an honest gap on each one.">
 <meta name="twitter:image" content="https://jobspulseapp.com/assets/og.png">
-<link rel="alternate" hreflang="en" href="https://jobspulseapp.com/how-it-works/?lang=en">
-<link rel="alternate" hreflang="es" href="https://jobspulseapp.com/how-it-works/?lang=es">
-<link rel="alternate" hreflang="ca" href="https://jobspulseapp.com/how-it-works/?lang=ca">
-<link rel="alternate" hreflang="de" href="https://jobspulseapp.com/how-it-works/?lang=de">
-<link rel="alternate" hreflang="fr" href="https://jobspulseapp.com/how-it-works/?lang=fr">
-<link rel="alternate" hreflang="ja" href="https://jobspulseapp.com/how-it-works/?lang=ja">
-<link rel="alternate" hreflang="zh" href="https://jobspulseapp.com/how-it-works/?lang=zh">
+<link rel="alternate" hreflang="en" href="https://jobspulseapp.com/how-it-works/">
+<link rel="alternate" hreflang="es" href="https://jobspulseapp.com/es/how-it-works/">
+<link rel="alternate" hreflang="ca" href="https://jobspulseapp.com/ca/how-it-works/">
+<link rel="alternate" hreflang="de" href="https://jobspulseapp.com/de/how-it-works/">
+<link rel="alternate" hreflang="fr" href="https://jobspulseapp.com/fr/how-it-works/">
+<link rel="alternate" hreflang="ja" href="https://jobspulseapp.com/ja/how-it-works/">
+<link rel="alternate" hreflang="zh" href="https://jobspulseapp.com/zh/how-it-works/">
 <link rel="alternate" hreflang="x-default" href="https://jobspulseapp.com/how-it-works/">
 <title>JobsPulse — how it works</title>
 <style>
@@ -78,13 +80,15 @@
     .steps .step,.steps .example{margin:0;}
     .steps .example{display:flex;flex-direction:column;justify-content:center;}
   }
+  /* Phones: long languages (es/de/fr) overflow the menu; How it works stays in the footer. */
+  @media(max-width:480px){ .nav-how{display:none !important} }
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav>
     <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
-    <div class="links"><a href="/how-it-works/" data-i18n="nav.how">How it works</a><a href="/pricing/" data-i18n="nav.pricing">Pricing</a><a href="/dashboard/" id="navauth" data-i18n="nav.signin">Sign in</a><a class="nav-cta" href="/#waitlist" data-i18n="nav.join">Join</a></div>
+    <div class="links"><a class="nav-how" href="/how-it-works/" data-i18n="nav.how">How it works</a><a href="/pricing/" data-i18n="nav.pricing">Pricing</a><a href="/dashboard/" id="navauth" data-i18n="nav.signin">Sign in</a><a class="nav-cta" href="/#waitlist" data-i18n="nav.join">Join</a></div>
   </nav>
 
   <h1 data-i18n="hw.h1">How JobsPulse works</h1>

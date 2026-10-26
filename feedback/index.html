@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <meta name="robots" content="noindex">
 <title>JobsPulse — your feedback</title>
 <meta name="description" content="Tell us what's working and what's missing in the JobsPulse beta.">
@@ -50,13 +52,15 @@
   .footrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
   #lang-switch{font:inherit;font-size:13px;color:var(--muted);background:var(--card);
     border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
+  /* Phones: long languages (es/de/fr) overflow the menu; How it works stays in the footer. */
+  @media(max-width:480px){ .nav-how{display:none !important} }
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav>
     <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
-    <div class="links"><a href="/how-it-works/" data-i18n="nav.how">How it works</a><a href="/pricing/" data-i18n="nav.pricing">Pricing</a><a href="/dashboard/" id="navauth" data-i18n="nav.signin">Sign in</a></div>
+    <div class="links"><a class="nav-how" href="/how-it-works/" data-i18n="nav.how">How it works</a><a href="/pricing/" data-i18n="nav.pricing">Pricing</a><a href="/dashboard/" id="navauth" data-i18n="nav.signin">Sign in</a></div>
   </nav>
 
   <div id="form-wrap">
@@ -132,14 +136,21 @@
   </footer>
 </div>
 <script src="/assets/i18n.js" defer></script>
+<script src="/assets/config.js"></script>
+<script src="/assets/guard.js"></script>
 
 <script>
   var form = document.getElementById('fb'), note = document.getElementById('note'), btn = document.getElementById('submit');
+  // bot check (assets/guard.js): rendered just above the send button, visible only if it needs a click
+  var gd = document.createElement('div'); gd.style.margin = '10px 0'; btn.parentNode.insertBefore(gd, btn);
+  var G = window.jpGuard ? jpGuard.mount(gd) : null;
   form.addEventListener('submit', async function(e){
     e.preventDefault();
     btn.disabled = true; note.textContent = 'Sending…';
     try {
-      var res = await fetch(this.action, { method:'POST', body:new FormData(this), headers:{'Accept':'application/json'} });
+      var fd = new FormData(form); if (G && G.on) fd.append('captcha', await G.token());
+      var res = await fetch(form.action, { method:'POST', body:fd, headers:{'Accept':'application/json'} });
+      if (G) G.reset();
       if (res.ok){ document.getElementById('form-wrap').style.display='none'; document.getElementById('done').style.display='block'; window.scrollTo(0,0); }
       else { btn.disabled = false; note.textContent = "Hmm, that didn't send — email me directly instead."; }
     } catch(_) { btn.disabled = false; note.textContent = 'Network hiccup — try again in a moment.'; }

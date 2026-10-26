@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en" data-i18n-title="inv.title">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="robots" content="noindex">
+<title>JobsPulse — invoices</title>
+<!--
+  Invoices (2026-10-22). Signed-in: the list of YOUR invoices and credit notes; ?id=<uuid> shows
+  one as a printable A4 invoice (Print / Save as PDF). Rows are issued by the `stripe-webhook`
+  and `admin` functions (migration 017) and are read-only here. The page always filters by the
+  signed-in user's own profile — admins can read every invoice through RLS, so /admin/ opens an
+  invoice with ?id=…&admin=1, which is honoured only for an account listed in public.admins.
+  ?demo=1 = sample invoice, no reads.
+-->
+<style>
+  :root{ --blue:#0b5cad; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; --green:#1a7f37; --red:#b3261e; }
+  @media (prefers-color-scheme: dark){ :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; } }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:var(--blue)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;max-width:900px;margin:0 auto}
+  .brand{font-weight:800;font-size:16px;color:var(--blue);text-decoration:none}
+  .hdr{display:flex;gap:8px;align-items:center}
+  #lang-switch,.hbtn{font:inherit;font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;text-decoration:none}
+  main{max-width:900px;margin:0 auto;padding:10px 20px 80px}
+  h1{font-size:26px;letter-spacing:-.02em;margin:10px 0 4px} .sub{color:var(--muted);margin:0 0 18px;font-size:14.5px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px} th,td{text-align:left;padding:10px 16px;border-bottom:1px solid var(--line)}
+  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)} tr:last-child td{border-bottom:0}
+  td.r,th.r{text-align:right} .pill{font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:20px;padding:2px 8px;color:var(--muted)}
+  .pill.ok{color:var(--green);border-color:var(--green)} .pill.bad{color:var(--red);border-color:var(--red)}
+  .empty{padding:18px 16px;color:var(--muted)}
+  .tools{display:flex;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+  .tools a,.tools button{font:inherit;font-size:13px;font-weight:600;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none}
+  .paper{background:#fff;color:#1b1b1b;border-radius:6px;box-shadow:0 2px 14px rgba(0,0,0,.12);padding:44px 48px;max-width:794px;margin:0 auto;font-size:13.5px}
+  @media(max-width:600px){ .paper{padding:24px 18px} }
+  .paper .top{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:26px}
+  .paper .logo{font-weight:800;font-size:20px;color:#0b5cad} .paper .logo span{display:inline-block;width:11px;height:11px;border-radius:50%;background:#0b5cad;margin-right:8px;vertical-align:1px}
+  .paper h2{font-size:22px;margin:0;text-align:right} .paper .no{text-align:right;color:#444;margin:2px 0 0}
+  .paper .parties{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px} @media(max-width:600px){ .paper .parties{grid-template-columns:1fr} }
+  .paper .lbl{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#777;margin:0 0 4px}
+  .paper .addr{white-space:pre-line;margin:0}
+  .paper table{font-size:13px} .paper th{color:#777;border-bottom:1.5px solid #ccc;padding:8px 6px} .paper td{border-bottom:1px solid #eee;padding:9px 6px}
+  .paper .tot{margin-left:auto;width:min(320px,100%);margin-top:14px} .paper .tot td{border:0;padding:4px 6px} .paper .tot tr.g td{font-weight:800;font-size:15px;border-top:1.5px solid #ccc;padding-top:8px}
+  .paper .foot{margin-top:30px;color:#666;font-size:11.5px;white-space:pre-line}
+  @media print{ @page{size:A4;margin:14mm} body{background:#fff} header,.tools,h1,.sub{display:none !important} main{padding:0;max-width:none} .paper{box-shadow:none;padding:0;max-width:none} }
+</style>
+</head>
+<body>
+<header><a class="brand" href="/">● JobsPulse</a><div class="hdr"><a class="hbtn" href="/dashboard/" data-i18n="nav.dashboard">Dashboard</a><select id="lang-switch" aria-label="Language"></select></div></header>
+<main id="main"></main>
+<script src="/assets/i18n.js"></script>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  const SUPABASE_URL = 'https://rkuiprrginjullnzskkg.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_jtWlWOLHLw-ebE0BcfHifA_D9PIQy8O';
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const T = k => (window.jpt ? window.jpt(k) : k);
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const qs = new URLSearchParams(location.search);
+  const DEMO = qs.get('demo') === '1';
+  const main = document.getElementById('main');
+  const L = () => (window.jpLang ? window.jpLang() : 'en');
+  const money = (c, cur) => new Intl.NumberFormat(L(), { style: 'currency', currency: cur || 'EUR' }).format((c || 0) / 100);
+  const date = s => s ? new Date(s).toLocaleDateString(L(), { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  const kindLabel = i => T(i.kind === 'credit_note' ? 'inv.credit' : i.customer_tax_id ? 'inv.full' : 'inv.simple');
+  let ROWS = [], ONE = null, CORRECTS = null;
+
+  function paintList() {
+    main.innerHTML = `<h1>${esc(T('inv.h1'))}</h1><p class="sub">${esc(T('inv.sub'))}</p><div class="card">` + (ROWS.length
+      ? `<table><thead><tr><th>${esc(T('inv.no'))}</th><th>${esc(T('inv.date'))}</th><th>${esc(T('inv.concept'))}</th><th class="r">${esc(T('inv.total'))}</th><th></th></tr></thead><tbody>` +
+        ROWS.map(i => `<tr><td><a href="?id=${esc(i.id)}${DEMO ? '&demo=1' : ''}">${esc(i.number)}</a></td><td>${esc(date(i.issued_at))}</td><td>${esc(kindLabel(i))}${i.status === 'refunded' && i.kind === 'invoice' ? ` <span class="pill bad">${esc(T('inv.refunded'))}</span>` : ''}</td><td class="r">${esc(money(i.total_cents, i.currency))}</td><td class="r"><a href="?id=${esc(i.id)}${DEMO ? '&demo=1' : ''}">${esc(T('inv.view'))}</a></td></tr>`).join('') + `</tbody></table>`
+      : `<p class="empty">${esc(T('inv.none'))}</p>`) + `</div>`;
+  }
+  function paintOne() {
+    const i = ONE;
+    const per = i.period_start && i.period_end ? ` (${date(i.period_start)} – ${date(i.period_end)})` : '';
+    main.innerHTML = `<div class="tools"><a href="/invoices/${DEMO ? '?demo=1' : ''}">← ${esc(T('inv.h1'))}</a><button id="print">${esc(T('inv.print'))}</button></div>
+    <article class="paper">
+      <div class="top"><div class="logo"><span></span>JobsPulse</div><div><h2>${esc(kindLabel(i))}</h2><p class="no">${esc(T('inv.no'))} ${esc(i.number)}</p><p class="no">${esc(T('inv.date'))}: ${esc(date(i.issued_at))}</p></div></div>
+      <div class="parties">
+        <div><p class="lbl">${esc(T('inv.issuer'))}</p><p class="addr"><strong>${esc(i.issuer_name)}</strong>\n${esc(T('inv.taxid'))}: ${esc(i.issuer_tax_id)}\n${esc(i.issuer_address)}</p></div>
+        <div><p class="lbl">${esc(T('inv.customer'))}</p><p class="addr"><strong>${esc(i.customer_name || i.customer_email || '')}</strong>${i.customer_tax_id ? `\n${esc(T('inv.taxid'))}: ${esc(i.customer_tax_id)}` : ''}${i.customer_address ? '\n' + esc(i.customer_address) : ''}${i.customer_country ? '\n' + esc(i.customer_country) : ''}${i.customer_name && i.customer_email ? '\n' + esc(i.customer_email) : ''}</p></div>
+      </div>
+      ${CORRECTS ? `<p>${esc(T('inv.corrects').replace('{no}', CORRECTS.number).replace('{date}', date(CORRECTS.issued_at)))}</p>` : ''}
+      <table><thead><tr><th>${esc(T('inv.concept'))}</th><th class="r">${esc(T('inv.qty'))}</th><th class="r">${esc(T('inv.base'))}</th><th class="r">${esc(T('inv.vat'))}</th><th class="r">${esc(T('inv.total'))}</th></tr></thead>
+        <tbody><tr><td>${esc(i.description)}${esc(per)}</td><td class="r">${i.quantity || 1}</td><td class="r">${esc(money(i.base_cents, i.currency))}</td><td class="r">${esc(String(i.vat_rate))}%</td><td class="r">${esc(money(i.total_cents, i.currency))}</td></tr></tbody></table>
+      <table class="tot"><tr><td>${esc(T('inv.base'))}</td><td class="r">${esc(money(i.base_cents, i.currency))}</td></tr><tr><td>${esc(T('inv.vat'))} (${esc(String(i.vat_rate))}%)</td><td class="r">${esc(money(i.vat_cents, i.currency))}</td></tr><tr class="g"><td>${esc(T('inv.total'))}</td><td class="r">${esc(money(i.total_cents, i.currency))}</td></tr></table>
+      <p class="foot">${esc(T(i.status === 'pending' ? 'inv.pending' : i.kind === 'credit_note' ? 'inv.refund_note' : 'inv.paid_note'))}${i.notes && i.source === 'manual' ? '\n' + esc(i.notes) : ''}</p>
+    </article>`;
+    document.getElementById('print').onclick = () => { const t = document.title; document.title = `${i.number} — JobsPulse`; window.print(); document.title = t; };
+  }
+  let LOADED = false;
+  const paint = () => { LOADED = true; return ONE ? paintOne() : paintList(); };
+
+  async function init() {
+    if (DEMO) {
+      const a = { id: 'd1', number: 'JP-2026-0001', kind: 'invoice', issued_at: '2026-11-02T10:00:00Z', issuer_name: 'Albert Reina i Buxó', issuer_tax_id: '00000000T', issuer_address: 'Carrer Exemple 1\n08001 Barcelona', customer_name: 'Marta Exemple', customer_email: 'marta@example.com', customer_tax_id: null, description: 'JobsPulse Premium — monthly subscription', period_start: '2026-11-02', period_end: '2026-12-02', quantity: 1, base_cents: 405, vat_rate: 21, vat_cents: 85, total_cents: 490, currency: 'EUR', status: 'paid', source: 'stripe' };
+      ROWS = [a]; ONE = qs.get('id') ? a : null; return paint();
+    }
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { main.innerHTML = `<h1>${esc(T('inv.h1'))}</h1><p class="sub">${esc(T('jv.signin'))} <a href="/dashboard/">${esc(T('nav.signin'))}</a></p>`; return; }
+    const id = qs.get('id');
+    let admin = false;
+    if (qs.get('admin') === '1') { const { data } = await sb.from('admins').select('email').limit(1); admin = !!(data && data.length); }
+    const { data: prof } = await sb.from('profiles').select('id').eq('email', session.user.email.toLowerCase()).limit(1).maybeSingle();
+    if (id) {
+      let q = sb.from('invoices').select('*').eq('id', id);
+      if (!admin) q = q.eq('profile_id', prof ? prof.id : '00000000-0000-0000-0000-000000000000');   // own invoices only
+      const { data } = await q.maybeSingle();
+      if (!data) { main.innerHTML = `<p class="sub">${esc(T('inv.notfound'))}</p>`; return; }
+      ONE = data;
+      if (data.corrects_id) { const { data: c } = await sb.from('invoices').select('number,issued_at').eq('id', data.corrects_id).maybeSingle(); CORRECTS = c; }
+      return paint();
+    }
+    if (prof) { const { data } = await sb.from('invoices').select('id,number,kind,issued_at,total_cents,currency,status,customer_tax_id').eq('profile_id', prof.id).order('issued_at', { ascending: false }); ROWS = data || []; }
+    paint();
+  }
+  document.addEventListener('jp:lang', () => { if (LOADED) paint(); });
+  init();
+</script>
+</body>
+</html>

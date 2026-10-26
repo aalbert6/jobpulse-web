@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="fr" data-page-lang="fr" data-i18n-title="pv.title" data-i18n-desc="pv.desc">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="canonical" href="https://jobspulseapp.com/fr/privacy/">
+<meta name="description" content="Ce que JobsPulse collecte, pourquoi, qui le traite, combien de temps il est conservé et vos droits au titre du RGPD.">
+<meta name="theme-color" content="#0b5cad">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="JobsPulse">
+<meta property="og:url" content="https://jobspulseapp.com/fr/privacy/">
+<meta property="og:title" content="JobsPulse — Politique de confidentialité">
+<meta property="og:description" content="Ce que JobsPulse collecte, pourquoi, qui le traite, combien de temps il est conservé et vos droits au titre du RGPD.">
+<meta property="og:image" content="https://jobspulseapp.com/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="JobsPulse — Politique de confidentialité">
+<meta name="twitter:description" content="Ce que JobsPulse collecte, pourquoi, qui le traite, combien de temps il est conservé et vos droits au titre du RGPD.">
+<meta name="twitter:image" content="https://jobspulseapp.com/assets/og.png">
+<link rel="alternate" hreflang="en" href="https://jobspulseapp.com/privacy/">
+<link rel="alternate" hreflang="es" href="https://jobspulseapp.com/es/privacy/">
+<link rel="alternate" hreflang="ca" href="https://jobspulseapp.com/ca/privacy/">
+<link rel="alternate" hreflang="de" href="https://jobspulseapp.com/de/privacy/">
+<link rel="alternate" hreflang="fr" href="https://jobspulseapp.com/fr/privacy/">
+<link rel="alternate" hreflang="ja" href="https://jobspulseapp.com/ja/privacy/">
+<link rel="alternate" hreflang="zh" href="https://jobspulseapp.com/zh/privacy/">
+<link rel="alternate" hreflang="x-default" href="https://jobspulseapp.com/privacy/">
+<title>JobsPulse — Politique de confidentialité</title>
+<style>
+  :root{ --blue:#0b5cad; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;}
+  a{color:var(--blue);}
+  .wrap{max-width:680px;margin:0 auto;padding:0 22px;}
+  /* nav: same as how-it-works / pricing */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0;flex-wrap:nowrap;gap:10px;}
+  .logo{display:inline-flex;align-items:center;flex:0 0 auto;gap:9px;font-weight:800;font-size:19px;color:var(--blue);text-decoration:none;}
+  .links{display:flex;align-items:center;flex-wrap:nowrap;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px color-mix(in srgb,var(--blue) 18%,transparent);}
+  nav .links a{font-size:14px;font-weight:600;margin-left:16px;text-decoration:none;color:var(--ink);white-space:nowrap;}
+  nav .links a:hover{color:var(--blue);}
+  nav .links a.nav-cta{background:var(--blue);color:#fff;padding:8px 12px;border-radius:8px;}
+  nav .links a.nav-cta:hover{color:#fff;filter:brightness(1.07);}
+  @media(max-width:430px){
+    nav{gap:6px;}
+    .logo{font-size:16px;gap:7px;}
+    nav .links a{font-size:13px;margin-left:8px;}
+    nav .links a.nav-cta{padding:6px 8px;}
+  }
+  @media(max-width:360px){
+    .logo{font-size:15px;}
+    nav .links a{font-size:12px;margin-left:6px;}
+    nav .links a.nav-cta{padding:5px 6px;}
+  }
+  h1{font-size:34px;line-height:1.12;margin:22px 0 6px;letter-spacing:-.02em;}
+  .muted{color:var(--muted);font-size:13.5px;margin:0 0 18px;}
+  h2{font-size:18px;margin:30px 0 6px;letter-spacing:-.01em;scroll-margin-top:20px;}
+  p,li{color:var(--ink);font-size:15.5px;}
+  li{margin:4px 0;}
+  .toc{display:none;}
+  footer{padding:36px 0 60px;color:var(--muted);font-size:13px;}
+  footer a{color:var(--blue);}
+  .footrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  #lang-switch{font:inherit;font-size:13px;color:var(--muted);background:var(--card);
+    border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
+  /* Desktop (≥1024px): same canvas as the other pages; a sticky section index on the left and
+     the notice in a card with a comfortable reading width. */
+  @media(min-width:1024px){
+    .wrap{max-width:1160px;padding:0 40px;}
+    h1{font-size:46px;margin-top:36px;}
+    .doc{display:grid;grid-template-columns:250px minmax(0,780px);gap:44px;align-items:start;margin-top:10px;}
+    .toc{display:block;position:sticky;top:24px;border-left:1px solid var(--line);padding:2px 0 2px 16px;}
+    .toc a{display:block;font-size:13.5px;color:var(--muted);text-decoration:none;padding:5px 0;line-height:1.35;}
+    .toc a:hover{color:var(--blue);}
+    article{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 44px 34px;}
+    article h2{margin-top:30px;}
+    p,li{font-size:16px;}
+  }
+  /* Phones: long languages (es/de/fr) overflow the menu; How it works stays in the footer. */
+  @media(max-width:480px){ .nav-how{display:none !important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/fr/"><span class="dot"></span>JobsPulse</a>
+    <div class="links">
+      <a class="nav-how" href="/fr/how-it-works/" data-i18n="nav.how">Comment ça marche</a>
+      <a href="/fr/pricing/" data-i18n="nav.pricing">Tarifs</a>
+      <a href="/dashboard/" id="navauth" data-i18n="nav.signin">Se connecter</a>
+      <a class="nav-cta" href="/fr/#waitlist" data-i18n="nav.join">Rejoindre</a>
+    </div>
+  </nav>
+  <h1 data-i18n="pv.h1">Politique de confidentialité</h1>
+  <p class="muted" data-i18n="pv.updated">JobsPulse · Dernière mise à jour : 2026-10-26</p>
+
+  <div class="doc">
+    <nav class="toc" aria-label="Contents">
+      <a href="#h2a" data-i18n="pv.h2a">Qui sommes-nous ?</a>
+      <a href="#h2b" data-i18n="pv.h2b">Que collectons-nous ?</a>
+      <a href="#h2c" data-i18n="pv.h2c">Pourquoi, et sur quelle base légale ?</a>
+      <a href="#h2auto" data-i18n="pv.h2auto">Correspondance automatisée</a>
+      <a href="#h2d" data-i18n="pv.h2d">Qui d’autre les traite ?</a>
+      <a href="#h2trans" data-i18n="pv.h2trans">Où sont-elles traitées ?</a>
+      <a href="#h2pay" data-i18n="pv.h2pay">Premium et factures</a>
+      <a href="#h2e" data-i18n="pv.h2e">Combien de temps les gardons-nous ?</a>
+      <a href="#h2cook" data-i18n="pv.h2cook">Cookies &amp; stockage local</a>
+      <a href="#h2f" data-i18n="pv.h2f">Quels sont vos droits ?</a>
+      <a href="#h2g" data-i18n="pv.h2g">Sécurité</a>
+    </nav>
+    <article>
+  <h2 id="h2a" data-i18n="pv.h2a">Qui sommes-nous ?</h2>
+  <p data-i18n="pv.pa">JobsPulse est un projet personnel exploité par Albert Reina i Buxó, basé à Barcelone, Espagne, en qualité de responsable du traitement. Contact : <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>.</p>
+
+  <h2 id="h2b" data-i18n="pv.h2b">Que collectons-nous ?</h2>
+  <p data-i18n="pv.pb">Seulement ce qu’il faut pour vous faire correspondre à des offres : votre prénom et votre e-mail ; votre poste actuel, vos années d’expérience et vos compétences ; les postes, lieux et modes de travail que vous visez ; et, en option, un salaire minimum, des critères rédhibitoires, le texte de votre CV ou l’URL de votre profil LinkedIn, et les documents que vous téléversez (CV, lettres, certificats). Nous ne collectons ni numéro d’identité, ni date de naissance, ni adresse, ni photo, ni données sensibles.</p>
+
+  <h2 id="h2c" data-i18n="pv.h2c">Pourquoi, et sur quelle base légale ?</h2>
+  <p data-i18n="pv.pc">Nous les utilisons pour générer votre e-mail hebdomadaire personnalisé. Notre base légale est votre <strong>consentement</strong>, donné en cochant la case à l’inscription. Vous pouvez le retirer à tout moment.</p>
+
+  <h2 id="h2auto" data-i18n="pv.h2auto">Correspondance automatisée</h2>
+  <p data-i18n="pv.pauto">Nous notons et classons les offres selon votre profil automatiquement — c’est du profilage. Il produit des suggestions, pas des décisions ayant des effets juridiques ou similaires, et vous pouvez signaler tout résultat pour qu’un humain l’examine.</p>
+
+  <h2 id="h2d" data-i18n="pv.h2d">Qui d’autre les traite ?</h2>
+  <p data-i18n="pv.pd">Nous faisons appel à un petit nombre de sous-traitants, chacun sous accord de traitement des données :</p>
+  <ul>
+    <li data-i18n="pv.li1"><strong>Supabase</strong> — stocke votre profil et les documents téléversés, hébergés dans l’UE et chiffrés.</li>
+    <li data-i18n="pv.li2"><strong>Resend</strong> — envoie votre e-mail hebdomadaire (votre adresse et le contenu des correspondances).</li>
+    <li data-i18n="pv.li3"><strong>Stripe</strong> — traite les paiements Premium (votre e-mail, vos coordonnées de facturation et votre carte ; nous ne voyons jamais votre numéro de carte).</li>
+    <li data-i18n="pv.li4"><strong>Anthropic</strong> — uniquement pour les utilisateurs Premium qui demandent un CV et une lettre adaptés : votre CV, votre profil et l'offre sont envoyés à son modèle Claude pour les rédiger. Anthropic n'utilise pas ces données pour entraîner ses modèles, et nous ne conservons pas le texte généré.</li>
+    <li data-i18n="pv.li5"><strong>Cloudflare</strong> — Turnstile vérifie que nos formulaires et la connexion sont utilisés par une personne et non par un robot (votre adresse IP et des signaux techniques du navigateur ; aucun cookie publicitaire).</li>
+  </ul>
+  <p data-i18n="pv.pd2">Nous nommerons ici tout prestataire supplémentaire avant qu’il ne traite vos données. Nous ne vendons jamais vos données et ne les utilisons pas pour la publicité.</p>
+
+  <h2 id="h2trans" data-i18n="pv.h2trans">Où sont-elles traitées ?</h2>
+  <p data-i18n="pv.ptrans">Votre profil et vos documents sont stockés par Supabase dans l’UE (Francfort). Resend, qui envoie vos e-mails, traite des données aux États-Unis ; ce transfert est protégé par les clauses contractuelles types de l’UE et la certification de Resend au cadre EU-US Data Privacy Framework. Les deux prestataires sont liés par un accord de traitement signé.</p>
+
+  <p data-i18n="pv.ptrans2">Stripe et Anthropic peuvent traiter des données aux États-Unis, dans le cadre d'accords de traitement signés incluant les clauses contractuelles types de l'UE.</p>
+
+  <h2 id="h2pay" data-i18n="pv.h2pay">Premium et factures</h2>
+  <p data-i18n="pv.ppay">Si vous souscrivez à Premium, nous traitons vos données de facturation pour exécuter le contrat et conservons vos factures six ans, comme l'exige le droit fiscal et commercial espagnol — même si vous supprimez votre compte (les factures ne gardent que les informations qui y figurent).</p>
+
+  <h2 id="h2e" data-i18n="pv.h2e">Combien de temps les gardons-nous ?</h2>
+  <p data-i18n="pv.pe">Jusqu’à ce que vous demandiez leur suppression, et nous supprimons automatiquement après 12 mois d’inactivité.</p>
+
+  <h2 id="h2cook" data-i18n="pv.h2cook">Cookies &amp; stockage local</h2>
+  <p data-i18n="pv.pcook">Nous n’utilisons pas de cookies de suivi ou publicitaires. Nous enregistrons votre choix de langue dans le stockage local de votre navigateur pour que le site s’en souvienne ; vous pouvez l’effacer à tout moment.</p>
+
+  <h2 id="h2f" data-i18n="pv.h2f">Quels sont vos droits ?</h2>
+  <p data-i18n="pv.pf">À tout moment, gratuitement, vous pouvez accéder à vos données, les rectifier, les supprimer, en limiter le traitement, les recevoir dans un format portable, vous opposer au traitement et retirer votre consentement. Écrivez à <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a> et nous agirons sous un mois. Vous pouvez aussi saisir l’autorité espagnole, l’<a href="https://www.aepd.es" target="_blank" rel="noopener">AEPD</a>.</p>
+
+  <h2 id="h2g" data-i18n="pv.h2g">Sécurité</h2>
+  <p data-i18n="pv.pg">Nous chiffrons vos données en transit et au repos et en restreignons l’accès.</p>
+  <p data-i18n="pv.pguard">Pour empêcher les abus de nos formulaires, nous conservons une empreinte irréversible (hash) de votre adresse IP — pas l'adresse elle-même — pendant deux jours au maximum, sur la base de notre intérêt légitime à sécuriser le service.</p>
+
+    </article>
+  </div>
+<footer>
+  <div class="footrow">
+    <div>
+      <a href="/fr/how-it-works/" data-i18n="footer.how">Comment ça marche</a> &middot; <a href="/fr/pricing/" data-i18n="footer.pricing">Tarifs</a> &middot;
+      <a href="/fr/privacy/" data-i18n="footer.privacy">Politique de confidentialité</a> &middot; <a href="mailto:privacy@jobspulseapp.com" data-i18n="footer.contact">Nous contacter</a>
+    </div>
+    <select id="lang-switch" data-i18n-aria="lang.label" aria-label="Langue"></select>
+  </div>
+</footer>
+</div>
+<script src="/assets/i18n.js" defer></script>
+  <script>
+    // Swap the nav link to "Dashboard" when a Supabase session exists (localStorage, no SDK).
+    (function(){try{var raw=localStorage.getItem("sb-rkuiprrginjullnzskkg-auth-token");if(!raw)return;var s=JSON.parse(raw);var exp=s&&(s.expires_at||(s.currentSession&&s.currentSession.expires_at));if(exp&&exp*1000<Date.now())return;var a=document.getElementById("navauth");if(a){a.setAttribute("data-i18n","nav.dashboard");a.textContent="Dashboard";}}catch(e){}})();
+  </script>
+</body>
+</html>

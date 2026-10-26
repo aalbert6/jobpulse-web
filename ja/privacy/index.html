@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ja" data-page-lang="ja" data-i18n-title="pv.title" data-i18n-desc="pv.desc">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="canonical" href="https://jobspulseapp.com/ja/privacy/">
+<meta name="description" content="JobsPulseが収集する情報、目的、処理者、保管期間、GDPRに基づくあなたの権利。">
+<meta name="theme-color" content="#0b5cad">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="JobsPulse">
+<meta property="og:url" content="https://jobspulseapp.com/ja/privacy/">
+<meta property="og:title" content="JobsPulse — プライバシーポリシー">
+<meta property="og:description" content="JobsPulseが収集する情報、目的、処理者、保管期間、GDPRに基づくあなたの権利。">
+<meta property="og:image" content="https://jobspulseapp.com/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="JobsPulse — プライバシーポリシー">
+<meta name="twitter:description" content="JobsPulseが収集する情報、目的、処理者、保管期間、GDPRに基づくあなたの権利。">
+<meta name="twitter:image" content="https://jobspulseapp.com/assets/og.png">
+<link rel="alternate" hreflang="en" href="https://jobspulseapp.com/privacy/">
+<link rel="alternate" hreflang="es" href="https://jobspulseapp.com/es/privacy/">
+<link rel="alternate" hreflang="ca" href="https://jobspulseapp.com/ca/privacy/">
+<link rel="alternate" hreflang="de" href="https://jobspulseapp.com/de/privacy/">
+<link rel="alternate" hreflang="fr" href="https://jobspulseapp.com/fr/privacy/">
+<link rel="alternate" hreflang="ja" href="https://jobspulseapp.com/ja/privacy/">
+<link rel="alternate" hreflang="zh" href="https://jobspulseapp.com/zh/privacy/">
+<link rel="alternate" hreflang="x-default" href="https://jobspulseapp.com/privacy/">
+<title>JobsPulse — プライバシーポリシー</title>
+<style>
+  :root{ --blue:#0b5cad; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;}
+  a{color:var(--blue);}
+  .wrap{max-width:680px;margin:0 auto;padding:0 22px;}
+  /* nav: same as how-it-works / pricing */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0;flex-wrap:nowrap;gap:10px;}
+  .logo{display:inline-flex;align-items:center;flex:0 0 auto;gap:9px;font-weight:800;font-size:19px;color:var(--blue);text-decoration:none;}
+  .links{display:flex;align-items:center;flex-wrap:nowrap;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px color-mix(in srgb,var(--blue) 18%,transparent);}
+  nav .links a{font-size:14px;font-weight:600;margin-left:16px;text-decoration:none;color:var(--ink);white-space:nowrap;}
+  nav .links a:hover{color:var(--blue);}
+  nav .links a.nav-cta{background:var(--blue);color:#fff;padding:8px 12px;border-radius:8px;}
+  nav .links a.nav-cta:hover{color:#fff;filter:brightness(1.07);}
+  @media(max-width:430px){
+    nav{gap:6px;}
+    .logo{font-size:16px;gap:7px;}
+    nav .links a{font-size:13px;margin-left:8px;}
+    nav .links a.nav-cta{padding:6px 8px;}
+  }
+  @media(max-width:360px){
+    .logo{font-size:15px;}
+    nav .links a{font-size:12px;margin-left:6px;}
+    nav .links a.nav-cta{padding:5px 6px;}
+  }
+  h1{font-size:34px;line-height:1.12;margin:22px 0 6px;letter-spacing:-.02em;}
+  .muted{color:var(--muted);font-size:13.5px;margin:0 0 18px;}
+  h2{font-size:18px;margin:30px 0 6px;letter-spacing:-.01em;scroll-margin-top:20px;}
+  p,li{color:var(--ink);font-size:15.5px;}
+  li{margin:4px 0;}
+  .toc{display:none;}
+  footer{padding:36px 0 60px;color:var(--muted);font-size:13px;}
+  footer a{color:var(--blue);}
+  .footrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  #lang-switch{font:inherit;font-size:13px;color:var(--muted);background:var(--card);
+    border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;}
+  /* Desktop (≥1024px): same canvas as the other pages; a sticky section index on the left and
+     the notice in a card with a comfortable reading width. */
+  @media(min-width:1024px){
+    .wrap{max-width:1160px;padding:0 40px;}
+    h1{font-size:46px;margin-top:36px;}
+    .doc{display:grid;grid-template-columns:250px minmax(0,780px);gap:44px;align-items:start;margin-top:10px;}
+    .toc{display:block;position:sticky;top:24px;border-left:1px solid var(--line);padding:2px 0 2px 16px;}
+    .toc a{display:block;font-size:13.5px;color:var(--muted);text-decoration:none;padding:5px 0;line-height:1.35;}
+    .toc a:hover{color:var(--blue);}
+    article{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 44px 34px;}
+    article h2{margin-top:30px;}
+    p,li{font-size:16px;}
+  }
+  /* Phones: long languages (es/de/fr) overflow the menu; How it works stays in the footer. */
+  @media(max-width:480px){ .nav-how{display:none !important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/ja/"><span class="dot"></span>JobsPulse</a>
+    <div class="links">
+      <a class="nav-how" href="/ja/how-it-works/" data-i18n="nav.how">仕組み</a>
+      <a href="/ja/pricing/" data-i18n="nav.pricing">料金</a>
+      <a href="/dashboard/" id="navauth" data-i18n="nav.signin">ログイン</a>
+      <a class="nav-cta" href="/ja/#waitlist" data-i18n="nav.join">参加する</a>
+    </div>
+  </nav>
+  <h1 data-i18n="pv.h1">プライバシーポリシー</h1>
+  <p class="muted" data-i18n="pv.updated">JobsPulse · 最終更新日：2026-10-26</p>
+
+  <div class="doc">
+    <nav class="toc" aria-label="Contents">
+      <a href="#h2a" data-i18n="pv.h2a">私たちについて</a>
+      <a href="#h2b" data-i18n="pv.h2b">収集する情報</a>
+      <a href="#h2c" data-i18n="pv.h2c">目的と法的根拠</a>
+      <a href="#h2auto" data-i18n="pv.h2auto">自動マッチング</a>
+      <a href="#h2d" data-i18n="pv.h2d">他に処理する事業者</a>
+      <a href="#h2trans" data-i18n="pv.h2trans">処理される場所</a>
+      <a href="#h2pay" data-i18n="pv.h2pay">Premium と請求書</a>
+      <a href="#h2e" data-i18n="pv.h2e">保管期間</a>
+      <a href="#h2cook" data-i18n="pv.h2cook">Cookieとローカルストレージ</a>
+      <a href="#h2f" data-i18n="pv.h2f">あなたの権利</a>
+      <a href="#h2g" data-i18n="pv.h2g">セキュリティ</a>
+    </nav>
+    <article>
+  <h2 id="h2a" data-i18n="pv.h2a">私たちについて</h2>
+  <p data-i18n="pv.pa">JobsPulseは、スペイン・バルセロナ在住のAlbert Reina i Buxóが個人で運営するプロジェクトで、彼がデータ管理者です。連絡先：<a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>。</p>
+
+  <h2 id="h2b" data-i18n="pv.h2b">収集する情報</h2>
+  <p data-i18n="pv.pb">求人とのマッチングに必要なものだけ：名前（名）とメールアドレス、現在の職種、経験年数、スキル、希望する職種・勤務地・働き方。任意で最低年収、譲れない条件、履歴書のテキストまたはLinkedIn URL、アップロードした書類（履歴書、カバーレター、証明書）。身分証番号、生年月日、住所、写真、要配慮個人情報は収集しません。</p>
+
+  <h2 id="h2c" data-i18n="pv.h2c">目的と法的根拠</h2>
+  <p data-i18n="pv.pc">あなた専用の週次求人マッチメールを作成するために使用します。法的根拠は、登録時にチェックボックスで示していただく<strong>同意</strong>です。いつでも撤回できます。</p>
+
+  <h2 id="h2auto" data-i18n="pv.h2auto">自動マッチング</h2>
+  <p data-i18n="pv.pauto">プロフィールに照らして求人を自動的に採点・順位付けします。これはプロファイリングに当たります。生成されるのは提案であり、法的またはそれに準ずる重大な影響を伴う決定ではありません。どの結果も人間による確認を求めることができます。</p>
+
+  <h2 id="h2d" data-i18n="pv.h2d">他に処理する事業者</h2>
+  <p data-i18n="pv.pd">少数の処理者に依存しており、いずれもデータ処理契約を締結しています：</p>
+  <ul>
+    <li data-i18n="pv.li1"><strong>Supabase</strong> — プロフィールとアップロード書類を保管。EU内でホストされ、暗号化されています。</li>
+    <li data-i18n="pv.li2"><strong>Resend</strong> — 週次の求人マッチメールを配信（メールアドレスとマッチ内容）。</li>
+    <li data-i18n="pv.li3"><strong>Stripe</strong> — Premium の決済を処理します（メールアドレス、請求情報、カード。カード番号を当社が見ることはありません）。</li>
+    <li data-i18n="pv.li4"><strong>Anthropic</strong> — 求人ごとの履歴書とカバーレターを依頼した Premium ユーザーのみ：作成のため、履歴書・プロフィール・求人票が同社の Claude モデルに送られます。Anthropic はこのデータをモデルの学習に使わず、当社も生成された文章を保存しません。</li>
+    <li data-i18n="pv.li5"><strong>Cloudflare</strong> — Turnstileが、フォームとログインを使っているのがボットではなく人間であることを確認します（IPアドレスとブラウザの技術的な情報。広告用Cookieは使いません）。</li>
+  </ul>
+  <p data-i18n="pv.pd2">追加の事業者が処理を行う前に、ここに記載します。データを売ることも、広告に使うこともありません。</p>
+
+  <h2 id="h2trans" data-i18n="pv.h2trans">処理される場所</h2>
+  <p data-i18n="pv.ptrans">プロフィールと書類はSupabaseによりEU（フランクフルト）に保管されます。メールを送信するResendは米国でデータを処理します。この移転はEU標準契約条項およびResendのEU-USデータプライバシーフレームワーク認証により保護されています。両事業者とも署名済みのデータ処理契約に拘束されます。</p>
+
+  <p data-i18n="pv.ptrans2">Stripe と Anthropic は米国でデータを処理する場合があります。EU 標準契約条項を含むデータ処理契約を締結しています。</p>
+
+  <h2 id="h2pay" data-i18n="pv.h2pay">Premium と請求書</h2>
+  <p data-i18n="pv.ppay">Premium に登録した場合、契約履行のため請求情報を処理し、スペインの税法・商法に基づき請求書を6年間保管します。アカウントを削除しても同様です（請求書に記載された情報のみが残ります）。</p>
+
+  <h2 id="h2e" data-i18n="pv.h2e">保管期間</h2>
+  <p data-i18n="pv.pe">削除のご依頼があるまで。また、12か月間利用がない場合は自動的に削除します。</p>
+
+  <h2 id="h2cook" data-i18n="pv.h2cook">Cookieとローカルストレージ</h2>
+  <p data-i18n="pv.pcook">トラッキングや広告用のCookieは使用しません。言語の選択はブラウザのローカルストレージに保存し、サイトが記憶できるようにします。いつでも消去できます。</p>
+
+  <h2 id="h2f" data-i18n="pv.h2f">あなたの権利</h2>
+  <p data-i18n="pv.pf">いつでも無料で、データへのアクセス、訂正、削除、処理の制限、持ち運び可能な形式での受け取り、処理への異議申し立て、同意の撤回ができます。<a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>までご連絡いただければ、1か月以内に対応します。スペインの監督機関<a href="https://www.aepd.es" target="_blank" rel="noopener">AEPD</a>に申し立てることもできます。</p>
+
+  <h2 id="h2g" data-i18n="pv.h2g">セキュリティ</h2>
+  <p data-i18n="pv.pg">データは転送時・保管時ともに暗号化し、アクセスを制限しています。</p>
+  <p data-i18n="pv.pguard">フォームの悪用を防ぐため、IPアドレスそのものではなく、元に戻せないハッシュ値を最長2日間保存します。根拠は、サービスを安全に保つという当社の正当な利益です。</p>
+
+    </article>
+  </div>
+<footer>
+  <div class="footrow">
+    <div>
+      <a href="/ja/how-it-works/" data-i18n="footer.how">仕組み</a> &middot; <a href="/ja/pricing/" data-i18n="footer.pricing">料金</a> &middot;
+      <a href="/ja/privacy/" data-i18n="footer.privacy">プライバシーポリシー</a> &middot; <a href="mailto:privacy@jobspulseapp.com" data-i18n="footer.contact">お問い合わせ</a>
+    </div>
+    <select id="lang-switch" data-i18n-aria="lang.label" aria-label="言語"></select>
+  </div>
+</footer>
+</div>
+<script src="/assets/i18n.js" defer></script>
+  <script>
+    // Swap the nav link to "Dashboard" when a Supabase session exists (localStorage, no SDK).
+    (function(){try{var raw=localStorage.getItem("sb-rkuiprrginjullnzskkg-auth-token");if(!raw)return;var s=JSON.parse(raw);var exp=s&&(s.expires_at||(s.currentSession&&s.currentSession.expires_at));if(exp&&exp*1000<Date.now())return;var a=document.getElementById("navauth");if(a){a.setAttribute("data-i18n","nav.dashboard");a.textContent="Dashboard";}}catch(e){}})();
+  </script>
+</body>
+</html>

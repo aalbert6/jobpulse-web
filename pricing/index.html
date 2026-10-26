@@ -4,26 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <link rel="canonical" href="https://jobspulseapp.com/pricing/">
-<meta name="description" content="JobsPulse pricing: a free monthly gap-aware digest, or €1/mo for weekly matches, the dashboard, and tailored CV & cover letters.">
+<meta name="description" content="JobsPulse pricing: free gap-aware job matches every four weeks, or Premium (€4.90/month, VAT included) for weekly matches, the dashboard and tailored CV & cover letters.">
 <meta name="theme-color" content="#0b5cad">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="JobsPulse">
 <meta property="og:url" content="https://jobspulseapp.com/pricing/">
 <meta property="og:title" content="JobsPulse — honest weekly job matches">
-<meta property="og:description" content="JobsPulse pricing: a free monthly gap-aware digest, or €1/mo for weekly matches, the dashboard, and tailored CV & cover letters.">
+<meta property="og:description" content="JobsPulse pricing: free gap-aware job matches every four weeks, or Premium (€4.90/month, VAT included) for weekly matches, the dashboard and tailored CV & cover letters.">
 <meta property="og:image" content="https://jobspulseapp.com/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="JobsPulse — honest weekly job matches">
-<meta name="twitter:description" content="JobsPulse pricing: a free monthly gap-aware digest, or €1/mo for weekly matches, the dashboard, and tailored CV & cover letters.">
+<meta name="twitter:description" content="JobsPulse pricing: free gap-aware job matches every four weeks, or Premium (€4.90/month, VAT included) for weekly matches, the dashboard and tailored CV & cover letters.">
 <meta name="twitter:image" content="https://jobspulseapp.com/assets/og.png">
-<link rel="alternate" hreflang="en" href="https://jobspulseapp.com/pricing/?lang=en">
-<link rel="alternate" hreflang="es" href="https://jobspulseapp.com/pricing/?lang=es">
-<link rel="alternate" hreflang="ca" href="https://jobspulseapp.com/pricing/?lang=ca">
-<link rel="alternate" hreflang="de" href="https://jobspulseapp.com/pricing/?lang=de">
-<link rel="alternate" hreflang="fr" href="https://jobspulseapp.com/pricing/?lang=fr">
-<link rel="alternate" hreflang="ja" href="https://jobspulseapp.com/pricing/?lang=ja">
-<link rel="alternate" hreflang="zh" href="https://jobspulseapp.com/pricing/?lang=zh">
+<link rel="alternate" hreflang="en" href="https://jobspulseapp.com/pricing/">
+<link rel="alternate" hreflang="es" href="https://jobspulseapp.com/es/pricing/">
+<link rel="alternate" hreflang="ca" href="https://jobspulseapp.com/ca/pricing/">
+<link rel="alternate" hreflang="de" href="https://jobspulseapp.com/de/pricing/">
+<link rel="alternate" hreflang="fr" href="https://jobspulseapp.com/fr/pricing/">
+<link rel="alternate" hreflang="ja" href="https://jobspulseapp.com/ja/pricing/">
+<link rel="alternate" hreflang="zh" href="https://jobspulseapp.com/zh/pricing/">
 <link rel="alternate" hreflang="x-default" href="https://jobspulseapp.com/pricing/">
 <title>JobsPulse — pricing</title>
 <style>
@@ -72,6 +74,8 @@
   .cta{margin-top:auto;display:inline-block;text-align:center;background:var(--blue);color:#fff;font-weight:600;padding:12px 18px;border-radius:10px;text-decoration:none;}
   .cta.ghost{background:transparent;color:var(--blue);border:1px solid var(--line);}
   .cta.soon{background:var(--line);color:var(--muted);cursor:default;}
+  .cta[hidden]{display:none}
+  .plan p.vat{margin:-4px 0 8px;font-size:12.5px;}
   .fine{color:var(--muted);font-size:13px;margin:20px 0 0;}
   footer{padding:36px 0 60px;color:var(--muted);font-size:13px;}
   .footrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
@@ -84,17 +88,21 @@
     .grid{gap:28px;margin-top:20px;}
     .plan{padding:34px 36px;}
   }
+  /* Phones: long languages (es/de/fr) overflow the menu; How it works stays in the footer. */
+  @media(max-width:480px){ .nav-how{display:none !important} }
+  .howlink{margin:-12px 0 22px;font-size:15px;font-weight:700;} .howlink a{text-decoration:none;} .howlink a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav>
     <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
-    <div class="links"><a href="/how-it-works/" data-i18n="nav.how">How it works</a><a href="/pricing/" data-i18n="nav.pricing">Pricing</a><a href="/dashboard/" id="navauth" data-i18n="nav.signin">Sign in</a><a class="nav-cta" href="/#waitlist" data-i18n="nav.join">Join</a></div>
+    <div class="links"><a class="nav-how" href="/how-it-works/" data-i18n="nav.how">How it works</a><a href="/pricing/" data-i18n="nav.pricing">Pricing</a><a href="/dashboard/" id="navauth" data-i18n="nav.signin">Sign in</a><a class="nav-cta" href="/#waitlist" data-i18n="nav.join">Join</a></div>
   </nav>
 
   <h1 data-i18n="pricing.h1">Simple pricing</h1>
   <p class="lede" data-i18n="pricing.lede">Start free. Upgrade only if the honest shortlist is worth a coffee a month.</p>
+    <p class="howlink"><a href="/how-it-works/" data-i18n="ld.howlink">How does it work? →</a></p>
 
   <div class="grid">
     <div class="plan">
@@ -114,18 +122,22 @@
 
     <div class="plan pro">
       <span class="tag" data-i18n="pricing.pro.tag">Professional · beta</span>
-      <div class="price">€1<small data-i18n="pricing.pro.month"> / month</small></div>
+      <div class="price">€<span id="price">4,90</span><small data-i18n="pricing.pro.month"> / month</small></div>
+      <p class="note vat" data-i18n="pricing.vat">VAT included · cancel anytime</p>
       <p class="note" data-i18n="pricing.pro.note">Everything in Base, plus the four things that let you act on it:</p>
       <ul>
         <li data-i18n="pricing.pro.f1">Weekly digests — 4 emails a month (vs 1)</li>
         <li data-i18n="pricing.pro.f2">Private dashboard — save &amp; flag matches</li>
         <li data-i18n="pricing.pro.f3">A tailored CV &amp; cover letter for each saved role</li>
         <li data-i18n="pricing.pro.f4">Re-match when you update your profile</li>
+        <li data-i18n="pricing.pro.f5">Invoices in your account</li>
       </ul>
-      <span class="cta soon" aria-disabled="true" data-i18n="pricing.pro.cta">Professional — coming soon</span>
+      <span class="cta soon" id="buysoon" aria-disabled="true" data-i18n="pricing.pro.cta">Premium — coming soon</span>
+      <a class="cta" id="buy" href="/dashboard/?next=upgrade" hidden data-i18n="pricing.pro.buy">Upgrade to Premium</a>
     </div>
   </div>
 
+  <p class="fine" id="cancelled" hidden data-i18n="pricing.cancelled">Checkout cancelled — nothing was charged.</p>
   <p class="fine" data-i18n="pricing.fine">Prices are for the private beta and are set to cover running costs, not for
   profit. No card needed to start free; you can delete your data anytime.</p>
 
@@ -139,6 +151,15 @@
     </div>
   </footer>
 </div>
+<script src="/assets/config.js"></script>
+<script>
+  // Launch switch (assets/config.js): real Upgrade button once Stripe is live. Upgrading always
+  // goes through /dashboard/ (sign-in first, then Stripe Checkout for the signed-in profile).
+  (function(){ var c = window.JP_CONFIG || {};
+    if (c.price) document.getElementById('price').textContent = c.price;
+    if (c.billing) { document.getElementById('buysoon').hidden = true; document.getElementById('buy').hidden = false; }
+    if (new URLSearchParams(location.search).get('billing') === 'cancel') document.getElementById('cancelled').hidden = false; })();
+</script>
 <script src="/assets/i18n.js" defer></script>
   <script>
     // Swap the nav link to "Dashboard" when a Supabase session exists (localStorage, no SDK).

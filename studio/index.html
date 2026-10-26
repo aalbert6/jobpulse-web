@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en" data-i18n-title="st.title">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="robots" content="noindex">
+<title>JobsPulse — CV &amp; cover letter</title>
+<!--
+  Dottie Studio (2026-10-22, Premium) — a CV + cover letter written for ONE job.
+
+  Same conversation as the intake: Dottie asks one thing at a time (which job → the posting if
+  it's not one of your matches → language → anything to highlight), each answered question
+  folds into a row you can tap to change, then Dottie "writes" (the `tailor` edge function,
+  Claude Opus 5.5 with the platform's key) and the result opens as three editable papers:
+  CV · Cover letter · Honest notes, with Download PDF (print layout) and Copy.
+  Nothing is stored server-side; the last result stays in this tab only (sessionStorage).
+  Free users meet Dottie with an Upgrade button. ?demo=1 = sample data, no calls.
+-->
+<style>
+  :root{ --blue:#0b5cad; --blue-d:#094a8c; --ink:#14202b; --muted:#5a6b7b; --bg:#f4f6f9; --card:#fff; --line:#e3e8ee; --green:#1a7f37; --err:#b3261e; --amber:#b26a00; }
+  @media (prefers-color-scheme: dark){ :root{ --ink:#eef3f8; --muted:#9fb0c0; --bg:#0e151c; --card:#161f29; --line:#26323f; --blue:#3a90e0; --blue-d:#2f7fca; } }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  a{color:var(--blue)}
+  header{position:sticky;top:0;z-index:6;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:space-between;padding:14px 20px;}
+  .brand{font-weight:800;font-size:16px;color:var(--blue);text-decoration:none}
+  .hdr{display:flex;gap:8px;align-items:center}
+  #lang-switch,.hbtn{font:inherit;font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;text-decoration:none}
+
+  /* Dottie — the same breathing orb as the intake / edit pages; glides to the active slot */
+  .orb{--s:min(70vmin,560px);position:fixed;left:50%;top:50%;width:var(--s);height:var(--s);z-index:3;pointer-events:none;
+    transform:translate(-50%,-50%) scale(0);transition:transform .8s cubic-bezier(.2,.8,.2,1);}
+  .core{position:relative;overflow:hidden;width:100%;height:100%;border-radius:50%;
+    background:radial-gradient(circle at 38% 34%, color-mix(in srgb,var(--blue) 82%, white) 0%, var(--blue) 45%, var(--blue-d) 100%);
+    box-shadow:0 0 0 calc(var(--s)*.05) color-mix(in srgb,var(--blue) 12%,transparent), 0 14px 40px color-mix(in srgb,var(--blue) 30%,transparent);
+    animation:breathe 4.5s ease-in-out infinite;}
+  .core::after{content:"";position:absolute;inset:0;border-radius:50%;opacity:0;background:radial-gradient(circle at 80% 50%, rgba(255,255,255,.55) 0%, rgba(255,255,255,.18) 18%, transparent 38%);transition:opacity .4s}
+  .thinking .core{animation:heartbeat 1.15s ease-in-out infinite} .thinking .core::after{opacity:1;animation:orbit 1.4s linear infinite}
+  .core.happy{animation:pop .9s cubic-bezier(.2,.9,.3,1.35) 1, breathe 4.5s ease-in-out .9s infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+  @keyframes heartbeat{0%{transform:scale(1)}18%{transform:scale(1.07)}36%{transform:scale(.98)}54%{transform:scale(1.05)}100%{transform:scale(1)}}
+  @keyframes orbit{to{transform:rotate(360deg)}}
+  @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.25)}100%{transform:scale(1)}}
+  @media (prefers-reduced-motion: reduce){ .core,.core::after{animation:none !important} .orb{transition:none} }
+
+  main{position:relative;z-index:2;max-width:760px;margin:0 auto;padding:26px 20px 90px;
+    --gut:calc(clamp(20px,3vw,28px) * 1.15 + 14px);}  /* orb column + gap: greeting, answered rows and options share this left edge */
+  .say{display:grid;grid-template-columns:auto 1fr;column-gap:14px;align-items:start;margin:8px 0 14px;opacity:0;transform:translateY(8px);transition:opacity .45s ease, transform .45s ease}
+  .say.in{opacity:1;transform:none}
+  .slot{width:1.15em;height:1.15em;font-size:clamp(20px,3vw,28px);margin-top:.04em}
+  .say h1,.say p.q{font-size:clamp(20px,3vw,28px);font-weight:800;letter-spacing:-.02em;line-height:1.22;margin:0}
+  .say .sub{grid-column:2;color:var(--muted);font-size:14.5px;margin:6px 0 0}
+  .done-row{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:0 0 8px var(--gut);padding:11px 16px;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+  .done-row:hover{background:color-mix(in srgb,var(--blue) 5%,var(--card))}
+  .done-row .q{font-size:12.5px;color:var(--muted);margin:0} .done-row .a{font-size:15px;font-weight:600;margin:0;overflow-wrap:anywhere}
+  .done-row .chg{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .ans{margin:0 0 6px;padding-left:var(--gut);opacity:0;transition:opacity .4s ease .1s} .ans.in{opacity:1}
+  @media(max-width:520px){ .ans{padding-left:0} .done-row{margin-left:0}
+    .say.intro{grid-template-columns:1fr} .say.intro .slot{display:none} .say.intro .sub{grid-column:1} }
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chips button{font:inherit;padding:10px 15px;border-radius:999px;background:var(--card);color:var(--ink);border:1.5px solid var(--line);cursor:pointer;font-weight:600;font-size:14px;text-align:left;max-width:100%}
+  .chips button:hover{border-color:var(--blue)} .chips button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .chips button small{display:block;font-weight:500;opacity:.75;font-size:12px}
+  input[type=text],input[type=url],textarea{width:100%;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);outline:none}
+  textarea{min-height:140px;resize:vertical}
+  :is(input,textarea):focus{border-color:var(--blue);box-shadow:0 0 0 4px color-mix(in srgb,var(--blue) 15%,transparent)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px} @media(max-width:520px){ .two{grid-template-columns:1fr} }
+  .acts{display:flex;gap:14px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  .go{background:var(--blue);color:#fff;font:inherit;font-weight:700;font-size:15px;padding:11px 22px;border-radius:999px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+  .go:hover{filter:brightness(1.08)} .go[disabled]{opacity:.6;cursor:default}
+  .ghost{background:none;border:0;font:inherit;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:pointer;padding:6px 0;text-decoration:none}
+  .err{font-size:13.5px;color:#fff;background:var(--err);display:none;padding:6px 12px;border-radius:9px;margin-top:10px} .err.on{display:inline-block}
+  .meta{font-size:12.5px;color:var(--muted);margin:2px 0 18px}
+  .working{position:fixed;left:16px;right:16px;top:calc(50% + min(70vmin,560px)*.21 + 26px);text-align:center;z-index:4}
+  .working p{font-size:17px;font-weight:700;margin:0 0 6px} .working small{color:var(--muted)}
+
+  /* result */
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px}
+  .tabs button{font:inherit;font-size:14px;font-weight:700;padding:8px 15px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer}
+  .tabs button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .tools{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px;align-items:center}
+  .tools button{font:inherit;font-size:13px;font-weight:600;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+  .tools button:hover{border-color:var(--blue);color:var(--blue)}
+  .tools .hint{font-size:12.5px;color:var(--muted)}
+  .paper{background:#fff;color:#1b1b1b;border-radius:6px;box-shadow:0 2px 14px rgba(0,0,0,.12);padding:48px 52px;margin:0 auto;max-width:794px;font-family:Georgia,'Times New Roman',serif;font-size:14.5px;line-height:1.5;outline:none}
+  .paper[hidden]{display:none}
+  .paper:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 30%,transparent),0 2px 14px rgba(0,0,0,.12)}
+  @media(max-width:600px){ .paper{padding:26px 20px;font-size:13.5px} }
+  .paper h1{font-size:26px;margin:0 0 2px;letter-spacing:-.01em} .paper .hl{font-size:15px;color:#444;margin:0 0 4px}
+  .paper .ct{font-size:12.5px;color:#555;margin:0 0 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+  .paper h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#0b5cad;border-bottom:1px solid #d9e2ec;padding-bottom:3px;margin:18px 0 8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+  .paper .job{margin:0 0 10px} .paper .job .jt{font-weight:700} .paper .job .jm{color:#555;font-size:13px}
+  .paper ul{margin:4px 0 0;padding-left:18px} .paper li{margin:2px 0}
+  .paper p{margin:0 0 10px}
+  .paper.letter p{margin:0 0 14px}
+  .paper.notes{font-family:inherit} .paper.notes h2{margin-top:6px}
+  .paper .disc{font-size:11.5px;color:#777;margin-top:22px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);z-index:60;background:var(--green);color:#fff;font-weight:700;font-size:14px;padding:10px 18px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.18);opacity:0;transition:opacity .25s,transform .25s;pointer-events:none}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  @media(min-width:1024px){ main{max-width:900px;padding:40px 40px 90px} }
+
+  /* print: only the paper on screen, at A4 */
+  @media print{
+    @page{size:A4;margin:16mm}
+    body{background:#fff} header,.orb,.say,.done-row,.tabs,.tools,.meta,.toast,#flow,.ans{display:none !important}
+    main{max-width:none;padding:0;margin:0}
+    .paper{box-shadow:none;padding:0;max-width:none;border-radius:0}
+    .paper[hidden]{display:none !important}
+    .paper .disc{display:none}
+  }
+</style>
+</head>
+<body>
+<header><a class="brand" href="/">● JobsPulse</a><div class="hdr"><a class="hbtn" href="/dashboard/" data-i18n="nav.dashboard">Dashboard</a><select id="lang-switch" aria-label="Language"></select></div></header>
+<div class="orb" id="orb"><div class="core" id="core"></div></div>
+<main>
+  <div id="flow"></div>
+  <div id="result" hidden>
+    <div class="say in"><div class="slot" id="rslot"></div><h1 id="rtitle"></h1></div>
+    <p class="meta" id="rmeta"></p>
+    <div class="tabs" id="rtabs">
+      <button data-doc="cv" class="on" data-i18n="st.tab_cv">CV</button>
+      <button data-doc="letter" data-i18n="st.tab_letter">Cover letter</button>
+      <button data-doc="notes" data-i18n="st.tab_notes">Honest notes</button>
+    </div>
+    <div class="tools">
+      <button id="pdf" data-i18n="st.pdf">Download PDF</button>
+      <button id="copy" data-i18n="st.copy">Copy text</button>
+      <button id="again" data-i18n="st.again">Another job</button>
+      <span class="hint" data-i18n="st.edit_hint">Tap the page to edit anything before you download.</span>
+    </div>
+    <article class="paper cv" id="doc-cv" contenteditable="true" spellcheck="true"></article>
+    <article class="paper letter" id="doc-letter" contenteditable="true" spellcheck="true" hidden></article>
+    <article class="paper notes" id="doc-notes" hidden></article>
+  </div>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="/assets/config.js"></script>
+<script src="/assets/i18n.js"></script>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  const SUPABASE_URL = 'https://rkuiprrginjullnzskkg.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_jtWlWOLHLw-ebE0BcfHifA_D9PIQy8O';
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const T = k => (window.jpt ? window.jpt(k) : k);
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const qs = new URLSearchParams(location.search);
+  const DEMO = qs.get('demo') === '1';
+  const LANGS = [['en','English'],['es','Español'],['ca','Català'],['de','Deutsch'],['fr','Français'],['ja','日本語'],['zh','中文']];
+  // Section headings belong to the DOCUMENT's language (which can differ from the page's).
+  const HEAD = {
+    en: { summary: 'Profile', exp: 'Experience', edu: 'Education', skills: 'Skills', langs: 'Languages', certs: 'Certifications', extras: 'Other' },
+    es: { summary: 'Perfil', exp: 'Experiencia', edu: 'Formación', skills: 'Competencias', langs: 'Idiomas', certs: 'Certificaciones', extras: 'Otros' },
+    ca: { summary: 'Perfil', exp: 'Experiència', edu: 'Formació', skills: 'Competències', langs: 'Idiomes', certs: 'Certificacions', extras: 'Altres' },
+    de: { summary: 'Profil', exp: 'Berufserfahrung', edu: 'Ausbildung', skills: 'Kenntnisse', langs: 'Sprachen', certs: 'Zertifikate', extras: 'Sonstiges' },
+    fr: { summary: 'Profil', exp: 'Expérience', edu: 'Formation', skills: 'Compétences', langs: 'Langues', certs: 'Certifications', extras: 'Divers' },
+    ja: { summary: 'プロフィール', exp: '職歴', edu: '学歴', skills: 'スキル', langs: '語学', certs: '資格', extras: 'その他' },
+    zh: { summary: '个人简介', exp: '工作经历', edu: '教育背景', skills: '技能', langs: '语言', certs: '证书', extras: '其他' },
+  };
+
+  // ── Dottie placement (same mechanics as edit-v2) ──
+  const orb = $('orb'), core = $('core');
+  const BASE = () => Math.min(Math.min(window.innerWidth, window.innerHeight) * 0.7, 560);
+  let slotEl = null;
+  function placeAt(el) {
+    if (!el) { orb.style.transform = 'translate(-50%,-50%) scale(.42)'; return; }
+    const r = el.getBoundingClientRect(), S = BASE();
+    const dx = r.left + r.width/2 - window.innerWidth/2, dy = r.top + r.height/2 - window.innerHeight/2;
+    orb.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${r.width / S})`;
+  }
+  const placeHome = () => placeAt(slotEl);
+  window.addEventListener('resize', placeHome); window.addEventListener('scroll', placeHome, { passive: true });
+  if (window.ResizeObserver) new ResizeObserver(placeHome).observe(document.body);
+  function happy() { core.classList.remove('happy'); void core.offsetWidth; core.classList.add('happy'); }
+  let toastT; function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2600); }
+
+  // ── state ──
+  let ST = null, PROFILE = null, SAVED = [];
+  const A = { job: null, text: '', url: '', title: '', company: '', language: '', highlight: '' };
+  const STEP_KEYS = ['job', 'posting', 'language', 'highlight'];
+  const shown = () => STEP_KEYS.filter(k => k !== 'posting' || (A.job && A.job.other));
+  let cur = 'job';
+
+  async function call(body) {
+    if (DEMO) { await new Promise(r => setTimeout(r, body.action === 'generate' ? 2600 : 300)); return demoReply(body); }
+    const { data: { session } } = await sb.auth.getSession();
+    const r = await fetch(SUPABASE_URL + '/functions/v1/tailor', { method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token }, body: JSON.stringify(body) });
+    return { ok: r.ok, status: r.status, j: await r.json().catch(() => ({})) };
+  }
+
+  // One Dottie line (+ optional sub line), with the orb slot.
+  const say = (text, sub, h1) => `<div class="say"><div class="slot"></div>${h1 ? `<h1>${text}</h1>` : `<p class="q">${text}</p>`}${sub ? `<p class="sub">${sub}</p>` : ''}</div>`;
+  function show(html) {
+    $('flow').innerHTML = html;
+    const lines = $('flow').querySelectorAll('.say'); const last = lines[lines.length - 1];
+    slotEl = last ? last.querySelector('.slot') : null;
+    requestAnimationFrame(() => { $('flow').querySelectorAll('.say,.ans').forEach((e, k) => setTimeout(() => e.classList.add('in'), 60 + k * 90)); setTimeout(placeHome, 80); });
+  }
+
+  // ── gates: signed out / free / not configured / quota ──
+  function gate(kind) {
+    const up = `<div class="ans"><div class="acts"><a class="go" href="/dashboard/?next=upgrade">${esc(T('st.upgrade'))}</a><a class="ghost" href="/pricing/">${esc(T('st.see_pricing'))}</a></div></div>`;
+    const back = `<div class="ans"><div class="acts"><a class="go" href="/dashboard/">${esc(T('nav.dashboard'))}</a></div></div>`;
+    if (kind === 'signin') show(say(esc(T('st.signin')), '', true) + `<div class="ans"><div class="acts"><a class="go" href="/dashboard/">${esc(T('nav.signin'))}</a></div></div>`);
+    else if (kind === 'free') show(say(esc(T('st.free_h')), esc(T('st.free_p').replace('{n}', ST.limit)), true) + up);
+    else if (kind === 'soon') show(say(esc(T('st.soon_h')), esc(T('st.soon_p')), true) + back);
+    else if (kind === 'quota') show(say(esc(T('st.quota_h')), esc(T('st.quota_p').replace('{n}', ST.limit)), true) + back);
+  }
+
+  // ── the conversation ──
+  function rowFor(k) {
+    const q = { job: 'st.q_job', posting: 'st.q_posting', language: 'st.q_lang', highlight: 'st.q_highlight' }[k];
+    let a = '';
+    if (k === 'job') a = A.job.other ? T('st.other_job') : `${A.job.title}${A.job.company ? ' · ' + A.job.company : ''}`;
+    if (k === 'posting') a = A.title || A.url || (A.text ? A.text.slice(0, 80) + '…' : '');
+    if (k === 'language') a = (LANGS.find(l => l[0] === A.language) || [, ''])[1];
+    if (k === 'highlight') a = A.highlight || T('st.nothing');
+    return `<div class="done-row" data-k="${k}"><div><p class="q">${esc(T(q))}</p><p class="a">${esc(a)}</p></div><span class="chg">${esc(T('st.change'))}</span></div>`;
+  }
+  function render() {
+    const keys = shown(), idx = keys.indexOf(cur);
+    let html = say(esc(T('st.hello').replace('{name}', PROFILE.first_name || '')), esc(T('st.hello_sub').replace('{left}', Math.max(0, ST.limit - ST.used)).replace('{n}', ST.limit)) + (ST.has_cv ? '' : ' ' + T('st.no_cv')), true);
+    html = html.replace('class="say"', 'class="say intro"');
+    keys.slice(0, idx).forEach(k => { html += rowFor(k); });
+    html += stepHtml(cur);
+    show(html);
+    $('flow').querySelectorAll('.done-row').forEach(r => r.onclick = () => { cur = r.dataset.k; render(); });
+    wire(cur);
+  }
+  function stepHtml(k) {
+    const err = `<div class="err" id="err"></div>`;
+    if (k === 'job') {
+      const opts = SAVED.map(m => `<button data-id="${esc(m.id)}" class="${A.job && A.job.id === m.id ? 'on' : ''}">${esc(m.title)}<small>${esc([m.company, m.location].filter(Boolean).join(' · '))}</small></button>`).join('');
+      return say(esc(T('st.q_job')), esc(T(SAVED.length ? 'st.q_job_sub' : 'st.q_job_none'))) +
+        `<div class="ans"><div class="chips">${opts}<button data-id="__other" class="${A.job && A.job.other ? 'on' : ''}">${esc(T('st.other_job'))}</button></div>${err}</div>`;
+    }
+    if (k === 'posting') return say(esc(T('st.q_posting')), esc(T('st.q_posting_sub'))) +
+      `<div class="ans"><textarea id="ptext" placeholder="${esc(T('st.posting_ph'))}">${esc(A.text)}</textarea>
+        <div class="two"><input type="text" id="ptitle" placeholder="${esc(T('st.title_ph'))}" value="${esc(A.title)}"><input type="text" id="pcompany" placeholder="${esc(T('st.company_ph'))}" value="${esc(A.company)}"></div>
+        <div class="two" style="grid-template-columns:1fr"><input type="url" id="purl" placeholder="${esc(T('st.url_ph'))}" value="${esc(A.url)}"></div>
+        ${err}<div class="acts"><button class="go" id="next">${esc(T('st.next'))}</button></div></div>`;
+    if (k === 'language') return say(esc(T('st.q_lang')), esc(T('st.q_lang_sub'))) +
+      `<div class="ans"><div class="chips">${LANGS.map(([c, n]) => `<button data-l="${c}" class="${A.language === c ? 'on' : ''}">${esc(n)}</button>`).join('')}</div>${err}</div>`;
+    if (k === 'highlight') return say(esc(T('st.q_highlight')), esc(T('st.q_highlight_sub'))) +
+      `<div class="ans"><textarea id="hl" style="min-height:90px" placeholder="${esc(T('st.highlight_ph'))}">${esc(A.highlight)}</textarea>${err}
+        <div class="acts"><button class="go" id="write">${esc(T('st.write'))}</button><button class="ghost" id="skip">${esc(T('st.skip_write'))}</button></div></div>`;
+    return '';
+  }
+  const fail = m => { const e = $('err'); if (e) { e.textContent = m; e.classList.add('on'); } };
+  function advance() { const keys = shown(); cur = keys[keys.indexOf(cur) + 1]; happy(); render(); }
+  function wire(k) {
+    if (k === 'job') $('flow').querySelectorAll('.chips button').forEach(b => b.onclick = () => {
+      A.job = b.dataset.id === '__other' ? { other: true } : SAVED.find(m => m.id === b.dataset.id); advance(); });
+    if (k === 'posting') {
+      const f = $('ptext'); setTimeout(() => f.focus({ preventScroll: true }), 400);
+      $('next').onclick = () => {
+        A.text = $('ptext').value.trim(); A.title = $('ptitle').value.trim(); A.company = $('pcompany').value.trim(); A.url = $('purl').value.trim();
+        if (A.text.length < 200 && !/^https:\/\//.test(A.url)) return fail(T('st.err_posting'));
+        advance();
+      };
+    }
+    if (k === 'language') $('flow').querySelectorAll('.chips button').forEach(b => b.onclick = () => { A.language = b.dataset.l; advance(); });
+    if (k === 'highlight') {
+      $('write').onclick = () => { A.highlight = $('hl').value.trim(); generate(); };
+      $('skip').onclick = () => { A.highlight = ''; generate(); };
+    }
+  }
+
+  // ── writing ──
+  let tick = null;
+  async function generate() {
+    const lines = ['st.w1', 'st.w2', 'st.w3', 'st.w4'];
+    $('flow').innerHTML = `<div class="working"><p id="wl">${esc(T(lines[0]))}</p><small>${esc(T('st.w_wait'))}</small></div>`;
+    slotEl = null; orb.classList.add('thinking'); placeAt(null);
+    let n = 0; tick = setInterval(() => { n = Math.min(n + 1, lines.length - 1); const w = $('wl'); if (w) w.textContent = T(lines[n]); }, 9000);
+    const body = { action: 'generate', language: A.language, highlight: A.highlight };
+    if (A.job.other) Object.assign(body, { job_text: A.text, job_url: A.url, title: A.title, company: A.company });
+    else Object.assign(body, { match_id: A.job.id, job_text: A.text });
+    let res;
+    try { res = await call(body); } catch (e) { res = { ok: false, status: 0, j: {} }; }
+    clearInterval(tick); orb.classList.remove('thinking');
+    if (res.ok && res.j.result) { ST.used = res.j.used; RESULT = { ...res.j.result, job: res.j.job, language: A.language, at: new Date().toISOString() };
+      try { sessionStorage.setItem('jp_studio', JSON.stringify(RESULT)); } catch (e) {} return paintResult(); }
+    const e = res.j.error;
+    if (e === 'need_posting') { if (!A.job.other) { A.job = { ...A.job, other: true }; A.title = A.title || A.job.title; A.company = A.company || A.job.company; } cur = 'posting'; render(); return fail(T('st.err_need_posting')); }
+    if (e === 'quota') { ST.used = ST.limit; return gate('quota'); }
+    if (e === 'premium required') return gate('free');
+    cur = 'highlight'; render(); fail(T(e === 'refused' ? 'st.err_refused' : 'st.err_generic'));
+  }
+
+  // ── result papers ──
+  let RESULT = null, DOC = 'cv';
+  const list = a => (Array.isArray(a) ? a : []).filter(x => String(x || '').trim());
+  function paintResult() {
+    const r = RESULT, h = HEAD[r.language] || HEAD.en, cv = r.cv || {}, cl = r.cover_letter || {}, no = r.notes || {};
+    $('flow').innerHTML = ''; $('result').hidden = false; slotEl = $('rslot'); happy();
+    $('rtitle').textContent = T('st.done_h');
+    $('rmeta').textContent = T('st.done_meta').replace('{job}', [r.job?.title, r.job?.company].filter(Boolean).join(' · ')).replace('{left}', Math.max(0, ST.limit - ST.used));
+    const sec = (title, inner) => inner ? `<h2>${esc(title)}</h2>${inner}` : '';
+    const ul = a => list(a).length ? `<ul>${list(a).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '';
+    $('doc-cv').innerHTML = `<h1>${esc(cv.full_name || PROFILE.first_name || '')}</h1>${cv.headline ? `<p class="hl">${esc(cv.headline)}</p>` : ''}` +
+      (list(cv.contact).length ? `<p class="ct">${list(cv.contact).map(esc).join(' · ')}</p>` : '') +
+      sec(h.summary, cv.summary ? `<p>${esc(cv.summary)}</p>` : '') +
+      sec(h.exp, (cv.experience || []).map(x => `<div class="job"><div class="jt">${esc(x.role)}${x.company ? ' — ' + esc(x.company) : ''}</div><div class="jm">${esc([x.location, x.period].filter(Boolean).join(' · '))}</div>${ul(x.bullets)}</div>`).join('')) +
+      sec(h.edu, (cv.education || []).map(x => `<div class="job"><div class="jt">${esc(x.degree)}${x.school ? ' — ' + esc(x.school) : ''}</div><div class="jm">${esc(x.period || '')}</div>${x.details ? `<p>${esc(x.details)}</p>` : ''}</div>`).join('')) +
+      sec(h.skills, list(cv.skills).length ? `<p>${list(cv.skills).map(esc).join(' · ')}</p>` : '') +
+      sec(h.langs, list(cv.languages).length ? `<p>${list(cv.languages).map(esc).join(' · ')}</p>` : '') +
+      sec(h.certs, ul(cv.certifications)) + sec(h.extras, ul(cv.extras));
+    $('doc-letter').innerHTML = `${cl.greeting ? `<p>${esc(cl.greeting)}</p>` : ''}${list(cl.paragraphs).map(p => `<p>${esc(p)}</p>`).join('')}${cl.closing ? `<p>${esc(cl.closing)}</p>` : ''}${cl.signature ? `<p>${esc(cl.signature)}</p>` : ''}`;
+    $('doc-notes').innerHTML = sec(T('st.n_strengths'), ul(no.strengths)) + sec(T('st.n_gaps'), ul(no.gaps)) + sec(T('st.n_tips'), ul(no.tips)) + `<p class="disc">${esc(T('st.disclaimer'))}</p>`;
+    tab(DOC); setTimeout(placeHome, 60);
+  }
+  function tab(d) {
+    DOC = d; document.querySelectorAll('#rtabs button').forEach(b => b.classList.toggle('on', b.dataset.doc === d));
+    ['cv', 'letter', 'notes'].forEach(x => $('doc-' + x).hidden = x !== d);
+  }
+  document.querySelectorAll('#rtabs button').forEach(b => b.onclick = () => tab(b.dataset.doc));
+  $('pdf').onclick = () => { const t = document.title; document.title = [T(DOC === 'letter' ? 'st.tab_letter' : DOC === 'notes' ? 'st.tab_notes' : 'st.tab_cv'), RESULT?.job?.company].filter(Boolean).join(' — '); window.print(); document.title = t; };
+  $('copy').onclick = async () => { try { await navigator.clipboard.writeText($('doc-' + DOC).innerText); toast(T('st.copied')); } catch (e) {} };
+  $('again').onclick = () => { try { sessionStorage.removeItem('jp_studio'); } catch (e) {} RESULT = null; $('result').hidden = true; Object.assign(A, { job: null, text: '', url: '', title: '', company: '', highlight: '' }); cur = 'job'; start(); };
+
+  // ── start ──
+  function start() {
+    if (!ST.configured) return gate('soon');
+    if (!ST.premium) return gate('free');
+    if (ST.used >= ST.limit) return gate('quota');
+    A.language = A.language || PROFILE.language || 'en';
+    const pre = qs.get('match');
+    if (pre && !A.job) { const m = SAVED.find(x => x.id === pre); if (m) { A.job = m; cur = 'language'; } }
+    render();
+  }
+  async function init() {
+    if (!DEMO) {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { PROFILE = {}; return gate('signin'); }
+      // own row only — admin accounts can read every profile
+      const { data: prof } = await sb.from('profiles').select('id,first_name,language').eq('email', session.user.email.toLowerCase()).limit(1).maybeSingle();
+      if (!prof) { PROFILE = {}; return gate('signin'); }
+      PROFILE = prof;
+    }
+    const { ok, j } = await call({ action: 'status' });
+    if (!ok) { ST = { configured: false, limit: 12, used: 0 }; return gate('soon'); }
+    ST = j; SAVED = j.saved || [];
+    // a match opened from the dashboard that isn't saved: fetch it (own rows only)
+    const pre = qs.get('match');
+    if (pre && !DEMO && !SAVED.some(m => m.id === pre)) {
+      const { data: m } = await sb.from('matches').select('id,title,company,location,url,score').eq('id', pre).eq('profile_id', PROFILE.id).maybeSingle();
+      if (m) SAVED.unshift(m);
+    }
+    try { const kept = JSON.parse(sessionStorage.getItem('jp_studio') || 'null'); if (kept && ST.premium) { RESULT = kept; return paintResult(); } } catch (e) {}
+    start();
+  }
+  document.addEventListener('jp:lang', () => { if (RESULT && !$('result').hidden) paintResult(); else if (ST && PROFILE && $('flow').querySelector('.chips,textarea')) render(); });
+
+  // ── preview (?demo=1): sample profile + result, no calls ──
+  function demoReply(body) {
+    if (body.action === 'status') return { ok: true, j: { premium: true, configured: true, used: 3, limit: 12, has_cv: true, saved: [
+      { id: 'd2', title: 'Analytics Engineer', company: 'Glovo', location: 'Barcelona' }, { id: 'd1', title: 'Data Analyst', company: 'PPG', location: 'Barcelona' }] } };
+    const L = body.language;
+    return { ok: true, j: { used: 4, limit: 12, job: { title: 'Analytics Engineer', company: 'Glovo' }, result: {
+      cv: { full_name: 'Albert Reina i Buxó', headline: 'Analytics & AI Engineer — SQL, Python, LLM tooling', contact: ['Barcelona', 'albert@example.com', 'linkedin.com/in/example'],
+        summary: 'Engineer with three years turning messy operational data into dashboards and automated pipelines. Builds with SQL and Python daily and has shipped LLM-based tools to production.',
+        experience: [{ role: 'AI Engineer', company: 'Example Labs', location: 'Barcelona', period: '2023 – today', bullets: ['Built the SQL + Python pipeline behind weekly job-match scoring for 200+ users.', 'Cut a manual reporting task from 4 hours to 10 minutes with an automated dbt-style model layer.', 'Shipped a retrieval-augmented assistant used daily by the support team.'] },
+          { role: 'Technical Support Specialist', company: 'Example Corp', location: 'Cork', period: '2021 – 2023', bullets: ['Escalation owner for data-quality issues across three product lines.'] }],
+        education: [{ degree: 'BSc Computer Engineering', school: 'Universitat de Girona', period: '2017 – 2021', details: '' }],
+        skills: ['SQL', 'Python', 'Data modelling', 'Dashboards', 'LLMs / RAG', 'Git'], languages: ['Catalan (native)', 'Spanish (native)', 'English (C1)'], certifications: ['AWS Cloud Practitioner'], extras: [] },
+      cover_letter: { greeting: 'Dear Glovo Data team,', paragraphs: ['I am applying for the Analytics Engineer role because it sits exactly where my last three years have been: modelling operational data so that people can act on it.', 'At Example Labs I built the SQL and Python layer behind a weekly scoring pipeline, and replaced a four-hour manual report with an automated model layer. Your posting asks for dbt; I have built the same patterns by hand and would ramp up on dbt itself quickly.', 'I would bring a habit of making data trustworthy before making it pretty, and the experience of shipping LLM tooling to real users.'], closing: 'Thank you for your time — I would be glad to talk.', signature: 'Albert Reina i Buxó' },
+      notes: { strengths: ['SQL + Python daily, as the role requires', 'Pipeline and modelling experience close to analytics engineering'], gaps: ['dbt is required and not in your CV — say how you would close it (done in the letter)', 'No Looker / Tableau named'], tips: ['Link one public example of a data model if you have it', 'Apply within the week — the posting is 5 days old'] },
+    } } };
+  }
+  if (DEMO) {
+    PROFILE = { id: 'demo', first_name: 'Albert', language: 'en' };
+    const b = document.createElement('div'); b.textContent = T('jv.preview'); b.setAttribute('data-i18n', 'jv.preview');
+    b.style.cssText = 'position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:#14202b;color:#fff;font:600 12.5px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:8px 14px;border-radius:999px;box-shadow:0 4px 16px rgba(0,0,0,.2);pointer-events:none;max-width:calc(100vw - 32px);text-align:center';
+    document.body.appendChild(b);
+  }
+  init();
+</script>
+</body>
+</html>

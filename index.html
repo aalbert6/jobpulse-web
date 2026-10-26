@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <link rel="canonical" href="https://jobspulseapp.com/">
 <meta name="description" content="A weekly email of jobs scored against your real profile, with an honest gap analysis for each one.">
 <meta name="theme-color" content="#0b5cad">
@@ -17,18 +19,20 @@
 <meta name="twitter:title" content="JobsPulse — honest weekly job matches">
 <meta name="twitter:description" content="A weekly email of jobs scored against your real profile, with an honest gap analysis for each one.">
 <meta name="twitter:image" content="https://jobspulseapp.com/assets/og.png">
-<link rel="alternate" hreflang="en" href="https://jobspulseapp.com/?lang=en">
-<link rel="alternate" hreflang="es" href="https://jobspulseapp.com/?lang=es">
-<link rel="alternate" hreflang="ca" href="https://jobspulseapp.com/?lang=ca">
-<link rel="alternate" hreflang="de" href="https://jobspulseapp.com/?lang=de">
-<link rel="alternate" hreflang="fr" href="https://jobspulseapp.com/?lang=fr">
-<link rel="alternate" hreflang="ja" href="https://jobspulseapp.com/?lang=ja">
-<link rel="alternate" hreflang="zh" href="https://jobspulseapp.com/?lang=zh">
+<link rel="alternate" hreflang="en" href="https://jobspulseapp.com/">
+<link rel="alternate" hreflang="es" href="https://jobspulseapp.com/es/">
+<link rel="alternate" hreflang="ca" href="https://jobspulseapp.com/ca/">
+<link rel="alternate" hreflang="de" href="https://jobspulseapp.com/de/">
+<link rel="alternate" hreflang="fr" href="https://jobspulseapp.com/fr/">
+<link rel="alternate" hreflang="ja" href="https://jobspulseapp.com/ja/">
+<link rel="alternate" hreflang="zh" href="https://jobspulseapp.com/zh/">
 <link rel="alternate" hreflang="x-default" href="https://jobspulseapp.com/">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
- {"@type":"Organization","@id":"https://jobspulseapp.com/#org","name":"JobsPulse","url":"https://jobspulseapp.com/","logo":"https://jobspulseapp.com/favicon.svg","email":"privacy@jobspulseapp.com","slogan":"Relentless pursuit.","areaServed":"ES"},
- {"@type":"WebSite","@id":"https://jobspulseapp.com/#site","url":"https://jobspulseapp.com/","name":"JobsPulse","publisher":{"@id":"https://jobspulseapp.com/#org"},"inLanguage":["en","es","ca","de","fr","ja","zh"]},
+ {"@type":"Organization","@id":"https://jobspulseapp.com/#org","name":"JobsPulse","alternateName":["Jobs Pulse","JobPulse","JobsPulse app"],"url":"https://jobspulseapp.com/","logo":{"@type":"ImageObject","url":"https://jobspulseapp.com/assets/logo-512.png","width":512,"height":512},"image":"https://jobspulseapp.com/assets/og.png","email":"privacy@jobspulseapp.com","slogan":"Relentless pursuit.","founder":{"@type":"Person","name":"Albert Reina i Buxó"},"areaServed":"ES","sameAs":[]},
+ {"@type":"WebSite","@id":"https://jobspulseapp.com/#site","url":"https://jobspulseapp.com/","name":"JobsPulse","alternateName":["Jobs Pulse","JobPulse","jobspulseapp.com"],"publisher":{"@id":"https://jobspulseapp.com/#org"},"inLanguage":["en","es","ca","de","fr","ja","zh"]},
+ {"@type":"SoftwareApplication","name":"JobsPulse","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://jobspulseapp.com/","description":"JobsPulse: one honest email a week with job openings scored against your profile and the gap named plainly — plus a CV and cover letter tailored to each job.","offers":[{"@type":"Offer","price":"0","priceCurrency":"EUR","name":"Base"},{"@type":"Offer","price":"4.90","priceCurrency":"EUR","name":"Premium","priceSpecification":{"@type":"UnitPriceSpecification","price":"4.90","priceCurrency":"EUR","billingDuration":"P1M","valueAddedTaxIncluded":true}}],"provider":{"@id":"https://jobspulseapp.com/#org"}}
+]},
  {"@type":"SoftwareApplication","name":"JobsPulse","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://jobspulseapp.com/","description":"One honest email a week: job openings scored against your profile with the gap named plainly.","offers":[{"@type":"Offer","price":"0","priceCurrency":"EUR","name":"Base"},{"@type":"Offer","price":"1","priceCurrency":"EUR","name":"Professional (beta)"}],"provider":{"@id":"https://jobspulseapp.com/#org"}}
 ]}
 </script>
@@ -102,6 +106,9 @@
     .grid{gap:20px;margin:40px 0 20px;}
     .grid .card{padding:26px 28px;}
   }
+  /* Phones: long languages (es/de/fr) overflow the menu; How it works stays in the footer. */
+  @media(max-width:480px){ .nav-how{display:none !important} }
+  .howlink{margin:-12px 0 22px;font-size:15px;font-weight:700;} .howlink a{text-decoration:none;} .howlink a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -110,10 +117,10 @@
   <nav>
     <a class="logo" href="/"><span class="dot"></span>JobsPulse</a>
     <div class="links">
-      <a href="/how-it-works/" data-i18n="nav.how">How it works</a>
+      <a class="nav-how" href="/how-it-works/" data-i18n="nav.how">How it works</a>
       <a href="/pricing/" data-i18n="nav.pricing">Pricing</a>
       <a href="/dashboard/" id="navauth" data-i18n="nav.signin">Sign in</a>
-      <a class="nav-cta" href="#waitlist" data-i18n="nav.join">Join</a>
+      <a class="nav-cta" id="navjoin" href="#waitlist" data-i18n="nav.join">Join</a>
     </div>
   </nav>
   <script>
@@ -137,6 +144,7 @@
     <h1 data-i18n="ld.h1">See what an honest match looks like.</h1>
     <p class="lede" data-i18n="ld.lede">Every week, roles scored against <em>your</em> profile — not a keyword —
       each with the honest gap: what you bring, and whether what's missing is learnable or a real wall.</p>
+    <p class="howlink"><a href="/how-it-works/" data-i18n="ld.howlink">How does it work? →</a></p>
 
     <div class="card demo">
       <span class="tag" data-i18n="ld.sampleh">A real weekly match, scored</span>
@@ -153,6 +161,12 @@
     <div class="hero-cta">
       <!-- Beta is full: primary "Get started -> intake" CTA returns here when the waitlist reopens. -->
       <a class="btn-ghost" href="/how-it-works/" data-i18n="ld.seehow">See how it works</a>
+    </div>
+
+    <div class="card" id="start" style="margin-top:16px;" hidden>
+      <h3 data-i18n="ld.openh">Start in six minutes</h3>
+      <p style="margin-top:6px;color:var(--muted);" data-i18n="ld.openp">Tell Dottie what you do and what you're after. Your first honest shortlist arrives within a day — free, and you can delete everything in one click.</p>
+      <p style="margin-top:14px;"><a class="btn-primary" href="/join/" data-i18n="ld.open_btn" style="display:inline-block;text-decoration:none;">Get started — it's free</a></p>
     </div>
 
     <div class="card" id="waitlist" style="margin-top:16px;">
@@ -175,16 +189,21 @@
     (function(){
       var f = document.getElementById('joinform'), b = document.getElementById('joinbtn'), m = document.getElementById('joinmsg');
       var T = function(k){ return window.jpt ? window.jpt(k) : k; };
+      // bot check (assets/guard.js; config.js loads later in the page, so mount on first focus)
+      var G = null; var mountG = function(){ if (!G && window.jpGuard) { var d = document.createElement('div'); d.style.marginTop = '10px'; f.appendChild(d); G = jpGuard.mount(d); } };
+      f.addEventListener('focusin', mountG);
       f.addEventListener('submit', async function(e){
         e.preventDefault();
         b.disabled = true; m.textContent = T('ld.join_sending');
         var data = new FormData(f);
         data.append('language', (localStorage.getItem('jp_lang') || navigator.language || 'en').slice(0,2));
+        mountG(); if (G && G.on) data.append('captcha', await G.token());
         try {
           var r = await fetch('https://rkuiprrginjullnzskkg.supabase.co/functions/v1/waitlist', {method:'POST', body:data, headers:{'Accept':'application/json'}});
           var j = await r.json().catch(function(){ return {}; });
           if (r.ok && j.ok) { f.reset(); m.textContent = T('ld.join_done'); }
-          else { m.textContent = T('ld.join_err'); }
+          else { m.textContent = T(j.error === 'captcha' ? 'guard.fail' : j.error === 'slow' ? 'guard.slow' : 'ld.join_err'); }
+          if (G) G.reset();
         } catch(err) { m.textContent = T('ld.join_err'); }
         b.disabled = false;
       });
@@ -218,6 +237,14 @@
   </footer>
 
 </div>
+<script src="/assets/config.js"></script>
+<script src="/assets/guard.js"></script>
+<script>
+  // Launch switch (assets/config.js): open signup replaces the invitation request.
+  (function(){ var c = window.JP_CONFIG || {}; if (!c.openSignup) return;
+    document.getElementById('start').hidden = false; document.getElementById('waitlist').hidden = true;
+    var n = document.getElementById('navjoin'); if (n) n.setAttribute('href', '/join/'); })();
+</script>
 <script src="/assets/i18n.js" defer></script>
 </body>
 </html>

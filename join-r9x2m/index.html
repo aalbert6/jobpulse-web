@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <meta name="robots" content="noindex">
 <title>JobsPulse — set up your profile</title>
 <!--
@@ -106,6 +108,9 @@
   .nav .go.quiet{color:var(--muted);font-weight:600}
   .bar{position:fixed;left:0;right:0;bottom:0;height:3px;background:transparent}
   .bar i{display:block;height:100%;background:var(--blue);width:0;transition:width .5s ease;opacity:.7}
+  .cta-row{margin-top:16px}
+  .cta{background:var(--blue);color:#fff;border:0;border-radius:999px;padding:12px 24px;font:inherit;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 8px 24px color-mix(in srgb,var(--blue) 30%,transparent)}
+  .cta:hover{filter:brightness(1.08)} .cta[disabled]{opacity:.6;cursor:default}
   .start{margin-top:18px;background:var(--blue);color:#fff;border:0;border-radius:999px;padding:13px 26px;font:inherit;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 10px 30px color-mix(in srgb,var(--blue) 35%,transparent)}
   /* Final screen: the dot is re-centred (place('center') on done) and the message sits over it in
      white, centred on both axes. The heading overrides the global .q{grid-column:2} so it stays
@@ -136,6 +141,7 @@
       <div id="answer"></div>
     </form>
     <span class="err" id="err"></span>
+    <div id="guard" style="margin-top:12px"></div>   <!-- Cloudflare check: visible only if it needs a click -->
   </div>
   <div class="line done" id="done" hidden><p class="q" data-i18n="in.done.h1"></p><p data-i18n="jv.done"></p><p data-i18n="in.done.changed"></p></div>
 </div>
@@ -147,6 +153,8 @@
 </div>
 <div class="bar"><i id="bar"></i></div>
 
+<script src="/assets/config.js"></script>
+<script src="/assets/guard.js"></script>
 <script src="/assets/i18n.js"></script>
 <script>
 (function(){
@@ -155,7 +163,9 @@
   var qs = new URLSearchParams(location.search);
   $('invite').value = (qs.get('invite')||'').trim();
   var DEMO = qs.get('demo') === '1';  // design preview: every step clickable, nothing is sent
-  function previewBanner(){ var b=document.createElement('div'); b.setAttribute('data-i18n','jv.preview'); b.textContent=(window.jpt?window.jpt('jv.preview'):'Preview'); b.style.cssText='position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:#14202b;color:#fff;font:600 12.5px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:8px 14px;border-radius:999px;box-shadow:0 4px 16px rgba(0,0,0,.2);pointer-events:none;max-width:calc(100vw - 32px);text-align:center'; document.body.appendChild(b); }
+  // Terms of service checkbox: launch switch, or ?demo=1&terms=1 to preview it
+  var TERMS = !!(window.JP_CONFIG && window.JP_CONFIG.terms) || (DEMO && qs.get('terms') === '1');
+  function previewBanner(){ var b=document.createElement('div'); b.setAttribute('data-i18n','jv.preview'); b.textContent=(window.jpt?window.jpt('jv.preview'):'Preview'); b.style.cssText='position:fixed;left:50%;bottom:calc(64px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:#14202b;color:#fff;font:600 12.5px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:8px 14px;border-radius:999px;box-shadow:0 4px 16px rgba(0,0,0,.2);pointer-events:none;max-width:calc(100vw - 32px);text-align:center'; document.body.appendChild(b); }
   if (DEMO) previewBanner();
 
   // The conversation. Field names + option values are exactly intake.html's (server contract).
@@ -215,6 +225,7 @@
     ul.querySelectorAll('button').forEach(function(b){ b.onclick = function(){ if (STEPS[i].type === 'file') files.cv = null; else files.docs.splice(+b.dataset.k, 1); paintFiles(); }; });
   }
   var orb = $('orb'), core = $('core'), stepEl = $('step'), busy = false;
+  var G = null;   // jpGuard handle (Turnstile), see assets/guard.js
   var BASE = function(){ return Math.min(window.innerWidth, window.innerHeight) * 0.70 > 560 ? 560 : Math.min(window.innerWidth, window.innerHeight) * 0.70; };
   // where the dot is: 'center' (big, thinking / intro / done) or 'side' (small, beside the question)
   function place(mode){
@@ -265,15 +276,25 @@
            + '<input type="file" id="fileinput" '+(s.type === 'files' ? 'multiple ' : '')+'accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" hidden><ul class="flist" id="flist"></ul></div>';
     else if (s.type === 'consent')
       html = '<label class="consent"><input type="checkbox" name="consent" '+(state.consent?'checked':'')+'><span>'+T('in.consent')+'</span></label>';
+    if (s.type === 'consent' && TERMS)   // launch switch (assets/config.js): Terms of service acceptance
+      html += '<label class="consent" style="margin-top:8px"><input type="checkbox" name="terms" '+(state.terms?'checked':'')+'><span>'+T('in.terms')+'</span></label>';
+    // A real button under the answer (Enter still works). Chip steps move on by themselves, so
+    // they only get it for the custom amount; the bottom bar keeps back / skip.
+    var ctaLabel = s.type === 'consent' ? T('jv.consent_btn') : T('jv.next');
+    var ctaText = ctaLabel.charAt(0).toUpperCase() + ctaLabel.slice(1);
+    if (s.type !== 'chips' || s.custom)
+      html += '<div class="cta-row"'+(s.type === 'chips' && !isCustomStep(s) ? ' hidden' : '')+' id="ctarow"><button type="button" class="cta" id="cta">'+ctaText+(s.type === 'consent' ? '' : ' →')+'</button></div>';
     a.innerHTML = html; $('err').classList.remove('on');
     $('back').disabled = i === 0;
     $('skip').hidden = !!s.required || s.type === 'consent';
-    var nx = $('next'); nx.textContent = s.type === 'consent' ? T('jv.consent_btn') : T('jv.next'); nx.classList.toggle('quiet', s.type === 'consent');
+    var nx = $('next'); nx.hidden = s.type !== 'chips'; nx.textContent = ctaLabel;
+    if ($('cta')) $('cta').onclick = next;
+    if (s.type === 'consent' && !G && window.jpGuard) G = jpGuard.mount($('guard'));   // bot check, mounted at the last step
     $('bar').style.width = Math.round(100 * (i + 1) / STEPS.length) + '%';
     requestAnimationFrame(function(){ place('side'); stepEl.classList.add('in'); var f = a.querySelector('input:not([type=radio]):not([type=checkbox]):not([type=file]),textarea'); if (f) f.focus(); });
     setTimeout(function(){ if (!stepEl.hidden) place('side'); }, 480);  // re-measure once the slide-in has settled
     a.querySelectorAll('input[type=radio]').forEach(function(r){ r.onchange = function(){
-      if (r.value === '__custom') { $('custom').hidden = false; state[s.name] = '__custom'; $('customval').focus(); return; }
+      if (r.value === '__custom') { $('custom').hidden = false; if ($('ctarow')) $('ctarow').hidden = false; state[s.name] = '__custom'; $('customval').focus(); return; }
       if ($('custom')) $('custom').hidden = true;
       state[s.name] = r.value; if (s.name === 'language_pick') setSiteLang(r.value); save(); orb.classList.add('calm'); setTimeout(next, 320); }; });
     if (s.type === 'chips') { var cur = a.querySelector('input[type=radio][value="'+String(v).replace(/"/g,'&quot;')+'"]'); if (cur && state[s.name] != null) cur.checked = true; }
@@ -289,6 +310,7 @@
     a.querySelectorAll('input:not([type=radio]),textarea').forEach(function(el){ el.oninput = function(){ orb.classList.toggle('calm', !!el.value); }; });
   }
 
+  function isCustomStep(s){ var v = state[s.name]; return v === '__custom' || (v != null && v !== '' && !s.options.some(function(o){ return o[0] === v; })); }
   function fail(msg){ var e = $('err'); e.textContent = msg; e.classList.add('on'); var f = $('answer').querySelector('input,textarea'); if (f) f.focus(); }
   function read(){
     var s = STEPS[i], a = $('answer');
@@ -303,7 +325,12 @@
       if (s.required && state[s.name] == null) { fail(T('jv.err_required')); return false; }
       return true;
     }
-    if (s.type === 'consent') { state.consent = !!a.querySelector('input').checked; if (!state.consent) { fail(T('jv.err_required')); return false; } return true; }
+    if (s.type === 'consent') {
+      state.consent = !!a.querySelector('input[name=consent]').checked;
+      state.terms = TERMS ? !!a.querySelector('input[name=terms]').checked : false;
+      if (!state.consent || (TERMS && !state.terms)) { fail(T('jv.err_required')); return false; }
+      return true;
+    }
     var el = a.querySelector('input,textarea'); var val = (el.value || '').trim();
     if (s.norm && NORM[s.norm]) val = NORM[s.norm](val);
     if (s.required && !val) { fail(T('jv.err_required')); return false; }
@@ -347,18 +374,22 @@
     busy = true; stepEl.classList.remove('in'); place('center'); orb.classList.add('thinking'); $('nav').hidden = true;
     var fd = new FormData();
     STEPS.forEach(function(s){ if (s.type !== 'files' && s.type !== 'file' && s.type !== 'consent' && s.name !== 'language_pick' && state[s.name] != null && state[s.name] !== '') fd.append(s.name, state[s.name]); });
-    fd.append('consent', 'on'); fd.append('consent_timestamp', new Date().toISOString());
+    fd.append('consent', 'on'); fd.append('consent_timestamp', new Date().toISOString()); if (TERMS) fd.append('terms', 'on');
     fd.append('language', state.language_pick || (localStorage.getItem('jp_lang') || 'en'));
     fd.append('invite', $('invite').value);
     if (files.cv) fd.append('cv_file', files.cv); files.docs.forEach(function(f){ fd.append('documents', f); });
+    if (G && G.on && !DEMO) fd.append('captcha', await G.token());
     try {
       var r = DEMO ? (await new Promise(function(res){ setTimeout(res, 900); }), { ok: true }) : await fetch($('intake').action, {method:'POST', body: fd, headers:{'Accept':'application/json'}});
       var j = DEMO ? {} : await r.json().catch(function(){ return {}; });
-      if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+      if (!r.ok) throw new Error(j.error === 'captcha' ? T('guard.fail') : j.error === 'slow' ? T('guard.slow') : (j.error || ('HTTP ' + r.status)));
       try { sessionStorage.removeItem('jp_join_v2'); } catch(e) {}
+      // open signup (no invitation): the profile waits for the email confirmation link
+      if (j.confirm) { var dp = $('done').querySelectorAll('p')[1]; if (dp) { dp.setAttribute('data-i18n', 'jv.done_confirm'); dp.innerHTML = T('jv.done_confirm'); } }
       orb.classList.remove('thinking'); busy = false;
       setTimeout(function(){ stepEl.hidden = true; place('center'); $('done').hidden = false; pulse('happy'); requestAnimationFrame(function(){ $('done').classList.add('in'); }); $('bar').style.width = '100%'; }, 450);
     } catch(err) {
+      if (G) G.reset();
       orb.classList.remove('thinking'); busy = false; $('nav').hidden = false; place('side'); stepEl.classList.add('in'); fail(err.message);
     }
   }
