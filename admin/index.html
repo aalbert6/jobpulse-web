@@ -257,11 +257,6 @@
     const rated = F.filter(r => r.usefulness != null && r.usefulness !== '');
     const avg = rated.length ? (rated.reduce((a, r) => a + (+r.usefulness || 0), 0) / rated.length).toFixed(1) : '—';
     const pending = W.filter(x => x.status === 'pending').length;
-    // MRR from what was actually charged: a yearly plan counts 1/12 a month for a year
-    const yr = x => x.period_start && x.period_end && (new Date(x.period_end) - new Date(x.period_start)) > 40 * 864e5;
-    const since = (days) => new Date(Date.now() - days * 864e5).toISOString();
-    const mrr = I.filter(x => x.kind === 'invoice' && x.source === 'stripe' && !yr(x) && x.issued_at >= since(31)).reduce((t, x) => t + x.total_cents, 0)
-      + Math.round(I.filter(x => x.kind === 'invoice' && x.source === 'stripe' && yr(x) && x.issued_at >= since(366)).reduce((t, x) => t + x.total_cents, 0) / 12);
     const kp = [
       ['Users', P.length, `${P.filter(x=>x.onboarded_at).length} onboarded · ${P.filter(x=>x.status!=='active').length} paused`],
       ['Pending invites', pending, `${W.filter(x=>x.status==='invited').length} invited · ${W.filter(x=>x.status==='joined').length} joined`],
@@ -486,6 +481,11 @@
     const sum = (a, k) => a.reduce((t, x) => t + (x[k] || 0), 0);
     const runsM = R.filter(r => r.created_at >= mStart && r.status === 'ok');
     const cost = R.filter(r => r.created_at >= mStart).reduce((t, r) => t + (r.input_tokens || 0) * 4e-6 + (r.output_tokens || 0) * 20e-6, 0);  // Opus 5.5 $4/$20 per MTok
+    // MRR from what was actually charged: a yearly plan counts 1/12 a month for a year
+    const yr = x => x.period_start && x.period_end && (new Date(x.period_end) - new Date(x.period_start)) > 40 * 864e5;
+    const since = (days) => new Date(Date.now() - days * 864e5).toISOString();
+    const mrr = I.filter(x => x.kind === 'invoice' && x.source === 'stripe' && !yr(x) && x.issued_at >= since(31)).reduce((t, x) => t + x.total_cents, 0)
+      + Math.round(I.filter(x => x.kind === 'invoice' && x.source === 'stripe' && yr(x) && x.issued_at >= since(366)).reduce((t, x) => t + x.total_cents, 0) / 12);
     const kp = [
       ['Premium', prem.length, `${paying.length} paying · ${prem.length - paying.length} comp`],
       ['MRR (approx.)', eur(mrr), 'VAT incl.: monthly charges of the last 31 days + yearly ones / 12'],
