@@ -66,6 +66,8 @@
   .mhead{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
   .msubj{font-weight:700;font-size:16px;overflow-wrap:anywhere;} .mmeta{min-width:0;flex:1}
   #mframe{flex:1;width:100%;border:0;background:#fff;border-radius:0 0 14px 14px;}
+  .maildlg .btn[disabled]{opacity:.45;cursor:not-allowed;}
+  #mkind{margin-top:6px;display:inline-block;} #mkind[hidden]{display:none;}
   #itable tbody tr{cursor:pointer;} #itable tbody tr:hover{background:color-mix(in srgb,var(--blue) 6%,transparent);}
 </style>
 </head>
@@ -141,7 +143,7 @@
          in a new tab). Remote images are blocked until "Show images" (they can track opens). -->
     <dialog id="maildlg" class="maildlg">
       <div class="mhead">
-        <div class="mmeta"><div class="msubj" id="msubj"></div><div class="small muted" id="mfrom"></div></div>
+        <div class="mmeta"><div class="msubj" id="msubj"></div><div class="small muted" id="mfrom"></div><span class="pill" id="mkind" hidden>Plain-text email</span></div>
         <div class="row"><button class="btn sm" id="mimg">Show images</button><button class="btn sm" id="mtext">Plain text</button><button class="btn sm" id="mclose">Close</button></div>
       </div>
       <iframe id="mframe" sandbox="allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" title="Message"></iframe>
@@ -357,25 +359,49 @@
     return named.length ? named : ['other'];
   };
   // ── mail viewer ──
+  // Each open builds a NEW sandboxed iframe (no scripts; links open in a new tab), so nothing from
+  // the previous message can linger. Remote images are off until "Show images" (they can track
+  // opens). Most inbound mail is plain text only (e.g. Gmail's "Send mail as" codes): it is shown
+  // with clickable links and quoted lines greyed, and the Formatted toggle explains why it's off.
   let MAIL = null, MIMG = false, MTEXT = false;
+  const hasHtml = r => !!(r && r.html_body && String(r.html_body).replace(/<[^>]+>/g, '').trim());
+  const hasImgs = r => hasHtml(r) && /<img[^>]+src=["']?https?:/i.test(String(r.html_body));
+  function textHtml(t) {
+    return String(t || '(no text)').split(/\r?\n/).map(line => {
+      const safe = esc(line).replace(/(https?:\/\/[^\s<]+)/g, u => `<a href="${u}">${u}</a>`);
+      return /^\s*&gt;/.test(safe) ? `<span style="color:#7a8794">${safe}</span>` : safe;
+    }).join('\n');
+  }
   function mailDoc(r) {
-    // CSP inside the frame: no scripts, no network except (optionally) https images; links → new tab
     const csp = `default-src 'none'; style-src 'unsafe-inline'; font-src data:; img-src data: cid:${MIMG ? ' https: http:' : ''}`;
-    const head = `<meta http-equiv="Content-Security-Policy" content="${csp}"><base target="_blank"><meta name="referrer" content="no-referrer">`;
-    if (MTEXT || !r.html_body) return `<!doctype html><html><head>${head}<style>body{font:14px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;color:#14202b;margin:18px;white-space:pre-wrap;overflow-wrap:anywhere}</style></head><body>${esc(r.text_body || '(no text)')}</body></html>`;
-    const h = String(r.html_body);
-    return /<head[^>]*>/i.test(h) ? h.replace(/<head[^>]*>/i, m => m + head) : `<!doctype html><html><head>${head}</head><body>${h}</body></html>`;
+    const head = `<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><base target="_blank"><meta name="referrer" content="no-referrer">`;
+    if (MTEXT || !hasHtml(r))
+      return `<!doctype html><html><head>${head}<style>body{font:14px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;color:#14202b;margin:18px;white-space:pre-wrap;overflow-wrap:anywhere}a{color:#0b5cad}</style></head><body>${textHtml(r.text_body)}</body></html>`;
+    // parse instead of regex-splicing: the CSP must be the first thing in <head>, whatever the mail looks like
+    const doc = new DOMParser().parseFromString(String(r.html_body), 'text/html');
+    doc.querySelectorAll('script, meta[http-equiv], base').forEach(n => n.remove());
+    doc.head.insertAdjacentHTML('afterbegin', head);
+    return '<!doctype html>' + doc.documentElement.outerHTML;
   }
   function paintMail() {
-    $('mframe').srcdoc = mailDoc(MAIL);
-    $('mimg').textContent = MIMG ? 'Hide images' : 'Show images'; $('mimg').hidden = MTEXT || !MAIL.html_body;
-    $('mtext').textContent = MTEXT ? 'Formatted' : 'Plain text'; $('mtext').hidden = !MAIL.html_body;
+    const old = $('mframe'), f = document.createElement('iframe');
+    f.id = 'mframe'; f.title = 'Message'; f.referrerPolicy = 'no-referrer';
+    f.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox');
+    f.srcdoc = mailDoc(MAIL);
+    old.replaceWith(f);
+    const html = hasHtml(MAIL), imgs = hasImgs(MAIL);
+    $('mkind').hidden = html;
+    $('mtext').textContent = MTEXT || !html ? 'Formatted' : 'Plain text';
+    $('mtext').disabled = !html; $('mtext').title = html ? '' : 'This email was sent as plain text only';
+    $('mimg').textContent = MIMG ? 'Hide images' : 'Show images';
+    $('mimg').disabled = !imgs || MTEXT; $('mimg').title = imgs ? 'Images are blocked by default — they can tell the sender you opened it' : 'No images in this email';
   }
   function openMail(r) {
     MAIL = r; MIMG = false; MTEXT = false;
     $('msubj').textContent = r.subject || '(no subject)';
     $('mfrom').textContent = `${r.from_addr || ''} → ${(r.to_addrs || []).join(', ')} · ${d(r.received_at)}`;
-    paintMail(); $('maildlg').showModal();
+    if (!$('maildlg').open) $('maildlg').showModal();
+    paintMail();
   }
   $('mimg').onclick = () => { MIMG = !MIMG; paintMail(); };
   $('mtext').onclick = () => { MTEXT = !MTEXT; paintMail(); };
