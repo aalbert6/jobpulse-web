@@ -304,7 +304,7 @@
   }
   let PLAN = null;
   async function paintPlan() {
-    if (!PLAN) { try { const { ok, j } = DEMO ? { ok: true, j: { premium: false, kits_used: 0, kits_limit: CFG.kits || 12 } } : await billing('status'); if (ok) PLAN = j; } catch (e) {} }
+    if (!PLAN) { try { const { ok, j } = DEMO ? { ok: true, j: { premium: false, kits_used: 0, kits_limit: CFG.kits || 12 } } : await billing('status'); if (ok) { PLAN = j; if (ALL.length && (j.premium || j.can_buy)) paint(); } } catch (e) {} }
     if (!PLAN) return;
     // Before launch (config billing off) only testers (billing fn BILLING_TESTERS) and Premium
     // accounts see the plan bar.
@@ -427,6 +427,9 @@
       </button>`;
   }
 
+  // CV & letter call-out: only once kits can actually be bought (config billing), or for testers /
+  // Premium accounts (billing status), or in the preview.
+  const kitsOn = () => DEMO || CFG.billing || !!(PLAN && (PLAN.premium || PLAN.can_buy));
   function detail(m) {
     const v = band(m.score || 0), { why, gap } = parts(m), src = m.source || host(m.url);
     return `<div class="md-head">${ring(m)}<div>
@@ -440,7 +443,7 @@
           <button class="ico save ${m.saved_at?'on':''}" data-act="save" data-id="${esc(m.id)}" title="${esc(T(m.saved_at?'db.saved_tip':'db.save_tip'))}" aria-label="${esc(T(m.saved_at?'db.saved':'db.save'))}" aria-pressed="${m.saved_at?'true':'false'}">${ICON_SAVE}</button>
           <button class="ico flag ${m.flagged_at?'on':''}" data-act="flag" data-id="${esc(m.id)}" title="${esc(T(m.flagged_at?'db.flagged_tip':'db.flag_tip'))}" aria-label="${esc(T(m.flagged_at?'db.flagged':'db.flag'))}" aria-pressed="${m.flagged_at?'true':'false'}">${ICON_FLAG}</button>
         </div>
-        <div class="md-kit"><span>${esc(T('db.kit_hint'))}</span><a href="/studio/?match=${esc(m.id)}${DEMO ? '&demo=1' : ''}">${esc(T('db.kit'))}</a></div>`;
+        ${kitsOn() ? `<div class="md-kit"><span>${esc(T('db.kit_hint'))}</span><a href="/studio/?match=${esc(m.id)}${DEMO ? '&demo=1' : ''}">${esc(T('db.kit'))}</a></div>` : ''}`;
   }
 
   const ICON_SAVE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>';
