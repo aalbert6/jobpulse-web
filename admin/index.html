@@ -60,6 +60,13 @@
   .mboxes button{font:inherit;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;white-space:nowrap;}
   .mboxes button.on{background:var(--blue);border-color:var(--blue);color:#fff;}
   .mboxes .n{opacity:.7;font-weight:500;margin-left:2px;}
+  .maildlg{width:min(900px,calc(100vw - 24px));height:min(88vh,1000px);padding:0;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);box-shadow:0 12px 40px rgba(0,0,0,.3);}
+  .maildlg[open]{display:flex;flex-direction:column;}
+  .maildlg::backdrop{background:rgba(10,20,30,.5);}
+  .mhead{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+  .msubj{font-weight:700;font-size:16px;overflow-wrap:anywhere;} .mmeta{min-width:0;flex:1}
+  #mframe{flex:1;width:100%;border:0;background:#fff;border-radius:0 0 14px 14px;}
+  #itable tbody tr{cursor:pointer;} #itable tbody tr:hover{background:color-mix(in srgb,var(--blue) 6%,transparent);}
 </style>
 </head>
 <body>
@@ -128,8 +135,17 @@
 
     <div id="tab-inbox" class="card" hidden>
       <div class="mboxes" id="mboxes" role="tablist" aria-label="Mailbox"></div>
-      <div class="tbl"><table id="itable"><thead><tr><th>Received</th><th>From</th><th>To</th><th>Subject</th><th>Text</th></tr></thead><tbody></tbody></table></div>
+      <div class="tbl"><table id="itable"><thead><tr><th>Received</th><th>From</th><th>To</th><th>Subject</th><th></th></tr></thead><tbody></tbody></table></div>
     </div>
+    <!-- Mail viewer: the message rendered as designed, in a sandboxed frame (no scripts, links open
+         in a new tab). Remote images are blocked until "Show images" (they can track opens). -->
+    <dialog id="maildlg" class="maildlg">
+      <div class="mhead">
+        <div class="mmeta"><div class="msubj" id="msubj"></div><div class="small muted" id="mfrom"></div></div>
+        <div class="row"><button class="btn sm" id="mimg">Show images</button><button class="btn sm" id="mtext">Plain text</button><button class="btn sm" id="mclose">Close</button></div>
+      </div>
+      <iframe id="mframe" sandbox="allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" title="Message"></iframe>
+    </dialog>
 
     <!-- Billing (migration 017): subscriptions, numbered invoices + credit notes (gap-free series
          issued in the DB), manual invoice generator, issuer details, CSV for the gestor, AI cost. -->
@@ -241,6 +257,11 @@
     const rated = F.filter(r => r.usefulness != null && r.usefulness !== '');
     const avg = rated.length ? (rated.reduce((a, r) => a + (+r.usefulness || 0), 0) / rated.length).toFixed(1) : '—';
     const pending = W.filter(x => x.status === 'pending').length;
+    // MRR from what was actually charged: a yearly plan counts 1/12 a month for a year
+    const yr = x => x.period_start && x.period_end && (new Date(x.period_end) - new Date(x.period_start)) > 40 * 864e5;
+    const since = (days) => new Date(Date.now() - days * 864e5).toISOString();
+    const mrr = I.filter(x => x.kind === 'invoice' && x.source === 'stripe' && !yr(x) && x.issued_at >= since(31)).reduce((t, x) => t + x.total_cents, 0)
+      + Math.round(I.filter(x => x.kind === 'invoice' && x.source === 'stripe' && yr(x) && x.issued_at >= since(366)).reduce((t, x) => t + x.total_cents, 0) / 12);
     const kp = [
       ['Users', P.length, `${P.filter(x=>x.onboarded_at).length} onboarded · ${P.filter(x=>x.status!=='active').length} paused`],
       ['Pending invites', pending, `${W.filter(x=>x.status==='invited').length} invited · ${W.filter(x=>x.status==='joined').length} joined`],
@@ -340,13 +361,40 @@
     const named = MAILBOXES.filter(m => local.includes(m));
     return named.length ? named : ['other'];
   };
+  // ── mail viewer ──
+  let MAIL = null, MIMG = false, MTEXT = false;
+  function mailDoc(r) {
+    // CSP inside the frame: no scripts, no network except (optionally) https images; links → new tab
+    const csp = `default-src 'none'; style-src 'unsafe-inline'; font-src data:; img-src data: cid:${MIMG ? ' https: http:' : ''}`;
+    const head = `<meta http-equiv="Content-Security-Policy" content="${csp}"><base target="_blank"><meta name="referrer" content="no-referrer">`;
+    if (MTEXT || !r.html_body) return `<!doctype html><html><head>${head}<style>body{font:14px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;color:#14202b;margin:18px;white-space:pre-wrap;overflow-wrap:anywhere}</style></head><body>${esc(r.text_body || '(no text)')}</body></html>`;
+    const h = String(r.html_body);
+    return /<head[^>]*>/i.test(h) ? h.replace(/<head[^>]*>/i, m => m + head) : `<!doctype html><html><head>${head}</head><body>${h}</body></html>`;
+  }
+  function paintMail() {
+    $('mframe').srcdoc = mailDoc(MAIL);
+    $('mimg').textContent = MIMG ? 'Hide images' : 'Show images'; $('mimg').hidden = MTEXT || !MAIL.html_body;
+    $('mtext').textContent = MTEXT ? 'Formatted' : 'Plain text'; $('mtext').hidden = !MAIL.html_body;
+  }
+  function openMail(r) {
+    MAIL = r; MIMG = false; MTEXT = false;
+    $('msubj').textContent = r.subject || '(no subject)';
+    $('mfrom').textContent = `${r.from_addr || ''} → ${(r.to_addrs || []).join(', ')} · ${d(r.received_at)}`;
+    paintMail(); $('maildlg').showModal();
+  }
+  $('mimg').onclick = () => { MIMG = !MIMG; paintMail(); };
+  $('mtext').onclick = () => { MTEXT = !MTEXT; paintMail(); };
+  $('mclose').onclick = () => $('maildlg').close();
+  $('maildlg').addEventListener('click', e => { if (e.target === $('maildlg')) $('maildlg').close(); });   // click outside closes
+
   function paintInbox() {
     const count = (b) => b === 'all' ? D.inbox.length : D.inbox.filter(r => boxesOf(r).includes(b)).length;
     $('mboxes').innerHTML = ['all', ...MAILBOXES, 'other'].map(b =>
       `<button class="${b === MBOX ? 'on' : ''}" data-box="${b}" role="tab" aria-selected="${b === MBOX}">${b === 'all' ? 'All' : b === 'other' ? 'Other' : esc(b + '@')} <span class="n">${count(b)}</span></button>`).join('');
     $('mboxes').querySelectorAll('button').forEach(x => x.onclick = () => { MBOX = x.dataset.box; paintInbox(); });
     const rows = MBOX === 'all' ? D.inbox : D.inbox.filter(r => boxesOf(r).includes(MBOX));
-    $('itable').querySelector('tbody').innerHTML = rows.map(r => `<tr><td class="small muted">${d(r.received_at)}${r.handled?' <span class="pill ok">handled</span>':''}</td><td class="small">${esc(r.from_addr||'')}</td><td class="small">${esc((r.to_addrs||[]).join(', '))}</td><td>${esc(r.subject||'')}</td><td class="small"><details><summary>show</summary>${esc((r.text_body||r.html_body||'').slice(0,2000))}</details></td></tr>`).join('') || '<tr><td colspan="5" class="muted">Empty.</td></tr>';
+    $('itable').querySelector('tbody').innerHTML = rows.map(r => `<tr><td class="small muted">${d(r.received_at)}${r.handled?' <span class="pill ok">handled</span>':''}</td><td class="small">${esc(r.from_addr||'')}</td><td class="small">${esc((r.to_addrs||[]).join(', '))}</td><td>${esc(r.subject||'')}</td><td><button class="btn sm" data-mail="${esc(r.resend_email_id || r.id || '')}">Open</button></td></tr>`).join('') || '<tr><td colspan="5" class="muted">Empty.</td></tr>';
+    $('itable').querySelectorAll('tbody tr').forEach((tr, k) => { if (rows[k]) tr.onclick = () => openMail(rows[k]); });
   }
 
   // ── charts: plain SVG, one hue, thin rounded bars, hover titles, direct labels ─────────────
@@ -438,10 +486,9 @@
     const sum = (a, k) => a.reduce((t, x) => t + (x[k] || 0), 0);
     const runsM = R.filter(r => r.created_at >= mStart && r.status === 'ok');
     const cost = R.filter(r => r.created_at >= mStart).reduce((t, r) => t + (r.input_tokens || 0) * 4e-6 + (r.output_tokens || 0) * 20e-6, 0);  // Opus 5.5 $4/$20 per MTok
-    const lastPrice = I.find(x => x.source === 'stripe' && x.kind === 'invoice');
     const kp = [
       ['Premium', prem.length, `${paying.length} paying · ${prem.length - paying.length} comp`],
-      ['MRR (approx.)', eur(paying.length * (lastPrice ? lastPrice.total_cents : 490)), 'VAT incl., at the last charged price'],
+      ['MRR (approx.)', eur(mrr), 'VAT incl.: monthly charges of the last 31 days + yearly ones / 12'],
       ['Revenue this month', eur(sum(inMonth, 'total_cents')), `base ${eur(sum(inMonth, 'base_cents'))}`],
       [`VAT ${q}`, eur(sum(inQ, 'vat_cents')), `base ${eur(sum(inQ, 'base_cents'))} · for modelo 303`],
       ['AI kits this month', runsM.length, `≈ $${cost.toFixed(2)} model cost`],

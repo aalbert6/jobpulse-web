@@ -7,17 +7,17 @@
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <link rel="canonical" href="https://jobspulseapp.com/fr/pricing/">
-<meta name="description" content="Tarifs JobsPulse : des offres avec analyse des écarts gratuites toutes les quatre semaines, ou Premium (4,90 €/mois TTC) avec offres hebdomadaires, tableau de bord, CV et lettre adaptés.">
+<meta name="description" content="Tarifs JobsPulse : des offres avec analyse des écarts gratuites toutes les quatre semaines, ou Premium (3,99 €/mois ou 39 €/an TTC) avec offres hebdomadaires, tableau de bord, CV et lettre adaptés.">
 <meta name="theme-color" content="#0b5cad">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="JobsPulse">
 <meta property="og:url" content="https://jobspulseapp.com/fr/pricing/">
 <meta property="og:title" content="JobsPulse — tarifs">
-<meta property="og:description" content="Tarifs JobsPulse : des offres avec analyse des écarts gratuites toutes les quatre semaines, ou Premium (4,90 €/mois TTC) avec offres hebdomadaires, tableau de bord, CV et lettre adaptés.">
+<meta property="og:description" content="Tarifs JobsPulse : des offres avec analyse des écarts gratuites toutes les quatre semaines, ou Premium (3,99 €/mois ou 39 €/an TTC) avec offres hebdomadaires, tableau de bord, CV et lettre adaptés.">
 <meta property="og:image" content="https://jobspulseapp.com/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="JobsPulse — tarifs">
-<meta name="twitter:description" content="Tarifs JobsPulse : des offres avec analyse des écarts gratuites toutes les quatre semaines, ou Premium (4,90 €/mois TTC) avec offres hebdomadaires, tableau de bord, CV et lettre adaptés.">
+<meta name="twitter:description" content="Tarifs JobsPulse : des offres avec analyse des écarts gratuites toutes les quatre semaines, ou Premium (3,99 €/mois ou 39 €/an TTC) avec offres hebdomadaires, tableau de bord, CV et lettre adaptés.">
 <meta name="twitter:image" content="https://jobspulseapp.com/assets/og.png">
 <link rel="alternate" hreflang="en" href="https://jobspulseapp.com/pricing/">
 <link rel="alternate" hreflang="es" href="https://jobspulseapp.com/es/pricing/">
@@ -122,8 +122,9 @@
 
     <div class="plan pro">
       <span class="tag" data-i18n="pricing.pro.tag">Premium</span>
-      <div class="price">€<span id="price">4,90</span><small data-i18n="pricing.pro.month">/ mois</small></div>
+      <div class="price">€<span id="price">3,99</span><small data-i18n="pricing.pro.month">/ mois</small></div>
       <p class="note vat" data-i18n="pricing.vat">TTC · résiliable à tout moment</p>
+      <p class="note yearly" data-i18n="pricing.pro.year">ou 39 € par an — deux mois offerts</p>
       <p class="note" data-i18n="pricing.pro.note">Tout ce qu’il y a dans Base, plus les quatre choses qui vous permettent d’agir :</p>
       <ul>
         <li data-i18n="pricing.pro.f1">Résumés hebdomadaires — 4 e-mails par mois (au lieu d’1)</li>
@@ -133,12 +134,13 @@
         <li data-i18n="pricing.pro.f5">Factures dans votre compte</li>
       </ul>
       <span class="cta soon" id="buysoon" aria-disabled="true" data-i18n="pricing.pro.cta">Premium — bientôt</span>
-      <a class="cta" id="buy" href="/dashboard/?next=upgrade" hidden data-i18n="pricing.pro.buy">Passer à Premium</a>
+      <a class="cta" id="buy" href="/dashboard/?next=upgrade&amp;plan=month" hidden data-i18n="pricing.pro.buy">Passer à Premium</a>
+      <a class="cta ghost" id="buyyear" href="/dashboard/?next=upgrade&amp;plan=year" hidden data-i18n="pricing.pro.buy_year" style="margin-top:8px">Annuel — 39 €</a>
     </div>
   </div>
 
   <p class="fine" id="cancelled" hidden data-i18n="pricing.cancelled">Paiement annulé — rien n'a été débité.</p>
-  <p class="fine" data-i18n="pricing.fine">Premium se renouvelle chaque mois et se résilie en un clic — il reste actif jusqu'à la fin de la période payée. L'offre gratuite ne demande pas de carte, et vous pouvez supprimer vos données à tout moment.</p>
+  <p class="fine" data-i18n="pricing.fine">Premium se renouvelle chaque mois (ou chaque année avec l'offre annuelle) et se résilie en un clic — il reste actif jusqu'à la fin de la période payée. L'offre gratuite ne demande pas de carte, et vous pouvez supprimer vos données à tout moment.</p>
 
   <footer>
     <div class="footrow">
@@ -156,7 +158,7 @@
   // goes through /dashboard/ (sign-in first, then Stripe Checkout for the signed-in profile).
   (function(){ var c = window.JP_CONFIG || {};
     if (c.price) document.getElementById('price').textContent = c.price;
-    if (c.billing) { document.getElementById('buysoon').hidden = true; document.getElementById('buy').hidden = false; }
+    if (c.billing) { document.getElementById('buysoon').hidden = true; document.getElementById('buy').hidden = false; document.getElementById('buyyear').hidden = false; }
     if (new URLSearchParams(location.search).get('billing') === 'cancel') document.getElementById('cancelled').hidden = false; })();
 </script>
 <script src="/assets/i18n.js" defer></script>

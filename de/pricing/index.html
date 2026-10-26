@@ -7,17 +7,17 @@
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <link rel="canonical" href="https://jobspulseapp.com/de/pricing/">
-<meta name="description" content="JobsPulse-Preise: kostenlose Job-Treffer mit Lückenanalyse alle vier Wochen, oder Premium (4,90 €/Monat inkl. MwSt.) mit wöchentlichen Treffern, Dashboard und maßgeschneidertem Lebenslauf &amp; Anschreiben.">
+<meta name="description" content="JobsPulse-Preise: kostenlose Job-Treffer mit Lückenanalyse alle vier Wochen, oder Premium (3,99 €/Monat oder 39 €/Jahr inkl. MwSt.) mit wöchentlichen Treffern, Dashboard und maßgeschneidertem Lebenslauf &amp; Anschreiben.">
 <meta name="theme-color" content="#0b5cad">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="JobsPulse">
 <meta property="og:url" content="https://jobspulseapp.com/de/pricing/">
 <meta property="og:title" content="JobsPulse — Preise">
-<meta property="og:description" content="JobsPulse-Preise: kostenlose Job-Treffer mit Lückenanalyse alle vier Wochen, oder Premium (4,90 €/Monat inkl. MwSt.) mit wöchentlichen Treffern, Dashboard und maßgeschneidertem Lebenslauf &amp; Anschreiben.">
+<meta property="og:description" content="JobsPulse-Preise: kostenlose Job-Treffer mit Lückenanalyse alle vier Wochen, oder Premium (3,99 €/Monat oder 39 €/Jahr inkl. MwSt.) mit wöchentlichen Treffern, Dashboard und maßgeschneidertem Lebenslauf &amp; Anschreiben.">
 <meta property="og:image" content="https://jobspulseapp.com/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="JobsPulse — Preise">
-<meta name="twitter:description" content="JobsPulse-Preise: kostenlose Job-Treffer mit Lückenanalyse alle vier Wochen, oder Premium (4,90 €/Monat inkl. MwSt.) mit wöchentlichen Treffern, Dashboard und maßgeschneidertem Lebenslauf &amp; Anschreiben.">
+<meta name="twitter:description" content="JobsPulse-Preise: kostenlose Job-Treffer mit Lückenanalyse alle vier Wochen, oder Premium (3,99 €/Monat oder 39 €/Jahr inkl. MwSt.) mit wöchentlichen Treffern, Dashboard und maßgeschneidertem Lebenslauf &amp; Anschreiben.">
 <meta name="twitter:image" content="https://jobspulseapp.com/assets/og.png">
 <link rel="alternate" hreflang="en" href="https://jobspulseapp.com/pricing/">
 <link rel="alternate" hreflang="es" href="https://jobspulseapp.com/es/pricing/">
@@ -122,8 +122,9 @@
 
     <div class="plan pro">
       <span class="tag" data-i18n="pricing.pro.tag">Premium</span>
-      <div class="price">€<span id="price">4,90</span><small data-i18n="pricing.pro.month">/ Monat</small></div>
+      <div class="price">€<span id="price">3,99</span><small data-i18n="pricing.pro.month">/ Monat</small></div>
       <p class="note vat" data-i18n="pricing.vat">inkl. MwSt. · jederzeit kündbar</p>
+      <p class="note yearly" data-i18n="pricing.pro.year">oder 39 € im Jahr — zwei Monate gratis</p>
       <p class="note" data-i18n="pricing.pro.note">Alles aus Basis, plus die vier Dinge, mit denen du handeln kannst:</p>
       <ul>
         <li data-i18n="pricing.pro.f1">Wöchentliche Überblicke — 4 E-Mails im Monat (statt 1)</li>
@@ -133,12 +134,13 @@
         <li data-i18n="pricing.pro.f5">Rechnungen in deinem Konto</li>
       </ul>
       <span class="cta soon" id="buysoon" aria-disabled="true" data-i18n="pricing.pro.cta">Premium — bald verfügbar</span>
-      <a class="cta" id="buy" href="/dashboard/?next=upgrade" hidden data-i18n="pricing.pro.buy">Auf Premium upgraden</a>
+      <a class="cta" id="buy" href="/dashboard/?next=upgrade&amp;plan=month" hidden data-i18n="pricing.pro.buy">Auf Premium upgraden</a>
+      <a class="cta ghost" id="buyyear" href="/dashboard/?next=upgrade&amp;plan=year" hidden data-i18n="pricing.pro.buy_year" style="margin-top:8px">Jährlich — 39 €</a>
     </div>
   </div>
 
   <p class="fine" id="cancelled" hidden data-i18n="pricing.cancelled">Bezahlung abgebrochen — es wurde nichts berechnet.</p>
-  <p class="fine" data-i18n="pricing.fine">Premium verlängert sich monatlich und ist mit einem Klick kündbar — es bleibt bis zum Ende des bezahlten Zeitraums aktiv. Kostenlos braucht keine Karte, und du kannst deine Daten jederzeit löschen.</p>
+  <p class="fine" data-i18n="pricing.fine">Premium verlängert sich monatlich (im Jahresplan jährlich) und ist mit einem Klick kündbar — es bleibt bis zum Ende des bezahlten Zeitraums aktiv. Kostenlos braucht keine Karte, und du kannst deine Daten jederzeit löschen.</p>
 
   <footer>
     <div class="footrow">
@@ -156,7 +158,7 @@
   // goes through /dashboard/ (sign-in first, then Stripe Checkout for the signed-in profile).
   (function(){ var c = window.JP_CONFIG || {};
     if (c.price) document.getElementById('price').textContent = c.price;
-    if (c.billing) { document.getElementById('buysoon').hidden = true; document.getElementById('buy').hidden = false; }
+    if (c.billing) { document.getElementById('buysoon').hidden = true; document.getElementById('buy').hidden = false; document.getElementById('buyyear').hidden = false; }
     if (new URLSearchParams(location.search).get('billing') === 'cancel') document.getElementById('cancelled').hidden = false; })();
 </script>
 <script src="/assets/i18n.js" defer></script>

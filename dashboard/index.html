@@ -295,11 +295,11 @@
   // ── plan panel (billing fn): Free → Upgrade; Premium → renew date, Manage billing, invoices.
   //    ?next=upgrade (from /pricing/) goes straight to Stripe Checkout once signed in.
   const CFG = window.JP_CONFIG || {};
-  async function billing(action) {
+  async function billing(action, extra = {}) {
     const { data: { session } } = await sb.auth.getSession();
     const r = await fetch(SUPABASE_URL + '/functions/v1/billing', { method: 'POST',
       headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + session.access_token },
-      body: JSON.stringify({ action, lang: window.jpLang ? window.jpLang() : 'en' }) });
+      body: JSON.stringify({ action, lang: window.jpLang ? window.jpLang() : 'en', ...extra }) });
     return { ok: r.ok, j: await r.json().catch(() => ({})) };
   }
   let PLAN = null;
@@ -317,15 +317,15 @@
       if ($('portal')) $('portal').onclick = async () => { const { ok, j } = await billing('portal'); if (ok && j.url) location.href = j.url; else dtoast(T('db.billing_err')); };
     } else {
       $('plantext').innerHTML = `<strong>${esc(T('db.plan_free'))}</strong> · ${esc(T('db.plan_free_note'))}`;
-      $('planacts').innerHTML = `<a href="/invoices/">${esc(T('db.invoices'))}</a><button class="up" id="upgrade">${esc(T('db.upgrade'))}</button>`;
-      $('upgrade').onclick = upgrade;
+      $('planacts').innerHTML = `<a href="/invoices/">${esc(T('db.invoices'))}</a><button id="upgradey">${esc(T('db.upgrade_year').replace('{price}', CFG.yearly || '39'))}</button><button class="up" id="upgrade">${esc(T('db.upgrade_month').replace('{price}', CFG.price || '3,99'))}</button>`;
+      $('upgrade').onclick = () => upgrade('month'); $('upgradey').onclick = () => upgrade('year');
     }
     $('planbar').hidden = false;
   }
-  async function upgrade() {
+  async function upgrade(interval = 'month') {
     if (DEMO) { dtoast(T('jv.preview')); return; }
-    const b = $('upgrade'); if (b) b.disabled = true;
-    const { ok, j } = await billing('checkout');
+    const b = $(interval === 'year' ? 'upgradey' : 'upgrade'); if (b) b.disabled = true;
+    const { ok, j } = await billing('checkout', { interval });
     if (ok && j.url) { location.href = j.url; return; }
     if (b) b.disabled = false; dtoast(T('db.billing_err'));
   }
@@ -336,7 +336,7 @@
     if (q.get('confirmed') === '1') setTimeout(() => dtoast(T('db.confirmed')), 800);
     if (q.get('email')) $('email').value = q.get('email');
     if (q.get('next') === 'upgrade' && CFG.billing) {   // from /pricing/: once signed in, go to Checkout
-      sb.auth.getSession().then(({ data: { session } }) => { if (session) { history.replaceState(null, '', '/dashboard/'); upgrade(); } });
+      sb.auth.getSession().then(({ data: { session } }) => { if (session) { history.replaceState(null, '', '/dashboard/'); upgrade(q.get('plan') === 'year' ? 'year' : 'month'); } });
     }
   }
 

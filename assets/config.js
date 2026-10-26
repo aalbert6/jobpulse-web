@@ -8,6 +8,7 @@
  *   turnstile:  Cloudflare Turnstile SITE key (public) → bot check on signup, waitlist, feedback and
  *                       the sign-in email (assets/guard.js). Set together with the TURNSTILE_SECRET
  *                       function secret and Supabase Auth captcha (docs/SETUP-GUIDE-ALBERT.md §4).
- *   price:      shown on the pricing page (VAT included); the charged amount is the Stripe Price.
+ *   price / yearly: shown on the pricing page + dashboard (VAT included); the charged amounts are
+ *                       the Stripe Prices (secrets STRIPE_PRICE_ID / STRIPE_PRICE_ID_YEARLY).
  */
-window.JP_CONFIG = { openSignup: false, billing: false, terms: false, turnstile: "0x4AAAAAAFmxK-VsujJ-VvxN", price: "4,90", kits: 12 };
+window.JP_CONFIG = { openSignup: false, billing: false, terms: false, turnstile: "0x4AAAAAAFmxK-VsujJ-VvxN", price: "3,99", yearly: "39", kits: 12 };
