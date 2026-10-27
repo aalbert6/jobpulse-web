@@ -6,6 +6,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
+<meta name="robots" content="noindex">
 <link rel="canonical" href="https://jobspulseapp.com/zh/privacy/">
 <meta name="description" content="JobsPulse 收集什么、为什么、谁处理、保留多久，以及你在 GDPR 下的权利。">
 <meta name="theme-color" content="#0b5cad">
@@ -84,6 +85,9 @@
   }
   /* Phones: long languages (es/de/fr) overflow the menu; How it works stays in the footer. */
   @media(max-width:480px){ .nav-how{display:none !important} }
+  .soon{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 28px;margin:18px 0 10px;max-width:760px;}
+  .soon p{margin:0 0 12px;font-size:16px;} .soon p:last-child{margin-bottom:0;}
+  .soon-tag{display:inline-block;font-size:12px !important;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:14px !important;}
 </style>
 </head>
 <body>
@@ -98,68 +102,13 @@
     </div>
   </nav>
   <h1 data-i18n="pv.h1">隐私声明</h1>
-  <p class="muted" data-i18n="pv.updated">JobsPulse · 最后更新：2026-10-26</p>
-
-  <div class="doc">
-    <nav class="toc" aria-label="Contents">
-      <a href="#h2a" data-i18n="pv.h2a">我们是谁？</a>
-      <a href="#h2b" data-i18n="pv.h2b">我们收集什么？</a>
-      <a href="#h2c" data-i18n="pv.h2c">为什么，依据什么法律基础？</a>
-      <a href="#h2auto" data-i18n="pv.h2auto">自动匹配</a>
-      <a href="#h2d" data-i18n="pv.h2d">还有谁处理这些数据？</a>
-      <a href="#h2trans" data-i18n="pv.h2trans">数据在哪里处理？</a>
-      <a href="#h2pay" data-i18n="pv.h2pay">Premium 与发票</a>
-      <a href="#h2e" data-i18n="pv.h2e">我们保留多久？</a>
-      <a href="#h2cook" data-i18n="pv.h2cook">Cookie 与本地存储</a>
-      <a href="#h2f" data-i18n="pv.h2f">你有哪些权利？</a>
-      <a href="#h2g" data-i18n="pv.h2g">安全</a>
-    </nav>
-    <article>
-  <h2 id="h2a" data-i18n="pv.h2a">我们是谁？</h2>
-  <p data-i18n="pv.pa">JobsPulse 是由居住在西班牙巴塞罗那的 Albert Reina i Buxó 运营的个人项目，他是数据控制者。联系方式：<a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>。</p>
-
-  <h2 id="h2b" data-i18n="pv.h2b">我们收集什么？</h2>
-  <p data-i18n="pv.pb">只收集为你匹配职位所需的信息：你的名字和邮箱；当前职位、工作年限和技能；你的目标职位、地点和工作方式；以及可选的薪资底线、不可接受的条件、简历文本或 LinkedIn 链接，以及你上传的文件（简历、求职信、证书）。我们不收集你的身份证号、出生日期、家庭住址、照片或任何特殊类别的数据。</p>
-
-  <h2 id="h2c" data-i18n="pv.h2c">为什么，依据什么法律基础？</h2>
-  <p data-i18n="pv.pc">我们用它来生成你的个性化每周职位匹配邮件。法律基础是你在注册时勾选框所给予的<strong>同意</strong>。你可以随时撤回。</p>
-
-  <h2 id="h2auto" data-i18n="pv.h2auto">自动匹配</h2>
-  <p data-i18n="pv.pauto">我们根据你的档案自动为职位评分和排序 — 这属于画像分析。它产生的是建议，而不是具有法律或类似重大影响的决定，你可以标记任何结果交由人工复核。</p>
-
-  <h2 id="h2d" data-i18n="pv.h2d">还有谁处理这些数据？</h2>
-  <p data-i18n="pv.pd">我们依赖少数几家处理者，每家都签有数据处理协议：</p>
-  <ul>
-    <li data-i18n="pv.li1"><strong>Supabase</strong> — 存储你的档案和上传的文件，托管在欧盟并加密。</li>
-    <li data-i18n="pv.li2"><strong>Resend</strong> — 投递你的每周职位匹配邮件（你的邮箱地址和匹配内容）。</li>
-    <li data-i18n="pv.li3"><strong>Stripe</strong>——处理 Premium 付款（你的邮箱、账单信息和银行卡；我们永远看不到你的卡号）。</li>
-    <li data-i18n="pv.li4"><strong>Anthropic</strong>——仅适用于申请定制简历和求职信的 Premium 用户：你的简历、个人资料和职位描述会发送给其 Claude 模型用于撰写。Anthropic 不会用这些数据训练模型，我们也不保存生成的文本。</li>
-    <li data-i18n="pv.li5"><strong>Cloudflare</strong> — Turnstile 用于确认使用我们表单和登录的是真人而不是机器人（你的 IP 地址和浏览器技术信号；不使用广告 Cookie）。</li>
-  </ul>
-  <p data-i18n="pv.pd2">在任何新增服务商处理你的数据之前，我们都会在此列明。我们从不出售你的数据，也不将其用于广告。</p>
-
-  <h2 id="h2trans" data-i18n="pv.h2trans">数据在哪里处理？</h2>
-  <p data-i18n="pv.ptrans">你的档案和文件由 Supabase 存储在欧盟（法兰克福）。负责发送邮件的 Resend 在美国处理数据；该传输受欧盟标准合同条款及 Resend 的欧盟-美国数据隐私框架认证保护。两家服务商均受已签署的数据处理协议约束。</p>
-
-  <p data-i18n="pv.ptrans2">Stripe 和 Anthropic 可能在美国处理数据，均已签署包含欧盟标准合同条款的数据处理协议。</p>
-
-  <h2 id="h2pay" data-i18n="pv.h2pay">Premium 与发票</h2>
-  <p data-i18n="pv.ppay">如果你订阅 Premium，我们会为履行合同处理你的账单信息，并依照西班牙税法和商法的要求将发票保存六年——即使你删除账户也是如此（发票仅保留其上印有的信息）。</p>
-
-  <h2 id="h2e" data-i18n="pv.h2e">我们保留多久？</h2>
-  <p data-i18n="pv.pe">直到你要求删除为止；如 12 个月无活动，我们会自动删除。</p>
-
-  <h2 id="h2cook" data-i18n="pv.h2cook">Cookie 与本地存储</h2>
-  <p data-i18n="pv.pcook">我们不使用跟踪或广告 Cookie。我们会将你的语言选择保存在浏览器的本地存储中，以便网站记住它；你可以随时清除。</p>
-
-  <h2 id="h2f" data-i18n="pv.h2f">你有哪些权利？</h2>
-  <p data-i18n="pv.pf">你可以随时免费访问、更正、删除、限制处理、以可移植格式获取或反对处理你的数据，并撤回同意。发送邮件至 <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>，我们会在一个月内处理。你也可以向西班牙监管机构 <a href="https://www.aepd.es" target="_blank" rel="noopener">AEPD</a> 投诉。</p>
-
-  <h2 id="h2g" data-i18n="pv.h2g">安全</h2>
-  <p data-i18n="pv.pg">我们对传输中和静态存储的数据进行加密，并限制访问。</p>
-  <p data-i18n="pv.pguard">为防止表单被滥用，我们会保存你 IP 地址的不可逆哈希值（而非地址本身），最长两天，依据是我们保障服务安全的正当利益。</p>
-
-    </article>
+  <!-- Interim (2026-10-27): the full notice is being rewritten by Albert's lawyer. The previous
+       text is kept in git history and in docs/legal/ (dossier annex B); the pv.* strings stay in
+       i18n.js until the new version replaces them. -->
+  <div class="soon">
+    <p class="soon-tag" data-i18n="pv.soon_tag">即将推出</p>
+    <p data-i18n="pv.soon_p1">我们正在与法律顾问一起准备一份新的、更完整的隐私声明，很快会在这里发布。</p>
+    <p data-i18n="pv.soon_p2">在此期间，如对你的数据有任何疑问，或需要查看、更正或删除数据，请写信至 <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>。</p>
   </div>
 <footer>
   <div class="footrow">

@@ -6,6 +6,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
+<meta name="robots" content="noindex">
 <link rel="canonical" href="https://jobspulseapp.com/es/privacy/">
 <meta name="description" content="Qué recoge JobsPulse, por qué, quién lo procesa, cuánto tiempo se guarda y tus derechos según el RGPD.">
 <meta name="theme-color" content="#0b5cad">
@@ -84,6 +85,9 @@
   }
   /* Phones: long languages (es/de/fr) overflow the menu; How it works stays in the footer. */
   @media(max-width:480px){ .nav-how{display:none !important} }
+  .soon{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 28px;margin:18px 0 10px;max-width:760px;}
+  .soon p{margin:0 0 12px;font-size:16px;} .soon p:last-child{margin-bottom:0;}
+  .soon-tag{display:inline-block;font-size:12px !important;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:14px !important;}
 </style>
 </head>
 <body>
@@ -98,68 +102,13 @@
     </div>
   </nav>
   <h1 data-i18n="pv.h1">Aviso de privacidad</h1>
-  <p class="muted" data-i18n="pv.updated">JobsPulse · Última actualización: 2026-10-26</p>
-
-  <div class="doc">
-    <nav class="toc" aria-label="Contents">
-      <a href="#h2a" data-i18n="pv.h2a">¿Quiénes somos?</a>
-      <a href="#h2b" data-i18n="pv.h2b">¿Qué recopilamos?</a>
-      <a href="#h2c" data-i18n="pv.h2c">¿Por qué, y con qué base legal?</a>
-      <a href="#h2auto" data-i18n="pv.h2auto">Emparejamiento automatizado</a>
-      <a href="#h2d" data-i18n="pv.h2d">¿Quién más lo trata?</a>
-      <a href="#h2trans" data-i18n="pv.h2trans">¿Dónde se trata?</a>
-      <a href="#h2pay" data-i18n="pv.h2pay">Premium y facturas</a>
-      <a href="#h2e" data-i18n="pv.h2e">¿Cuánto tiempo lo conservamos?</a>
-      <a href="#h2cook" data-i18n="pv.h2cook">Cookies y almacenamiento local</a>
-      <a href="#h2f" data-i18n="pv.h2f">¿Cuáles son tus derechos?</a>
-      <a href="#h2g" data-i18n="pv.h2g">Seguridad</a>
-    </nav>
-    <article>
-  <h2 id="h2a" data-i18n="pv.h2a">¿Quiénes somos?</h2>
-  <p data-i18n="pv.pa">JobsPulse es un proyecto personal gestionado por Albert Reina i Buxó, con sede en Barcelona (España), que actúa como responsable del tratamiento. Contacto: <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>.</p>
-
-  <h2 id="h2b" data-i18n="pv.h2b">¿Qué recopilamos?</h2>
-  <p data-i18n="pv.pb">Solo lo necesario para encontrarte ofertas: tu nombre y correo; tu puesto actual, años de experiencia y habilidades; los puestos, ubicaciones y modalidades de trabajo que buscas; y, opcionalmente, un salario mínimo, deal-breakers, el texto de tu CV o tu URL de LinkedIn, y cualquier documento que subas (CV, cartas de presentación, certificados). No recopilamos tu número de identidad, fecha de nacimiento, domicilio, foto ni ninguna categoría especial de datos.</p>
-
-  <h2 id="h2c" data-i18n="pv.h2c">¿Por qué, y con qué base legal?</h2>
-  <p data-i18n="pv.pc">Lo usamos para generar tu correo semanal personalizado de coincidencias de empleo. Nuestra base legal es tu <strong>consentimiento</strong>, otorgado al marcar la casilla al registrarte. Puedes retirarlo en cualquier momento.</p>
-
-  <h2 id="h2auto" data-i18n="pv.h2auto">Emparejamiento automatizado</h2>
-  <p data-i18n="pv.pauto">Puntuamos y ordenamos las ofertas según tu perfil de forma automática; esto es elaboración de perfiles. Genera sugerencias, no decisiones con efectos jurídicos o similares, y puedes marcar cualquier resultado para que una persona lo revise.</p>
-
-  <h2 id="h2d" data-i18n="pv.h2d">¿Quién más lo trata?</h2>
-  <p data-i18n="pv.pd">Contamos con un número reducido de encargados del tratamiento, cada uno bajo un contrato de tratamiento de datos:</p>
-  <ul>
-    <li data-i18n="pv.li1"><strong>Supabase</strong> — almacena tu perfil y los documentos que subas, alojados en la UE y cifrados.</li>
-    <li data-i18n="pv.li2"><strong>Resend</strong> — envía tu correo semanal de coincidencias de empleo (tu dirección de correo y el contenido de las coincidencias).</li>
-    <li data-i18n="pv.li3"><strong>Stripe</strong> — procesa los pagos de Premium (tu correo, datos de facturación y tarjeta; nunca vemos el número de tu tarjeta).</li>
-    <li data-i18n="pv.li4"><strong>Anthropic</strong> — solo para usuarios Premium que piden un CV y una carta adaptados: tu CV, tu perfil y la oferta se envían a su modelo Claude para redactarlos. Anthropic no usa estos datos para entrenar sus modelos y nosotros no guardamos el texto generado.</li>
-    <li data-i18n="pv.li5"><strong>Cloudflare</strong> — Turnstile comprueba que nuestros formularios y el inicio de sesión los usa una persona y no un bot (tu dirección IP y señales técnicas del navegador; sin cookies publicitarias).</li>
-  </ul>
-  <p data-i18n="pv.pd2">Indicaremos aquí cualquier proveedor adicional antes de que trate tus datos. Nunca vendemos tus datos ni los usamos para publicidad.</p>
-
-  <h2 id="h2trans" data-i18n="pv.h2trans">¿Dónde se trata?</h2>
-  <p data-i18n="pv.ptrans">Tu perfil y tus documentos los almacena Supabase en la UE (Fráncfort). Resend, que envía tus correos, trata los datos en Estados Unidos; esa transferencia está protegida por las Cláusulas Contractuales Tipo de la UE y la certificación de Resend en el Marco de Privacidad de Datos UE-EE. UU. Ambos proveedores están sujetos a un contrato de tratamiento de datos firmado.</p>
-
-  <p data-i18n="pv.ptrans2">Stripe y Anthropic pueden tratar datos en Estados Unidos, con acuerdos de tratamiento de datos firmados que incluyen las Cláusulas Contractuales Tipo de la UE.</p>
-
-  <h2 id="h2pay" data-i18n="pv.h2pay">Premium y facturas</h2>
-  <p data-i18n="pv.ppay">Si te suscribes a Premium, tratamos tus datos de facturación para ejecutar el contrato y conservamos tus facturas seis años porque lo exige la normativa fiscal y mercantil española — aunque borres tu cuenta (las facturas conservan solo los datos impresos en ellas).</p>
-
-  <h2 id="h2e" data-i18n="pv.h2e">¿Cuánto tiempo lo conservamos?</h2>
-  <p data-i18n="pv.pe">Hasta que nos pidas que lo borremos, y lo eliminamos automáticamente tras 12 meses de inactividad.</p>
-
-  <h2 id="h2cook" data-i18n="pv.h2cook">Cookies y almacenamiento local</h2>
-  <p data-i18n="pv.pcook">No usamos cookies de seguimiento ni de publicidad. Guardamos tu idioma en el almacenamiento local de tu navegador para que la web lo recuerde; puedes borrarlo cuando quieras.</p>
-
-  <h2 id="h2f" data-i18n="pv.h2f">¿Cuáles son tus derechos?</h2>
-  <p data-i18n="pv.pf">En cualquier momento y de forma gratuita, puedes acceder, rectificar, suprimir, limitar, recibir en un formato portátil, u oponerte al tratamiento de tus datos, y retirar el consentimiento. Escribe a <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a> y lo gestionaremos en el plazo de un mes. También puedes reclamar ante la autoridad española, la <a href="https://www.aepd.es" target="_blank" rel="noopener">AEPD</a>.</p>
-
-  <h2 id="h2g" data-i18n="pv.h2g">Seguridad</h2>
-  <p data-i18n="pv.pg">Ciframos tus datos en tránsito y en reposo, y restringimos el acceso a ellos.</p>
-  <p data-i18n="pv.pguard">Para evitar abusos en nuestros formularios, guardamos un hash irreversible de tu dirección IP (no la dirección en sí) durante dos días como máximo, sobre la base de nuestro interés legítimo en mantener el servicio seguro.</p>
-
-    </article>
+  <!-- Interim (2026-10-27): the full notice is being rewritten by Albert's lawyer. The previous
+       text is kept in git history and in docs/legal/ (dossier annex B); the pv.* strings stay in
+       i18n.js until the new version replaces them. -->
+  <div class="soon">
+    <p class="soon-tag" data-i18n="pv.soon_tag">Muy pronto</p>
+    <p data-i18n="pv.soon_p1">Estamos preparando con nuestra asesora legal un aviso de privacidad nuevo y más completo. Lo publicaremos aquí muy pronto.</p>
+    <p data-i18n="pv.soon_p2">Mientras tanto, para cualquier consulta sobre tus datos —o para consultarlos, corregirlos o borrarlos— escribe a <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>.</p>
   </div>
 <footer>
   <div class="footrow">

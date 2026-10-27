@@ -6,6 +6,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
+<meta name="robots" content="noindex">
 <link rel="canonical" href="https://jobspulseapp.com/de/privacy/">
 <meta name="description" content="Was JobsPulse erhebt, warum, wer es verarbeitet, wie lange es gespeichert wird und deine Rechte nach der DSGVO.">
 <meta name="theme-color" content="#0b5cad">
@@ -84,6 +85,9 @@
   }
   /* Phones: long languages (es/de/fr) overflow the menu; How it works stays in the footer. */
   @media(max-width:480px){ .nav-how{display:none !important} }
+  .soon{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 28px;margin:18px 0 10px;max-width:760px;}
+  .soon p{margin:0 0 12px;font-size:16px;} .soon p:last-child{margin-bottom:0;}
+  .soon-tag{display:inline-block;font-size:12px !important;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:14px !important;}
 </style>
 </head>
 <body>
@@ -98,68 +102,13 @@
     </div>
   </nav>
   <h1 data-i18n="pv.h1">Datenschutzerklärung</h1>
-  <p class="muted" data-i18n="pv.updated">JobsPulse · Zuletzt aktualisiert: 2026-10-26</p>
-
-  <div class="doc">
-    <nav class="toc" aria-label="Contents">
-      <a href="#h2a" data-i18n="pv.h2a">Wer sind wir?</a>
-      <a href="#h2b" data-i18n="pv.h2b">Was erheben wir?</a>
-      <a href="#h2c" data-i18n="pv.h2c">Wozu, und auf welcher Rechtsgrundlage?</a>
-      <a href="#h2auto" data-i18n="pv.h2auto">Automatisches Matching</a>
-      <a href="#h2d" data-i18n="pv.h2d">Wer verarbeitet sie sonst?</a>
-      <a href="#h2trans" data-i18n="pv.h2trans">Wo werden sie verarbeitet?</a>
-      <a href="#h2pay" data-i18n="pv.h2pay">Premium und Rechnungen</a>
-      <a href="#h2e" data-i18n="pv.h2e">Wie lange bewahren wir sie auf?</a>
-      <a href="#h2cook" data-i18n="pv.h2cook">Cookies &amp; lokaler Speicher</a>
-      <a href="#h2f" data-i18n="pv.h2f">Welche Rechte hast du?</a>
-      <a href="#h2g" data-i18n="pv.h2g">Sicherheit</a>
-    </nav>
-    <article>
-  <h2 id="h2a" data-i18n="pv.h2a">Wer sind wir?</h2>
-  <p data-i18n="pv.pa">JobsPulse ist ein persönliches Projekt von Albert Reina i Buxó, Barcelona, Spanien, als Verantwortlicher. Kontakt: <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>.</p>
-
-  <h2 id="h2b" data-i18n="pv.h2b">Was erheben wir?</h2>
-  <p data-i18n="pv.pb">Nur, was wir zum Matchen brauchen: Vorname und E-Mail; aktuelle Rolle, Berufsjahre und Skills; die Rollen, Orte und Arbeitsformen, die du anstrebst; optional eine Gehaltsuntergrenze, Ausschlusskriterien, deinen Lebenslauftext oder deine LinkedIn-URL und hochgeladene Dokumente (Lebenslauf, Anschreiben, Zeugnisse). Wir erheben keine Ausweisnummer, kein Geburtsdatum, keine Wohnadresse, kein Foto und keine besonderen Datenkategorien.</p>
-
-  <h2 id="h2c" data-i18n="pv.h2c">Wozu, und auf welcher Rechtsgrundlage?</h2>
-  <p data-i18n="pv.pc">Wir nutzen sie, um deine persönliche wöchentliche Job-Match-E-Mail zu erstellen. Rechtsgrundlage ist deine <strong>Einwilligung</strong> durch das Häkchen bei der Anmeldung. Du kannst sie jederzeit widerrufen.</p>
-
-  <h2 id="h2auto" data-i18n="pv.h2auto">Automatisches Matching</h2>
-  <p data-i18n="pv.pauto">Wir bewerten und sortieren Stellen automatisch anhand deines Profils — das ist Profiling. Es erzeugt Vorschläge, keine Entscheidungen mit rechtlicher oder ähnlich erheblicher Wirkung, und du kannst jedes Ergebnis zur Prüfung durch einen Menschen melden.</p>
-
-  <h2 id="h2d" data-i18n="pv.h2d">Wer verarbeitet sie sonst?</h2>
-  <p data-i18n="pv.pd">Wir setzen auf wenige Auftragsverarbeiter, jeweils mit Auftragsverarbeitungsvertrag:</p>
-  <ul>
-    <li data-i18n="pv.li1"><strong>Supabase</strong> — speichert dein Profil und hochgeladene Dokumente, gehostet in der EU und verschlüsselt.</li>
-    <li data-i18n="pv.li2"><strong>Resend</strong> — stellt deine wöchentliche Job-Match-E-Mail zu (deine E-Mail-Adresse und der Inhalt der Matches).</li>
-    <li data-i18n="pv.li3"><strong>Stripe</strong> — wickelt Premium-Zahlungen ab (deine E-Mail, Rechnungsdaten und Karte; deine Kartennummer sehen wir nie).</li>
-    <li data-i18n="pv.li4"><strong>Anthropic</strong> — nur für Premium-Nutzer, die einen maßgeschneiderten Lebenslauf und ein Anschreiben anfordern: Dein Lebenslauf, dein Profil und die Stellenanzeige gehen an das Modell Claude, das sie schreibt. Anthropic nutzt diese Daten nicht zum Training seiner Modelle, und wir speichern den erzeugten Text nicht.</li>
-    <li data-i18n="pv.li5"><strong>Cloudflare</strong> — Turnstile prüft, dass unsere Formulare und die Anmeldung von einem Menschen und nicht von einem Bot genutzt werden (deine IP-Adresse und technische Browsersignale; keine Werbe-Cookies).</li>
-  </ul>
-  <p data-i18n="pv.pd2">Weitere Anbieter nennen wir hier, bevor sie deine Daten verarbeiten. Wir verkaufen deine Daten nie und nutzen sie nicht für Werbung.</p>
-
-  <h2 id="h2trans" data-i18n="pv.h2trans">Wo werden sie verarbeitet?</h2>
-  <p data-i18n="pv.ptrans">Dein Profil und deine Dokumente speichert Supabase in der EU (Frankfurt). Resend, das deine E-Mails versendet, verarbeitet Daten in den USA; diese Übermittlung ist durch die EU-Standardvertragsklauseln und Resends Zertifizierung nach dem EU-US Data Privacy Framework abgesichert. Beide Anbieter sind durch einen unterzeichneten Auftragsverarbeitungsvertrag gebunden.</p>
-
-  <p data-i18n="pv.ptrans2">Stripe und Anthropic können Daten in den USA verarbeiten — auf Grundlage unterzeichneter Auftragsverarbeitungsverträge mit den EU-Standardvertragsklauseln.</p>
-
-  <h2 id="h2pay" data-i18n="pv.h2pay">Premium und Rechnungen</h2>
-  <p data-i18n="pv.ppay">Wenn du Premium abonnierst, verarbeiten wir deine Rechnungsdaten zur Vertragserfüllung und bewahren deine Rechnungen sechs Jahre auf, weil spanisches Steuer- und Handelsrecht das verlangt — auch wenn du dein Konto löschst (die Rechnungen enthalten dann nur die darauf gedruckten Angaben).</p>
-
-  <h2 id="h2e" data-i18n="pv.h2e">Wie lange bewahren wir sie auf?</h2>
-  <p data-i18n="pv.pe">Bis du uns bittest, sie zu löschen; nach 12 Monaten Inaktivität löschen wir automatisch.</p>
-
-  <h2 id="h2cook" data-i18n="pv.h2cook">Cookies &amp; lokaler Speicher</h2>
-  <p data-i18n="pv.pcook">Wir verwenden keine Tracking- oder Werbe-Cookies. Deine Sprachwahl speichern wir im lokalen Speicher deines Browsers, damit die Seite sie sich merkt; du kannst sie jederzeit löschen.</p>
-
-  <h2 id="h2f" data-i18n="pv.h2f">Welche Rechte hast du?</h2>
-  <p data-i18n="pv.pf">Jederzeit und kostenlos kannst du auf deine Daten zugreifen, sie berichtigen, löschen, einschränken, in portablem Format erhalten, der Verarbeitung widersprechen und die Einwilligung widerrufen. Schreib an <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>, wir erledigen es innerhalb eines Monats. Du kannst dich auch bei der spanischen Aufsichtsbehörde <a href="https://www.aepd.es" target="_blank" rel="noopener">AEPD</a> beschweren.</p>
-
-  <h2 id="h2g" data-i18n="pv.h2g">Sicherheit</h2>
-  <p data-i18n="pv.pg">Wir verschlüsseln deine Daten bei der Übertragung und im Ruhezustand und beschränken den Zugriff.</p>
-  <p data-i18n="pv.pguard">Um Missbrauch unserer Formulare zu verhindern, speichern wir einen nicht umkehrbaren Hash deiner IP-Adresse (nicht die Adresse selbst) höchstens zwei Tage lang, auf Grundlage unseres berechtigten Interesses an einem sicheren Dienst.</p>
-
-    </article>
+  <!-- Interim (2026-10-27): the full notice is being rewritten by Albert's lawyer. The previous
+       text is kept in git history and in docs/legal/ (dossier annex B); the pv.* strings stay in
+       i18n.js until the new version replaces them. -->
+  <div class="soon">
+    <p class="soon-tag" data-i18n="pv.soon_tag">Demnächst</p>
+    <p data-i18n="pv.soon_p1">Wir erarbeiten gerade mit unserer Rechtsberaterin einen neuen, ausführlicheren Datenschutzhinweis. Er wird in Kürze hier veröffentlicht.</p>
+    <p data-i18n="pv.soon_p2">Bis dahin: Für Fragen zu deinen Daten — oder um sie einzusehen, zu berichtigen oder zu löschen — schreib an <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>.</p>
   </div>
 <footer>
   <div class="footrow">

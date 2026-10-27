@@ -6,6 +6,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
+<meta name="robots" content="noindex">
 <link rel="canonical" href="https://jobspulseapp.com/fr/privacy/">
 <meta name="description" content="Ce que JobsPulse collecte, pourquoi, qui le traite, combien de temps il est conservé et vos droits au titre du RGPD.">
 <meta name="theme-color" content="#0b5cad">
@@ -84,6 +85,9 @@
   }
   /* Phones: long languages (es/de/fr) overflow the menu; How it works stays in the footer. */
   @media(max-width:480px){ .nav-how{display:none !important} }
+  .soon{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 28px;margin:18px 0 10px;max-width:760px;}
+  .soon p{margin:0 0 12px;font-size:16px;} .soon p:last-child{margin-bottom:0;}
+  .soon-tag{display:inline-block;font-size:12px !important;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:14px !important;}
 </style>
 </head>
 <body>
@@ -98,68 +102,13 @@
     </div>
   </nav>
   <h1 data-i18n="pv.h1">Politique de confidentialité</h1>
-  <p class="muted" data-i18n="pv.updated">JobsPulse · Dernière mise à jour : 2026-10-26</p>
-
-  <div class="doc">
-    <nav class="toc" aria-label="Contents">
-      <a href="#h2a" data-i18n="pv.h2a">Qui sommes-nous ?</a>
-      <a href="#h2b" data-i18n="pv.h2b">Que collectons-nous ?</a>
-      <a href="#h2c" data-i18n="pv.h2c">Pourquoi, et sur quelle base légale ?</a>
-      <a href="#h2auto" data-i18n="pv.h2auto">Correspondance automatisée</a>
-      <a href="#h2d" data-i18n="pv.h2d">Qui d’autre les traite ?</a>
-      <a href="#h2trans" data-i18n="pv.h2trans">Où sont-elles traitées ?</a>
-      <a href="#h2pay" data-i18n="pv.h2pay">Premium et factures</a>
-      <a href="#h2e" data-i18n="pv.h2e">Combien de temps les gardons-nous ?</a>
-      <a href="#h2cook" data-i18n="pv.h2cook">Cookies &amp; stockage local</a>
-      <a href="#h2f" data-i18n="pv.h2f">Quels sont vos droits ?</a>
-      <a href="#h2g" data-i18n="pv.h2g">Sécurité</a>
-    </nav>
-    <article>
-  <h2 id="h2a" data-i18n="pv.h2a">Qui sommes-nous ?</h2>
-  <p data-i18n="pv.pa">JobsPulse est un projet personnel exploité par Albert Reina i Buxó, basé à Barcelone, Espagne, en qualité de responsable du traitement. Contact : <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>.</p>
-
-  <h2 id="h2b" data-i18n="pv.h2b">Que collectons-nous ?</h2>
-  <p data-i18n="pv.pb">Seulement ce qu’il faut pour vous faire correspondre à des offres : votre prénom et votre e-mail ; votre poste actuel, vos années d’expérience et vos compétences ; les postes, lieux et modes de travail que vous visez ; et, en option, un salaire minimum, des critères rédhibitoires, le texte de votre CV ou l’URL de votre profil LinkedIn, et les documents que vous téléversez (CV, lettres, certificats). Nous ne collectons ni numéro d’identité, ni date de naissance, ni adresse, ni photo, ni données sensibles.</p>
-
-  <h2 id="h2c" data-i18n="pv.h2c">Pourquoi, et sur quelle base légale ?</h2>
-  <p data-i18n="pv.pc">Nous les utilisons pour générer votre e-mail hebdomadaire personnalisé. Notre base légale est votre <strong>consentement</strong>, donné en cochant la case à l’inscription. Vous pouvez le retirer à tout moment.</p>
-
-  <h2 id="h2auto" data-i18n="pv.h2auto">Correspondance automatisée</h2>
-  <p data-i18n="pv.pauto">Nous notons et classons les offres selon votre profil automatiquement — c’est du profilage. Il produit des suggestions, pas des décisions ayant des effets juridiques ou similaires, et vous pouvez signaler tout résultat pour qu’un humain l’examine.</p>
-
-  <h2 id="h2d" data-i18n="pv.h2d">Qui d’autre les traite ?</h2>
-  <p data-i18n="pv.pd">Nous faisons appel à un petit nombre de sous-traitants, chacun sous accord de traitement des données :</p>
-  <ul>
-    <li data-i18n="pv.li1"><strong>Supabase</strong> — stocke votre profil et les documents téléversés, hébergés dans l’UE et chiffrés.</li>
-    <li data-i18n="pv.li2"><strong>Resend</strong> — envoie votre e-mail hebdomadaire (votre adresse et le contenu des correspondances).</li>
-    <li data-i18n="pv.li3"><strong>Stripe</strong> — traite les paiements Premium (votre e-mail, vos coordonnées de facturation et votre carte ; nous ne voyons jamais votre numéro de carte).</li>
-    <li data-i18n="pv.li4"><strong>Anthropic</strong> — uniquement pour les utilisateurs Premium qui demandent un CV et une lettre adaptés : votre CV, votre profil et l'offre sont envoyés à son modèle Claude pour les rédiger. Anthropic n'utilise pas ces données pour entraîner ses modèles, et nous ne conservons pas le texte généré.</li>
-    <li data-i18n="pv.li5"><strong>Cloudflare</strong> — Turnstile vérifie que nos formulaires et la connexion sont utilisés par une personne et non par un robot (votre adresse IP et des signaux techniques du navigateur ; aucun cookie publicitaire).</li>
-  </ul>
-  <p data-i18n="pv.pd2">Nous nommerons ici tout prestataire supplémentaire avant qu’il ne traite vos données. Nous ne vendons jamais vos données et ne les utilisons pas pour la publicité.</p>
-
-  <h2 id="h2trans" data-i18n="pv.h2trans">Où sont-elles traitées ?</h2>
-  <p data-i18n="pv.ptrans">Votre profil et vos documents sont stockés par Supabase dans l’UE (Francfort). Resend, qui envoie vos e-mails, traite des données aux États-Unis ; ce transfert est protégé par les clauses contractuelles types de l’UE et la certification de Resend au cadre EU-US Data Privacy Framework. Les deux prestataires sont liés par un accord de traitement signé.</p>
-
-  <p data-i18n="pv.ptrans2">Stripe et Anthropic peuvent traiter des données aux États-Unis, dans le cadre d'accords de traitement signés incluant les clauses contractuelles types de l'UE.</p>
-
-  <h2 id="h2pay" data-i18n="pv.h2pay">Premium et factures</h2>
-  <p data-i18n="pv.ppay">Si vous souscrivez à Premium, nous traitons vos données de facturation pour exécuter le contrat et conservons vos factures six ans, comme l'exige le droit fiscal et commercial espagnol — même si vous supprimez votre compte (les factures ne gardent que les informations qui y figurent).</p>
-
-  <h2 id="h2e" data-i18n="pv.h2e">Combien de temps les gardons-nous ?</h2>
-  <p data-i18n="pv.pe">Jusqu’à ce que vous demandiez leur suppression, et nous supprimons automatiquement après 12 mois d’inactivité.</p>
-
-  <h2 id="h2cook" data-i18n="pv.h2cook">Cookies &amp; stockage local</h2>
-  <p data-i18n="pv.pcook">Nous n’utilisons pas de cookies de suivi ou publicitaires. Nous enregistrons votre choix de langue dans le stockage local de votre navigateur pour que le site s’en souvienne ; vous pouvez l’effacer à tout moment.</p>
-
-  <h2 id="h2f" data-i18n="pv.h2f">Quels sont vos droits ?</h2>
-  <p data-i18n="pv.pf">À tout moment, gratuitement, vous pouvez accéder à vos données, les rectifier, les supprimer, en limiter le traitement, les recevoir dans un format portable, vous opposer au traitement et retirer votre consentement. Écrivez à <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a> et nous agirons sous un mois. Vous pouvez aussi saisir l’autorité espagnole, l’<a href="https://www.aepd.es" target="_blank" rel="noopener">AEPD</a>.</p>
-
-  <h2 id="h2g" data-i18n="pv.h2g">Sécurité</h2>
-  <p data-i18n="pv.pg">Nous chiffrons vos données en transit et au repos et en restreignons l’accès.</p>
-  <p data-i18n="pv.pguard">Pour empêcher les abus de nos formulaires, nous conservons une empreinte irréversible (hash) de votre adresse IP — pas l'adresse elle-même — pendant deux jours au maximum, sur la base de notre intérêt légitime à sécuriser le service.</p>
-
-    </article>
+  <!-- Interim (2026-10-27): the full notice is being rewritten by Albert's lawyer. The previous
+       text is kept in git history and in docs/legal/ (dossier annex B); the pv.* strings stay in
+       i18n.js until the new version replaces them. -->
+  <div class="soon">
+    <p class="soon-tag" data-i18n="pv.soon_tag">Bientôt disponible</p>
+    <p data-i18n="pv.soon_p1">Nous préparons avec notre conseillère juridique un nouvel avis de confidentialité, plus complet. Il sera publié ici très bientôt.</p>
+    <p data-i18n="pv.soon_p2">En attendant, pour toute question sur vos données — ou pour les consulter, les corriger ou les supprimer — écrivez à <a href="mailto:privacy@jobspulseapp.com">privacy@jobspulseapp.com</a>.</p>
   </div>
 <footer>
   <div class="footrow">
